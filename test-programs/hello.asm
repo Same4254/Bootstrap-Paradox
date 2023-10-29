@@ -7,6 +7,9 @@ section .data
 	not_matches_str db "The string does not match", 10
 	test_str db "bannana"
 
+        character_not_found_str db "Character was not found", 10
+        character_found_str db "Character was found", 10
+
 section .bss
 	entered_buff resb 32
 
@@ -14,7 +17,8 @@ section .text
 	; global exports the method 
 	global _start
 
-strncmp:
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+str_ncmp:
 	; rdi -> *str1
 	; rsi -> *str2
 	; rdx -> length
@@ -22,8 +26,8 @@ strncmp:
 	mov r11, 0
 
 loop:
-	mov cl, byte [rdi]
-	mov r8b,  byte [rsi]
+	mov cl, byte [rdi + r11]
+	mov r8b,  byte [rsi + r11]
 
 	cmp cl, r8b
 	je check
@@ -39,7 +43,28 @@ check:
 	mov rax, 1
 out:
 	ret 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+str_search_char:
+	; rdi -> str
+	; rsi -> str_len
+	; dl -> character
+	mov r11, 0
+	mov rax, -1
+loop_1:
+	cmp dl, byte [rdi + r11]
+	jne check_1
+
+	mov rax, r11
+	jmp out_1
+check_1:
+	inc r11
+	cmp r11, rsi
+	jne loop_1
+out_1:
+	ret
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 print:
 	; rdi -> *str
 	; rsi -> length
@@ -83,7 +108,7 @@ _start:
 	mov rdi, entered_buff
 	mov rsi, test_str
 	mov rdx, 7
-	call strncmp
+	call str_ncmp
 
 	cmp rax, 0
 	je not_matches
@@ -91,12 +116,31 @@ _start:
 	mov rdi, matches_str
 	mov rsi, 19
 	call print
-	jmp end
+	jmp search
 
 not_matches:
 	mov rdi, not_matches_str
 	mov rsi, 26
 	call print
+
+search:
+	mov rdi, entered_buff
+	mov rsi, 32
+        mov dl, 97
+        call str_search_char
+
+        cmp rax, -1
+        jne found
+
+        mov rdi, character_not_found_str
+        mov rsi, 24
+        call print
+
+        jmp end
+found:
+        mov rdi, character_found_str
+        mov rsi, 20
+        call print
 
 end:
 	;;; exit
