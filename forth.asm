@@ -1,6 +1,10 @@
 section .data
     ; define bytes with pointer named "text", 10 is newline
-    filename_str db "./test-programs/add.forth", 0
+    input_filename_str db "./test-programs/add.forth", 0
+    output_filename_str db "out.asm", 0
+
+    test_str db "12345"
+
     newline_str db 10
 
     ; ;modes
@@ -21,204 +25,9 @@ section .text
     ; global exports the method 
     global _start
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-str_ncmp:
-    ; rdi -> *str1
-    ; rsi -> *str2
-    ; rdx -> length
-
-    ; r11 -> index
-    mov r11, 0
-
-loop:
-    mov cl, byte [rdi + r11]
-    mov r8b,  byte [rsi + r11]
-
-    cmp cl, r8b
-    je check
-    
-    mov rax, 0
-    jmp out
-
-check:
-    inc r11
-    cmp r11, rdx
-    jne loop
-    
-    mov rax, 1
-out:
-    ret 
-    
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-str_search_char:
-    ; rdi -> str
-    ; rsi -> str_len
-    ; dl -> character
-    mov r11, 0
-    mov rax, -1
-
-loop_1:
-    cmp dl, byte [rdi + r11]
-    jne check_1
-    
-    mov rax, r11
-    jmp out_1
-
-check_1:
-    inc r11
-    cmp r11, rsi
-    jne loop_1
-
-out_1:
-    ret
+%include "std.asm"
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-str_reverse:
-    ; rdi -> string
-    ; rsi -> length
-
-    cmp rsi, 0
-    je str_reverse_end
-
-    cmp rsi, 1
-    je str_reverse_end
-
-    mov rax, rsi
-    mov r11, 2
-
-    mov rdx, 0
-    div r11
-
-    mov r11, 0
-    mov r8, rsi
-    dec r8
-
-str_reverse_loop:
-    mov cl, [rdi + r11]
-    mov bl, [rdi + r8]
-
-    mov [rdi + r11], bl
-    mov [rdi + r8], cl
-    
-    inc r11
-    dec r8
-
-    cmp rax, r11
-    jne str_reverse_loop
-
-str_reverse_end:
-    ret
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-print:
-    ; rdi -> *str
-    ; rsi -> length
-    mov rdx, rsi
-    mov rsi, rdi
-    
-    ; sys_write
-    mov rax, 1
-    ; stdout
-    mov rdi, 1
-    syscall
-    
-    ret
-
-print_newline:
-    mov rdx, 1
-    mov rsi, newline_str
-
-    mov rax, 1
-    mov rdi, 1
-    syscall
-
-    ret
-
-print_int:
-    ; rdi -> integer
-    ; r11 -> length
-
-    mov rax, rdi
-
-    cmp rax, 0
-    jge print_int_abs
-
-    mov r8, -1
-    mul r8
-
-print_int_abs:
-
-    mov r11, 0
-    mov r8, 10
-
-    cmp rax, 0
-    jne print_int_loop
-
-    inc r11
-    mov byte [int_to_string_buff], 48
-    
-    jmp print_int_end
-
-print_int_loop:
-    mov rdx, 0
-    div r8
-
-    add dl, 48
-    mov byte [int_to_string_buff + r11], dl
-    inc r11
-
-    cmp rax, 0
-    jne print_int_loop
-
-print_int_sign:
-    cmp rdi, 0
-    jge print_int_end
-
-    mov dl, 45
-    mov byte [int_to_string_buff + r11], dl
-    inc r11
-
-print_int_end:
-    push r11
-
-    mov rdi, int_to_string_buff
-    mov rsi, r11
-    call str_reverse
-
-    pop r11
-
-    mov rdi, int_to_string_buff
-    mov rsi, r11
-    call print
-
-    ret
-
-str_is_int:
-    ; rdi -> string
-    ; rsi -> length
-
-    mov r11, 0
-    mov rax, 0
-
-str_is_int_loop:
-    mov dl, byte [rdi + r11]
-
-    cmp dl, 48
-    jl str_is_int_end
-    cmp dl, 57
-    jg str_is_int_end
-
-    inc r11
-    cmp r11, rsi
-    jne str_is_int_loop
-
-    mov rax, 1
-str_is_int_end:
-    ret
-
 str_skip_whitespace:
     ; rdi -> string
     ; rsi -> length
@@ -246,6 +55,7 @@ str_skip_whitespace_loop_end:
 str_skip_whitespace_end:
     ret
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 str_skip_to_whitespace:
     ; rdi -> string
     ; rsi -> length
@@ -276,14 +86,44 @@ str_skip_to_whitespace_found:
 str_skip_to_whitespace_end:
     ret
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+str_to_int:
+    ; rdi -> string
+    ; rsi -> length
+
+    mov rax, 0
+    mov r11, 0
+    mov r8,  0
+
+str_to_int_loop:
+    mov r8B, byte [rdi + r11]
+    sub r8B, 48
+
+    add rax, r8
+
+    inc r11
+    cmp r11, rsi
+    je str_to_int_end
+
+    imul rax, 10
+    jmp str_to_int_loop
+
+str_to_int_end:
+    ret
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 forth_parse_token:
     push r12
     push r13
+    push r14
 
     ; rdi -> address
     ; rsi -> length
+    ; rdx -> file descriptor
     mov r12, rdi
     mov r13, rsi
+    mov r14, rdx
 
     call str_is_int
 
@@ -297,6 +137,7 @@ forth_parse_token_int:
 forth_parse_token_str:
 
 forth_parse_token_end:
+    pop r14
     pop r13
     pop r12
 
@@ -305,7 +146,7 @@ forth_parse_token_end:
 _start:
     ; open the file
     mov rax, 2
-    mov rdi, filename_str
+    mov rdi, input_filename_str
     mov rsi, 0
     mov rdx, 0
     syscall
@@ -400,6 +241,13 @@ parse_token_found:
     jne parse
     
 parse_end:
+    mov rdi, test_str
+    mov rsi, 5
+    call str_to_int
+
+    mov rdi, rax
+    call print_int
+
      ;;; exit
     mov rax, 60
     ; code
