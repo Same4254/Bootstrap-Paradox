@@ -39,6 +39,8 @@ section .data
     r11_str db "r11"
     rcx_str db "rcx"
     rdi_str db "rdi"
+    
+    test_str db "1234"
 
     ; ;modes
     ; O_RDONLY: db 0        ;read-only
@@ -761,7 +763,7 @@ parse_func_call_add:
     call write_add_to_file
 
     mov rdi, r14
-    mov rsi, rcx_str
+    mov rsi, r11_str
     mov rdx, 3
     call write_push_to_file
     
@@ -945,6 +947,9 @@ parse_loop_end:
 ;     call print_int
 
 end:
+    mov rdi, 1234
+    call print_int
+
     ; exit code
     mov rax, 1
     mov rdi, r14

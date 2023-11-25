@@ -1,16 +1,24 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
+; Input
+; rdi -> string 1
+; rsi -> string 1 length
+; rdx -> string 2
+; rcx -> string 2 length 
 str_ncmp:
-    ; rdi -> *str1
-    ; rsi -> *str2
-    ; rdx -> length
-
     ; r11 -> index
     mov r11, 0
 
+    cmp rsi, rcx
+    je loop
+
+    ; if length are not equal, quit
+    mov rax, 0
+    jmp out
+
 loop:
+    ; match each byte against each other
     mov cl, byte [rdi + r11]
-    mov r8b,  byte [rsi + r11]
+    mov r8b,  byte [rdx + r11]
 
     cmp cl, r8b
     je check
@@ -20,7 +28,7 @@ loop:
 
 check:
     inc r11
-    cmp r11, rdx
+    cmp r11, rsi
     jne loop
     
     mov rax, 1
@@ -116,32 +124,37 @@ print_newline:
     ret
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-print_int:
-    ; rdi -> integer
+; Input
+; rdi -> integer
+; rsi -> buffer
+;
+; Output
+; rax -> length
+int_to_string:
     ; r11 -> length
 
     mov rax, rdi
 
     cmp rax, 0
-    jge print_int_abs
+    jge int_to_string_abs
 
     mov r8, -1
     mul r8
 
-print_int_abs:
+int_to_string_abs:
 
     mov r11, 0
     mov r8, 10
 
     cmp rax, 0
-    jne print_int_loop
+    jne int_to_string_loop
 
     inc r11
     mov byte [int_to_string_buff], 48
     
-    jmp print_int_end
+    jmp int_to_string_end
 
-print_int_loop:
+int_to_string_loop:
     mov rdx, 0
     div r8
 
@@ -150,17 +163,17 @@ print_int_loop:
     inc r11
 
     cmp rax, 0
-    jne print_int_loop
+    jne int_to_string_loop
 
-print_int_sign:
+int_to_string_sign:
     cmp rdi, 0
-    jge print_int_end
+    jge int_to_string_end
 
     mov dl, 45
     mov byte [int_to_string_buff + r11], dl
     inc r11
 
-print_int_end:
+int_to_string_end:
     push r11
 
     mov rdi, int_to_string_buff
@@ -168,9 +181,23 @@ print_int_end:
     call str_reverse
 
     pop r11
+    mov rax, r11
+
+    ; mov rdi, int_to_string_buff
+    ; mov rsi, r11
+    ; call print
+
+    ret
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Input
+; rdi -> integer
+print_int:
+    mov rsi, int_to_string_buff
+    call int_to_string
 
     mov rdi, int_to_string_buff
-    mov rsi, r11
+    mov rsi, rax
     call print
 
     ret
