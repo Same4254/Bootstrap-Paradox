@@ -1,0 +1,4 @@
+*.o
+./test-programs/*.o
+*.swp
+forth
