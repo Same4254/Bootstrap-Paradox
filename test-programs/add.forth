@@ -1,5 +1,3 @@
-1 2 + . "Hello World!"
+1 2 + 5 + .
 
-7 3 + .
-
-: thing 5 7 + . ;
+"Hello World!" TYPE CR

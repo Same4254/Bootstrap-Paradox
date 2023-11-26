@@ -1,3 +1,35 @@
+section .data
+    newline_str db 10
+
+section .bss
+    int_to_string_buff resb 32
+
+section .text
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Input
+; rdi -> ptr dst
+; rsi -> ptr src
+; rdx -> length
+memcpy:
+    ; index
+    mov r11, 0
+    cmp rdx, r11
+    je memcpy_end
+
+memcpy_loop:
+    mov r8B, byte [rsi + r11]
+    mov byte [rdi + r11], r8B
+
+    inc r11
+
+memcpy_loop_check:
+    cmp rdx, r11
+    jne memcpy_loop
+
+memcpy_end:
+    ret
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Input
 ; rdi -> string 1
@@ -227,4 +259,17 @@ str_is_int_end:
     ret
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;; Forth Bindings
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+TYPE:
+    ; pop off the return address to get a "clean" version of the stack
+    add rsp, 8
+    ; get the address and length off the stack
+    pop rsi
+    pop rdi
+
+    call print
+
+    sub rsp, 8
+    ret

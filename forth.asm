@@ -4,9 +4,11 @@ section .data
     output_filename_str db "out.asm", 0
     strings_filename_str db "strings.asm", 0
 
-    template_str db "%include ", 34, "strings.asm", 34, 10, "%include ", 34, "std.asm", 34, 10, 10, "section .data", 10, "    newline_str db 10", 10, 10, "section .bss", 10, "    int_to_string_buff resb 32", 10, 10, "section .text", 10, "    global _start", 10, 10, "_start:", 10
+    template_str db "%include ", 34, "strings.asm", 34, 10, "%include ", 34, "std.asm", 34, 10, 10, "section .bss", 10, "the_stack resb 1024", 10, 10, "section .text", 10, "    global _start", 10, 10, "_start:", 10, "mov r12, the_stack", 10, 10
 
     end_template_str db "; exit", 10, "mov rax, 60", 10, "mov rdi, 0", 10, "syscall", 10
+
+    str_file_template_str db "section .data", 10
 
     begin_parse_str db "Begin Parsing!", 10
 
@@ -16,16 +18,22 @@ section .data
     token_literal_str   db "TOKEN [Literal]   : "
     token_int_str       db "TOKEN [Int]       : "
 
-    newline_str db 10
-
     comma_str db ","
     space_str db " "
 
-    ;;; function strings
+    ;;; ASM function strings
     plus_str db "+"
     add_str db "add"
+    sub_str db "sub"
 
+    ;;; FORTH function strings
+    ; these are functions that are moreso macros to a native call
+    TYPE_str db "TYPE"
+    CR_str db "CR"
     print_int_forth_str db "."
+
+    ;;; NATIVE function strings
+    print_asm_str db "print"
     print_int_asm_str db "print_int"
     print_newline_str db "print_newline"
 
@@ -34,11 +42,21 @@ section .data
     push_str db "push"
     pop_str  db "pop"
     call_str db "call"
+    db_str   db "db"
 
     ;;; register strings
     r11_str db "r11"
+    r12_str db "r12"
     rcx_str db "rcx"
     rdi_str db "rdi"
+    rsi_str db "rsi"
+
+    ;;; stack access strings
+    stack_access_current_str db "[r12]"
+    eight_str db "8" ; used to increment stack_ptr
+
+    ;;; string define name
+    str_name_str db "string_"
 
     ; ;modes
     ; O_RDONLY: db 0        ;read-only
@@ -51,8 +69,13 @@ section .data
     ; O_APPEND: dw 2000o    ;append to file
 
 section .bss
+    ; buffer for reading the input forth file
     read_buff resb 1024
-    int_to_string_buff resb 32
+
+    ; used to build name strings
+    ; usually append a number to the name
+    ; requires a temporary space to build
+    string_build_buff resb 1024
 
 section .text
     ; global exports the method 
@@ -261,6 +284,28 @@ write_add_to_file:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Input
 ; rdi -> fp
+;
+; rsi -> arg1 string
+; rdx -> arg1 length
+;
+; rcx -> arg2 string
+; r8  -> arg2 length
+write_sub_to_file:
+    mov r10, r8
+    mov r9 , rcx
+
+    mov rcx, rsi
+    mov r8 , rdx
+
+    mov rsi, sub_str
+    mov rdx, 3
+
+    call write_two_arg_inst
+    ret
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Input
+; rdi -> fp
 ; 
 ; rsi -> instruction string ptr
 ; rdx -> instruction string length
@@ -313,21 +358,21 @@ write_two_arg_inst:
 
     push rcx
     push r8
-        push r9
-        push r10
-            ; write the instruction name
-            call write_str_to_file
+    push r9
+    push r10
+        ; write the instruction name
+        call write_str_to_file
 
-            ; write space
-            mov rdi, r12
-            mov rsi, space_str
-            mov rdx, 1
-            call write_str_to_file
-        pop rdx
-        pop rsi 
+        ; write space
+        mov rdi, r12
+        mov rsi, space_str
+        mov rdx, 1
+        call write_str_to_file
 
         ; write arg 1
         mov rdi, r12
+        mov rsi, [rsp + 24]
+        mov rdx, [rsp + 16]
         call write_str_to_file
 
         ; write comma
@@ -336,17 +381,71 @@ write_two_arg_inst:
         mov rdx, 1
         call write_str_to_file
 
-    pop rdx
-    pop rsi 
-
     ; write arg 2
     mov rdi, r12
+    mov rsi, [rsp + 8]
+    mov rdx, [rsp]
     call write_str_to_file
 
     mov rdi, r12
     call write_newline_to_file
 
+    pop rdx
+    pop rsi 
+    pop rdx
+    pop rsi 
+
     pop r12
+    ret
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Pushes a value onto the *Forth Stack*
+; Input
+; rdi -> fp
+; rsi -> register name string
+; rdx -> register name length
+write_forth_stack_push_to_file:
+    ; increment stack pointer
+    push rdi
+    push rsi 
+    push rdx
+        mov rsi, r12_str
+        mov rdx, 3
+        mov rcx, eight_str
+        mov r8,  1
+        call write_add_to_file
+    pop r8
+    pop rcx
+    pop rdi
+
+    ; mov value onto the stack
+    mov rsi, stack_access_current_str
+    mov rdx, 5
+    call write_mov_to_file
+
+    ret
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Pops a value from the *Forth Stack*
+; Input
+; rdi -> fp
+; rsi -> register name string
+; rdx -> register name length
+write_forth_stack_pop_to_file:
+    push rdi
+        ; mov value from stack to register
+        mov rcx, stack_access_current_str
+        mov r8, 5
+        call write_mov_to_file
+    pop rdi
+
+    ; decrement stack pointer
+    mov rsi, r12_str
+    mov rdx, 3
+    mov rcx, eight_str
+    mov r8,  1
+    call write_sub_to_file
+
     ret
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -553,22 +652,35 @@ _start:
 
     mov r15, rax
 
-    ; test write
+    ; Write start of code output file
     mov rax, 1
     mov rdi, r14
     mov rsi, template_str
-    mov rdx, 166
+    mov rdx, 138
+    syscall
+
+    ; Write start of str file
+    mov rax, 1
+    mov rdi, r15
+    mov rsi, str_file_template_str
+    mov rdx, 14
     syscall
 
     mov rdi, begin_parse_str
     mov rsi, 15
     call print
 
+    mov r8, 0
+    push r8
+
     ; parse the buffer
     ; r12 -> input buffer pointer
     ; r13 -> input buffer length
     ; r14 -> code output file
     ; r15 -> strings file
+
+    ; stack
+    ; num strings (0)
 parse:
     mov rdi, r12
     mov rsi, r13
@@ -702,6 +814,7 @@ parse_func_call:
         cmp rax, 1
         je parse_func_call_add
 
+        ; check if the function being called is .
         mov rdi, [rsp + 8]
         mov rsi, [rsp]
         mov rdx, print_int_forth_str
@@ -710,14 +823,32 @@ parse_func_call:
         cmp rax, 1
         je parse_func_call_printint
 
-        jmp parse_func_call_end
+        ; check if the function being called is TYPE
+        mov rdi, [rsp + 8]
+        mov rsi, [rsp]
+        mov rdx, TYPE_str
+        mov rcx, 4
+        call str_ncmp
+        cmp rax, 1
+        je parse_func_call_TYPE
+
+        ; check if the function being called is TYPE
+        mov rdi, [rsp + 8]
+        mov rsi, [rsp]
+        mov rdx, CR_str
+        mov rcx, 2
+        call str_ncmp
+        cmp rax, 1
+        je parse_func_call_CR
+
+        jmp parse_func_call_default
 
 parse_func_call_printint:
     ; pop r11
     mov rdi, r14
     mov rsi, rdi_str
     mov rdx, 3
-    call write_pop_to_file
+    call write_forth_stack_pop_to_file
 
     ; call print_int
     mov rdi, r14
@@ -744,13 +875,13 @@ parse_func_call_add:
     mov rdi, r14
     mov rsi, r11_str
     mov rdx, 3
-    call write_pop_to_file
+    call write_forth_stack_pop_to_file
     
     ; pop rcx
     mov rdi, r14
     mov rsi, rcx_str
     mov rdx, 3
-    call write_pop_to_file
+    call write_forth_stack_pop_to_file
 
     ; add r11, rcx
     mov rdi, r14
@@ -761,10 +892,56 @@ parse_func_call_add:
     call write_add_to_file
 
     mov rdi, r14
-    mov rsi, rcx_str
+    mov rsi, r11_str
     mov rdx, 3
-    call write_push_to_file
+    call write_forth_stack_push_to_file
     
+    mov rdi, r14
+    call write_newline_to_file
+
+    jmp parse_func_call_end
+
+parse_func_call_TYPE:
+    ; pop the string length off of the stack
+    mov rdi, r14
+    mov rsi, rsi_str
+    mov rdx, 3
+    call write_forth_stack_pop_to_file
+
+    ; pop the string address off of the stack
+    mov rdi, r14
+    mov rsi, rdi_str
+    mov rdx, 3
+    call write_forth_stack_pop_to_file
+
+    ; call print
+    mov rdi, r14
+    mov rsi, print_asm_str
+    mov rdx, 5
+    call write_call_to_file
+    
+    mov rdi, r14
+    call write_newline_to_file
+
+    jmp parse_func_call_end
+
+parse_func_call_CR:
+    mov rdi, r14
+    mov rsi, print_newline_str
+    mov rdx, 13
+    call write_call_to_file
+
+    mov rdi, r14
+    call write_newline_to_file
+
+    jmp parse_func_call_end
+parse_func_call_default:
+    ; the name is a function that was previously defined. Call it
+    mov rdi, r14
+    mov rsi, [rsp + 8]
+    mov rdx, [rsp]
+    call write_call_to_file
+
     mov rdi, r14
     call write_newline_to_file
 
@@ -792,6 +969,123 @@ parse_literal:
     pop rdx
     pop rax
 
+    ; write "string_"
+    push rax
+    push rdx
+        ; mov rdi, r15
+        ; mov rsi, str_name_str
+        ; mov rdx, 7
+        ; call write_str_to_file
+
+        ; ; convert the number of counted strings to a string
+        ; mov rdi, [rsp + 16]
+        ; mov rsi, int_to_string_buff
+        ; call int_to_string
+
+        ; ; write the number after the underscore to make the name unique
+        ; mov rdi, r15
+        ; mov rsi, int_to_string_buff
+        ; mov rdx, rax
+        ; call write_str_to_file
+        
+        ; copy "string_" into the string build buffer
+        mov rdi, string_build_buff
+        mov rsi, str_name_str
+        mov rdx, 7
+        call memcpy
+
+        ; convert the number of counted strings to a string
+        mov rdi, [rsp + 16]
+        mov rsi, int_to_string_buff
+        call int_to_string
+
+        ; add the number after the underscore
+        mov rdi, string_build_buff
+        add rdi, 7 ; accounts for the length of the existing string
+        mov rsi, int_to_string_buff
+        mov rdx, rax
+        ; save the length of the integer string
+        push rdx
+            call memcpy
+
+            ; add the length of the prefix "string_"
+            add qword [rsp], 7
+
+            ; write the string
+            mov rdi, r15
+            mov rsi, string_build_buff
+            mov rdx, [rsp]
+            call write_str_to_file
+
+            ; write a space
+            mov rdi, r15
+            mov rsi, space_str
+            mov rdx, 1
+            call write_str_to_file
+
+            ; write "db"
+            mov rdi, r15
+            mov rsi, db_str
+            mov rdx, 2
+            call write_str_to_file
+
+            ; write a space
+            mov rdi, r15
+            mov rsi, space_str
+            mov rdx, 1
+            call write_str_to_file
+
+            ; write the string literal
+            mov rdi, r15
+            mov rsi, [rsp + 16]
+            mov rdx, [rsp + 8]
+            call write_str_to_file
+
+            mov rdi, r15
+            call write_newline_to_file
+
+            ; the string has been allocated, now we may reference the address
+            ; write "mov r11, string_build_buff"
+            mov rdi, r14
+            mov rsi, r11_str
+            mov rdx, 3
+            mov rcx, string_build_buff
+            mov r8 , [rsp] ; length was put onto the stack after the tostring was computed
+            call write_mov_to_file
+
+            ; push the address onto the stack
+            mov rdi, r14
+            mov rsi, r11_str
+            mov rdx, 3
+            call write_forth_stack_push_to_file
+
+            ; convert the length of the string (an integer) into a string
+            mov rdi, [rsp + 8] ; length was put onto the stack
+            sub rdi, 2 ; remove 2 because this includes both of the quotes
+            mov rsi, int_to_string_buff
+            call int_to_string
+
+            ; load the length of the string onto register
+            mov rdi, r14
+            mov rsi, r11_str
+            mov rdx, 3
+            mov rcx, int_to_string_buff
+            mov r8 , rax
+            call write_mov_to_file
+
+            ; push onto the stack
+            mov rdi, r14
+            mov rsi, r11_str
+            mov rdx, 3
+            call write_forth_stack_push_to_file
+
+            mov rdi, r14
+            call write_newline_to_file
+
+        pop rdx
+    pop rdx
+    pop rax
+
     jmp parse_loop_end
 
 parse_int:
@@ -814,16 +1108,16 @@ parse_int:
     push rax
     push rdx
         mov rdi, r14
-        mov rsi, [rsp + 8]
-        mov rdx, [rsp]
-        mov rcx, r11_str
-        mov r8,  3
+        mov rsi, r11_str
+        mov rdx, 3
+        mov rcx, [rsp + 8]
+        mov r8,  [rsp]
         call write_mov_to_file 
 
         mov rdi, r14
         mov rsi, r11_str
         mov rdx, 3
-        call write_push_to_file
+        call write_forth_stack_push_to_file
 
         mov rdi, r14
         call write_newline_to_file
