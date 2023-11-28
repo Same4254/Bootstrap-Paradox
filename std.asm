@@ -257,19 +257,3 @@ str_is_int_loop:
     mov rax, 1
 str_is_int_end:
     ret
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;; Forth Bindings
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-TYPE:
-    ; pop off the return address to get a "clean" version of the stack
-    add rsp, 8
-    ; get the address and length off the stack
-    pop rsi
-    pop rdi
-
-    call print
-
-    sub rsp, 8
-    ret

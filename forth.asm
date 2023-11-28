@@ -29,6 +29,8 @@ section .data
     ;;; FORTH function strings
     ; these are functions that are moreso macros to a native call
     TYPE_str db "TYPE"
+    DUP_str db "DUP"
+    two_DUP_str db "2DUP"
     CR_str db "CR"
     print_int_forth_str db "."
 
@@ -832,6 +834,24 @@ parse_func_call:
         cmp rax, 1
         je parse_func_call_TYPE
 
+        ; check if the function being called is DUP
+        mov rdi, [rsp + 8]
+        mov rsi, [rsp]
+        mov rdx, DUP_str
+        mov rcx, 3
+        call str_ncmp
+        cmp rax, 1
+        je parse_func_call_DUP
+
+        ; check if the function being called is DUP
+        mov rdi, [rsp + 8]
+        mov rsi, [rsp]
+        mov rdx, two_DUP_str
+        mov rcx, 4
+        call str_ncmp
+        cmp rax, 1
+        je parse_func_call_2DUP
+
         ; check if the function being called is TYPE
         mov rdi, [rsp + 8]
         mov rsi, [rsp]
@@ -922,6 +942,68 @@ parse_func_call_TYPE:
     
     mov rdi, r14
     call write_newline_to_file
+
+    jmp parse_func_call_end
+
+parse_func_call_DUP:
+    ; pop top value
+    mov rdi, r14
+    mov rsi, r11_str
+    mov rdx, 3
+    call write_forth_stack_pop_to_file
+
+    ; push to stack
+    mov rdi, r14
+    mov rsi, r11_str
+    mov rdx, 3
+    call write_forth_stack_push_to_file
+
+    ; push to stack (again)
+    mov rdi, r14
+    mov rsi, r11_str
+    mov rdx, 3
+    call write_forth_stack_push_to_file
+
+    jmp parse_func_call_end
+
+parse_func_call_2DUP:
+    ; pop top value
+    mov rdi, r14
+    mov rsi, rcx_str
+    mov rdx, 3
+    call write_forth_stack_pop_to_file
+    
+    ; pop top value
+    mov rdi, r14
+    mov rsi, r11_str
+    mov rdx, 3
+    call write_forth_stack_pop_to_file
+
+
+    ; push to stack
+    mov rdi, r14
+    mov rsi, r11_str
+    mov rdx, 3
+    call write_forth_stack_push_to_file
+
+    ; push to stack (again)
+    mov rdi, r14
+    mov rsi, rcx_str
+    mov rdx, 3
+    call write_forth_stack_push_to_file
+
+
+    ; push to stack
+    mov rdi, r14
+    mov rsi, r11_str
+    mov rdx, 3
+    call write_forth_stack_push_to_file
+
+    ; push to stack (again)
+    mov rdi, r14
+    mov rsi, rcx_str
+    mov rdx, 3
+    call write_forth_stack_push_to_file
 
     jmp parse_func_call_end
 
