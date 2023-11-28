@@ -1004,6 +1004,10 @@ parse_literal:
         add rdi, 7 ; accounts for the length of the existing string
         mov rsi, int_to_string_buff
         mov rdx, rax
+
+        ; increment the number of string literals seen (to keep names unique)
+        inc qword [rsp + 16]
+
         ; save the length of the integer string
         push rdx
             call memcpy
@@ -1081,7 +1085,6 @@ parse_literal:
 
             mov rdi, r14
             call write_newline_to_file
-
         pop rdx
     pop rdx
     pop rax

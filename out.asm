@@ -59,6 +59,21 @@ call print
 
 call print_newline
 
+mov r11,string_1
+add r12,8
+mov [r12],r11
+mov r11,12
+add r12,8
+mov [r12],r11
+
+mov rsi,[r12]
+sub r12,8
+mov rdi,[r12]
+sub r12,8
+call print
+
+call print_newline
+
 ; exit
 mov rax, 60
 mov rdi, 0
