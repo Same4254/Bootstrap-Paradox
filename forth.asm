@@ -23,14 +23,19 @@ section .data
 
     ;;; ASM function strings
     plus_str db "+"
+    star_str db "*"
+
     add_str db "add"
     sub_str db "sub"
+    mul_str db "imul"
 
     ;;; FORTH function strings
     ; these are functions that are moreso macros to a native call
     TYPE_str db "TYPE"
     DUP_str db "DUP"
     two_DUP_str db "2DUP"
+    SWAP_str db "SWAP"
+    two_SWAP_str db "2SWAP"
     CR_str db "CR"
     print_int_forth_str db "."
 
@@ -52,6 +57,7 @@ section .data
     rcx_str db "rcx"
     rdi_str db "rdi"
     rsi_str db "rsi"
+    rax_str db "rax"
 
     ;;; stack access strings
     stack_access_current_str db "[r12]"
@@ -215,6 +221,28 @@ write_mov_to_file:
 
     mov rsi, mov_str
     mov rdx, 3
+
+    call write_two_arg_inst
+    ret
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Input
+; rdi -> fp
+; 
+; rsi -> arg1 string ptr
+; rdx -> arg1 string length
+; 
+; rcx -> arg2 string ptr
+; r8  -> arg2 string length
+write_mul_to_file:
+    mov r10, r8
+    mov r9 , rcx
+
+    mov rcx, rsi
+    mov r8 , rdx
+
+    mov rsi, mul_str
+    mov rdx, 4
 
     call write_two_arg_inst
     ret
@@ -861,6 +889,33 @@ parse_func_call:
         cmp rax, 1
         je parse_func_call_CR
 
+        ; check if the function being called is TYPE
+        mov rdi, [rsp + 8]
+        mov rsi, [rsp]
+        mov rdx, SWAP_str
+        mov rcx, 4
+        call str_ncmp
+        cmp rax, 1
+        je parse_func_call_SWAP
+
+        ; check if the function being called is TYPE
+        mov rdi, [rsp + 8]
+        mov rsi, [rsp]
+        mov rdx, two_SWAP_str
+        mov rcx, 5
+        call str_ncmp
+        cmp rax, 1
+        je parse_func_call_2SWAP
+
+        ; check if the function being called is TYPE
+        mov rdi, [rsp + 8]
+        mov rsi, [rsp]
+        mov rdx, star_str
+        mov rcx, 1
+        call str_ncmp
+        cmp rax, 1
+        je parse_func_call_mul
+
         jmp parse_func_call_default
 
 parse_func_call_printint:
@@ -911,11 +966,44 @@ parse_func_call_add:
     mov r8 , 3
     call write_add_to_file
 
+    ; push r11
     mov rdi, r14
     mov rsi, r11_str
     mov rdx, 3
     call write_forth_stack_push_to_file
     
+    mov rdi, r14
+    call write_newline_to_file
+
+    jmp parse_func_call_end
+
+parse_func_call_mul:
+    ; pop r11
+    mov rdi, r14
+    mov rsi, rax_str
+    mov rdx, 3
+    call write_forth_stack_pop_to_file
+    
+    ; pop rcx
+    mov rdi, r14
+    mov rsi, rcx_str
+    mov rdx, 3
+    call write_forth_stack_pop_to_file
+
+    ; imul rax, rcx
+    mov rdi, r14
+    mov rsi, rax_str
+    mov rdx, 3
+    mov rcx, rcx_str
+    mov r8 , 3
+    call write_mul_to_file
+
+    ; push rax
+    mov rdi, r14
+    mov rsi, rax_str
+    mov rdx, 3
+    call write_forth_stack_push_to_file
+
     mov rdi, r14
     call write_newline_to_file
 
@@ -940,6 +1028,17 @@ parse_func_call_TYPE:
     mov rdx, 5
     call write_call_to_file
     
+    mov rdi, r14
+    call write_newline_to_file
+
+    jmp parse_func_call_end
+
+parse_func_call_CR:
+    mov rdi, r14
+    mov rsi, print_newline_str
+    mov rdx, 13
+    call write_call_to_file
+
     mov rdi, r14
     call write_newline_to_file
 
@@ -1005,18 +1104,97 @@ parse_func_call_2DUP:
     mov rdx, 3
     call write_forth_stack_push_to_file
 
+    mov rdi, r14
+    call write_newline_to_file
+
     jmp parse_func_call_end
 
-parse_func_call_CR:
+parse_func_call_SWAP:
+    ; pop top value
     mov rdi, r14
-    mov rsi, print_newline_str
-    mov rdx, 13
-    call write_call_to_file
+    mov rsi, rcx_str
+    mov rdx, 3
+    call write_forth_stack_pop_to_file
+    
+    ; pop top value
+    mov rdi, r14
+    mov rsi, r11_str
+    mov rdx, 3
+    call write_forth_stack_pop_to_file
+
+    ; push to stack
+    mov rdi, r14
+    mov rsi, rcx_str
+    mov rdx, 3
+    call write_forth_stack_push_to_file
+
+    ; push to stack (again)
+    mov rdi, r14
+    mov rsi, r11_str
+    mov rdx, 3
+    call write_forth_stack_push_to_file
 
     mov rdi, r14
     call write_newline_to_file
 
     jmp parse_func_call_end
+
+parse_func_call_2SWAP:
+    ; pop top value
+    mov rdi, r14
+    mov rsi, rcx_str
+    mov rdx, 3
+    call write_forth_stack_pop_to_file
+    
+    ; pop top value
+    mov rdi, r14
+    mov rsi, r11_str
+    mov rdx, 3
+    call write_forth_stack_pop_to_file
+
+    ; pop top value
+    mov rdi, r14
+    mov rsi, rdi_str
+    mov rdx, 3
+    call write_forth_stack_pop_to_file
+    
+    ; pop top value
+    mov rdi, r14
+    mov rsi, rsi_str
+    mov rdx, 3
+    call write_forth_stack_pop_to_file
+
+
+    ; push to stack
+    mov rdi, r14
+    mov rsi, r11_str
+    mov rdx, 3
+    call write_forth_stack_push_to_file
+
+    ; push to stack (again)
+    mov rdi, r14
+    mov rsi, rcx_str
+    mov rdx, 3
+    call write_forth_stack_push_to_file
+
+
+    ; push to stack
+    mov rdi, r14
+    mov rsi, rsi_str
+    mov rdx, 3
+    call write_forth_stack_push_to_file
+
+    ; push to stack (again)
+    mov rdi, r14
+    mov rsi, rdi_str
+    mov rdx, 3
+    call write_forth_stack_push_to_file
+
+    mov rdi, r14
+    call write_newline_to_file
+
+    jmp parse_func_call_end
+
 parse_func_call_default:
     ; the name is a function that was previously defined. Call it
     mov rdi, r14
