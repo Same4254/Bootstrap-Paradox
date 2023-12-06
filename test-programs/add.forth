@@ -27,9 +27,25 @@ TYPE CR
 1
 1
 
-1 IF 
+1 2 = IF 
     "Condition was true!" TYPE CR
+    1 2 + .
+ELSE
+    "Condition was false!" TYPE CR
 THEN
 
 "After" TYPE CR
 
+5 3 - .
+
+11
+
+12
+
+13
+
+14
+
+DROP
+
+.

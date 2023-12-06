@@ -256,6 +256,19 @@ mov r11,1
 add r12,8
 mov [r12],r11
 
+mov r11,2
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+cmp rcx,r11
+setz r11B
+setz r11B
+add r12,8
+mov [r12],r11
 mov r11,[r12]
 sub r12,8
 cmp r11,0
@@ -276,9 +289,47 @@ call print
 
 call print_newline
 
-if_then_0:
+mov r11,1
+add r12,8
+mov [r12],r11
+
+mov r11,2
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov rcx,[r12]
+sub r12,8
+add r11,rcx
+add r12,8
+mov [r12],r11
+
+mov rdi,[r12]
+sub r12,8
+call print_int
+
+call print_newline
+
+jmp if_then_0
 if_else_0:
 mov r11,string_6
+add r12,8
+mov [r12],r11
+mov r11,20
+add r12,8
+mov [r12],r11
+
+mov rsi,[r12]
+sub r12,8
+mov rdi,[r12]
+sub r12,8
+call print
+
+call print_newline
+
+if_then_0:
+mov r11,string_7
 add r12,8
 mov [r12],r11
 mov r11,5
@@ -290,6 +341,52 @@ sub r12,8
 mov rdi,[r12]
 sub r12,8
 call print
+
+call print_newline
+
+mov r11,5
+add r12,8
+mov [r12],r11
+
+mov r11,3
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+sub r11,rcx
+add r12,8
+mov [r12],r11
+
+mov rdi,[r12]
+sub r12,8
+call print_int
+
+call print_newline
+
+mov r11,11
+add r12,8
+mov [r12],r11
+
+mov r11,12
+add r12,8
+mov [r12],r11
+
+mov r11,13
+add r12,8
+mov [r12],r11
+
+mov r11,14
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov rdi,[r12]
+sub r12,8
+call print_int
 
 call print_newline
 

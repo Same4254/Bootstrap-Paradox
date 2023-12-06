@@ -36,7 +36,10 @@ section .data
     colon_str db ":"
 
     plus_str db "+"
+    minus_str db "-"
     star_str db "*"
+
+    equal_str db "="
 
     zero_str db "0"
 
@@ -52,6 +55,7 @@ section .data
     IF_str db "IF"
     THEN_str db "THEN"
     ELSE_str db "ELSE"
+    DROP_str db "DROP"
 
     ;;; NATIVE function strings
     print_asm_str db "print"
@@ -63,7 +67,9 @@ section .data
     sub_str db "sub"
     mul_str db "imul"
     cmp_str db "cmp"
+    setz_str db "setz"
     mov_str db "mov"
+    movzx_str db "movzx"
     jmp_str db "jmp"
     jne_str db "jne"
     je_str  db "je"
@@ -74,6 +80,8 @@ section .data
 
     ;;; register strings
     r11_str db "r11"
+    r11B_str db "r11B"
+
     r12_str db "r12"
     rcx_str db "rcx"
     rdi_str db "rdi"
@@ -312,6 +320,28 @@ write_mov_to_file:
 ; 
 ; rcx -> arg2 string ptr
 ; r8  -> arg2 string length
+write_movzx_to_file:
+    mov r10, r8
+    mov r9 , rcx
+
+    mov rcx, rsi
+    mov r8 , rdx
+
+    mov rsi, movzx_str
+    mov rdx, 5
+
+    call write_two_arg_inst
+    ret
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Input
+; rdi -> fp
+; 
+; rsi -> arg1 string ptr
+; rdx -> arg1 string length
+; 
+; rcx -> arg2 string ptr
+; r8  -> arg2 string length
 write_cmp_to_file:
     mov r10, r8
     mov r9 , rcx
@@ -345,6 +375,20 @@ write_mul_to_file:
     mov rdx, 4
 
     call write_two_arg_inst
+    ret
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Input
+; rdi -> fp
+; rsi -> label string
+; rdx -> label length
+write_setz_to_file:
+    mov rcx, rsi
+    mov r8 , rdx
+    
+    mov rsi, setz_str
+    mov rdx, 4
+    call write_one_arg_inst
     ret
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1062,6 +1106,25 @@ parse_else:
         jmp parse_branch_end
 
 parse_then:
+        cmp qword [if_elseset], 0
+        jne parse_then_end
+
+        ; if there was no "else" label
+        ; make the label for the else, effevtively nop
+        ; (the if always jumps to the else if the condition fails)
+
+        ; make the label 
+        mov rdi, if_else_label_str
+        mov rsi, 8
+        mov rdx, [if_stack]
+        call str_append_int
+
+        mov rdi, r14
+        mov rsi, string_build_buff
+        mov rdx, rax
+        call write_label_to_file
+
+parse_then_end:
         ; not needed, but nice to have a label here
         mov rdi, if_then_label_str
         mov rsi, 8
@@ -1079,25 +1142,6 @@ parse_then:
         sub rdi, 8
         mov [if_stack_nextptr], rdi
 
-        cmp qword [if_elseset], 0
-        jne parse_then_end
-
-parse_then_noelse:
-        ; make the label for the else, effevtively nop
-        ; (the if always jumps to the else if the condition fails)
-
-        ; make the label 
-        mov rdi, if_else_label_str
-        mov rsi, 8
-        mov rdx, [if_stack]
-        call str_append_int
-
-        mov rdi, r14
-        mov rsi, string_build_buff
-        mov rdx, rax
-        call write_label_to_file
-
-parse_then_end:
         ; reset the else flag
         mov qword [if_elseset], 0
         jmp parse_branch_end
@@ -1194,6 +1238,24 @@ parse_func_call:
         cmp rax, 1
         je parse_func_call_add
 
+        ; check if the function being called is -
+        mov rdi, [rsp + 8]
+        mov rsi, [rsp]
+        mov rdx, minus_str
+        mov rcx, 1
+        call str_ncmp
+        cmp rax, 1
+        je parse_func_call_sub
+
+        ; check if the function being called is *
+        mov rdi, [rsp + 8]
+        mov rsi, [rsp]
+        mov rdx, star_str
+        mov rcx, 1
+        call str_ncmp
+        cmp rax, 1
+        je parse_func_call_mul
+
         ; check if the function being called is .
         mov rdi, [rsp + 8]
         mov rsi, [rsp]
@@ -1212,6 +1274,15 @@ parse_func_call:
         cmp rax, 1
         je parse_func_call_TYPE
 
+        ; check if the function being called is CR
+        mov rdi, [rsp + 8]
+        mov rsi, [rsp]
+        mov rdx, CR_str
+        mov rcx, 2
+        call str_ncmp
+        cmp rax, 1
+        je parse_func_call_CR
+
         ; check if the function being called is DUP
         mov rdi, [rsp + 8]
         mov rsi, [rsp]
@@ -1221,7 +1292,7 @@ parse_func_call:
         cmp rax, 1
         je parse_func_call_DUP
 
-        ; check if the function being called is DUP
+        ; check if the function being called is 2DUP
         mov rdi, [rsp + 8]
         mov rsi, [rsp]
         mov rdx, two_DUP_str
@@ -1230,16 +1301,7 @@ parse_func_call:
         cmp rax, 1
         je parse_func_call_2DUP
 
-        ; check if the function being called is TYPE
-        mov rdi, [rsp + 8]
-        mov rsi, [rsp]
-        mov rdx, CR_str
-        mov rcx, 2
-        call str_ncmp
-        cmp rax, 1
-        je parse_func_call_CR
-
-        ; check if the function being called is TYPE
+        ; check if the function being called is SWAP
         mov rdi, [rsp + 8]
         mov rsi, [rsp]
         mov rdx, SWAP_str
@@ -1248,7 +1310,7 @@ parse_func_call:
         cmp rax, 1
         je parse_func_call_SWAP
 
-        ; check if the function being called is TYPE
+        ; check if the function being called is 2SWAP
         mov rdi, [rsp + 8]
         mov rsi, [rsp]
         mov rdx, two_SWAP_str
@@ -1257,14 +1319,23 @@ parse_func_call:
         cmp rax, 1
         je parse_func_call_2SWAP
 
-        ; check if the function being called is TYPE
+        ; check if the function being called is DROP
         mov rdi, [rsp + 8]
         mov rsi, [rsp]
-        mov rdx, star_str
+        mov rdx, DROP_str
+        mov rcx, 4
+        call str_ncmp
+        cmp rax, 1
+        je parse_func_call_drop
+
+        ; check if the function being called is =
+        mov rdi, [rsp + 8]
+        mov rsi, [rsp]
+        mov rdx, equal_str
         mov rcx, 1
         call str_ncmp
         cmp rax, 1
-        je parse_func_call_mul
+        je parse_func_call_is_equal
 
         jmp parse_func_call_default
 
@@ -1315,6 +1386,38 @@ parse_func_call_add:
     mov rcx, rcx_str
     mov r8 , 3
     call write_add_to_file
+
+    ; push r11
+    mov rdi, r14
+    mov rsi, r11_str
+    mov rdx, 3
+    call write_forth_stack_push_to_file
+    
+    mov rdi, r14
+    call write_newline_to_file
+
+    jmp parse_func_call_end
+
+parse_func_call_sub:
+    ; pop rcx
+    mov rdi, r14
+    mov rsi, rcx_str
+    mov rdx, 3
+    call write_forth_stack_pop_to_file
+
+    ; pop r11
+    mov rdi, r14
+    mov rsi, r11_str
+    mov rdx, 3
+    call write_forth_stack_pop_to_file
+    
+    ; sub r11, rcx
+    mov rdi, r14
+    mov rsi, r11_str
+    mov rdx, 3
+    mov rcx, rcx_str
+    mov r8 , 3
+    call write_sub_to_file
 
     ; push r11
     mov rdi, r14
@@ -1542,6 +1645,58 @@ parse_func_call_2SWAP:
 
     mov rdi, r14
     call write_newline_to_file
+
+    jmp parse_func_call_end
+
+parse_func_call_drop:
+    ; pop top value
+    mov rdi, r14
+    mov rsi, r11_str
+    mov rdx, 3
+    call write_forth_stack_pop_to_file
+
+    jmp parse_func_call_end
+
+parse_func_call_is_equal:
+    ; pop top value
+    mov rdi, r14
+    mov rsi, rcx_str
+    mov rdx, 3
+    call write_forth_stack_pop_to_file
+    
+    ; pop top value
+    mov rdi, r14
+    mov rsi, r11_str
+    mov rdx, 3
+    call write_forth_stack_pop_to_file
+
+    ; cmp rcx, r11
+    mov rdi, r14
+    mov rsi, rcx_str
+    mov rdx, 3
+    mov rcx, r11_str
+    mov r8 , 3
+    call write_cmp_to_file
+
+    ; setz r11B
+    mov rdi, r14
+    mov rsi, r11B_str
+    mov rdx, 4
+    call write_setz_to_file
+
+    ; movzx r11, r11B
+    mov rdi, r14
+    mov rsi, r11B_str
+    mov rdx, 4
+    mov rcx, r11_str
+    mov r8 , 3
+    call write_setz_to_file
+
+    ; push r11 to stack
+    mov rdi, r14
+    mov rsi, r11_str
+    mov rdx, 3
+    call write_forth_stack_push_to_file
 
     jmp parse_func_call_end
 
