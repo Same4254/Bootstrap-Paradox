@@ -1,10 +1,23 @@
+section .bss
+    ; buffer for reading the input forth file
+    read_buff resb 1024
+
+    ; used to build name strings
+    ; usually append a number to the name
+    ; requires a temporary space to build
+    string_build_buff resb 1024
+
+    ; stack of if statement ids
+    ; these are popped as THEN statements are made
+    if_stack resb 8192
+
 section .data
     ; define bytes with pointer named "text", 10 is newline
     input_filename_str db "./test-programs/add.forth", 0
     output_filename_str db "out.asm", 0
     strings_filename_str db "strings.asm", 0
 
-    template_str db "%include ", 34, "strings.asm", 34, 10, "%include ", 34, "std.asm", 34, 10, 10, "section .bss", 10, "the_stack resb 1024", 10, 10, "section .text", 10, "    global _start", 10, 10, "_start:", 10, "mov r12, the_stack", 10, 10
+    template_str db "%include ", 34, "strings.asm", 34, 10, "%include ", 34, "std.asm", 34, 10, 10, "section .bss", 10, "the_stack resb 8192", 10, 10, "section .text", 10, "    global _start", 10, 10, "_start:", 10, "mov r12, the_stack", 10, 10
 
     end_template_str db "; exit", 10, "mov rax, 60", 10, "mov rdi, 0", 10, "syscall", 10
 
@@ -20,16 +33,14 @@ section .data
 
     comma_str db ","
     space_str db " "
+    colon_str db ":"
 
-    ;;; ASM function strings
     plus_str db "+"
     star_str db "*"
 
-    add_str db "add"
-    sub_str db "sub"
-    mul_str db "imul"
+    zero_str db "0"
 
-    ;;; FORTH function strings
+    ;;; FORTH function strings/keywords
     ; these are functions that are moreso macros to a native call
     TYPE_str db "TYPE"
     DUP_str db "DUP"
@@ -38,6 +49,9 @@ section .data
     two_SWAP_str db "2SWAP"
     CR_str db "CR"
     print_int_forth_str db "."
+    IF_str db "IF"
+    THEN_str db "THEN"
+    ELSE_str db "ELSE"
 
     ;;; NATIVE function strings
     print_asm_str db "print"
@@ -45,7 +59,14 @@ section .data
     print_newline_str db "print_newline"
 
     ;;; instruction strings
-    mov_str  db "mov"
+    add_str db "add"
+    sub_str db "sub"
+    mul_str db "imul"
+    cmp_str db "cmp"
+    mov_str db "mov"
+    jmp_str db "jmp"
+    jne_str db "jne"
+    je_str  db "je"
     push_str db "push"
     pop_str  db "pop"
     call_str db "call"
@@ -64,7 +85,26 @@ section .data
     eight_str db "8" ; used to increment stack_ptr
 
     ;;; string define name
-    str_name_str db "string_"
+    ; worst name ever, but it makes sense I swear
+    string_label_name_str db "string_"
+    if_label_str db "if_"
+    if_else_label_str db "if_else_"
+    if_then_label_str db "if_then_"
+
+    ; conditional state variables
+    if_stack_nextptr dq if_stack 
+    if_stack_nextid dq 0
+    if_elseset dq 0
+    
+    ;modes
+    O_RDONLY: db 0        ;read-only
+    O_WRONLY: db 1        ;wirte-only
+    O_RDWR:   db 2        ;read and write
+
+    ;flags
+    O_CREAT:  dw 100o     ;create file if file doesnt exists
+    O_TRUNC:  dw 1000o    ;truncate file
+    O_APPEND: dw 2000o    ;append to file
 
     ; ;modes
     ; O_RDONLY: db 0        ;read-only
@@ -75,15 +115,6 @@ section .data
     ; O_CREAT:  dw 100o     ;create file if file doesnt exists
     ; O_TRUNC:  dw 1000o    ;truncate file
     ; O_APPEND: dw 2000o    ;append to file
-
-section .bss
-    ; buffer for reading the input forth file
-    read_buff resb 1024
-
-    ; used to build name strings
-    ; usually append a number to the name
-    ; requires a temporary space to build
-    string_build_buff resb 1024
 
 section .text
     ; global exports the method 
@@ -181,6 +212,53 @@ str_to_int_end:
     ret
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Takes a string and a number, appends the
+; number to the end of the string
+;
+; Input
+; rdi -> str
+; rsi -> str_len
+; rdx -> val
+; 
+; Output
+; rax -> length of the new string
+; string_build_buff will have the new string
+str_append_int:
+    push rdi 
+    push rsi
+    push rdx
+
+        ; copy the string into the string build buffer
+        mov rdi, string_build_buff
+        mov rsi, [rsp + 16]
+        mov rdx, [rsp + 8]
+        call memcpy
+
+        ; convert the number of counted strings to a string
+        mov rdi, [rsp]
+        mov rsi, int_to_string_buff
+        call int_to_string
+        
+        ; add the two lengths together to return at the end
+        mov rdi, [rsp + 8]
+        add rdi, rax
+        push rdi
+
+        ; add the number after the underscore
+        mov rdi, string_build_buff
+        add rdi, [rsp + 16] ; accounts for the length of the existing string
+        mov rsi, int_to_string_buff
+        mov rdx, rax
+        call memcpy
+
+    pop rax
+    pop rdx
+    pop rsi
+    pop rdi 
+
+    ret
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Input
 ; rdi -> fp
 ; rsi -> buffer
@@ -234,6 +312,28 @@ write_mov_to_file:
 ; 
 ; rcx -> arg2 string ptr
 ; r8  -> arg2 string length
+write_cmp_to_file:
+    mov r10, r8
+    mov r9 , rcx
+
+    mov rcx, rsi
+    mov r8 , rdx
+
+    mov rsi, cmp_str
+    mov rdx, 3
+
+    call write_two_arg_inst
+    ret
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Input
+; rdi -> fp
+; 
+; rsi -> arg1 string ptr
+; rdx -> arg1 string length
+; 
+; rcx -> arg2 string ptr
+; r8  -> arg2 string length
 write_mul_to_file:
     mov r10, r8
     mov r9 , rcx
@@ -245,6 +345,48 @@ write_mul_to_file:
     mov rdx, 4
 
     call write_two_arg_inst
+    ret
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Input
+; rdi -> fp
+; rsi -> label string
+; rdx -> label length
+write_jne_to_file:
+    mov rcx, rsi
+    mov r8 , rdx
+    
+    mov rsi, jne_str
+    mov rdx, 3
+    call write_one_arg_inst
+    ret
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Input
+; rdi -> fp
+; rsi -> label string
+; rdx -> label length
+write_jmp_to_file:
+    mov rcx, rsi
+    mov r8 , rdx
+    
+    mov rsi, jmp_str
+    mov rdx, 3
+    call write_one_arg_inst
+    ret
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Input
+; rdi -> fp
+; rsi -> label string
+; rdx -> label length
+write_je_to_file:
+    mov rcx, rsi
+    mov r8 , rdx
+    
+    mov rsi, je_str
+    mov rdx, 2
+    call write_one_arg_inst
     ret
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -287,6 +429,31 @@ write_call_to_file:
     mov rsi, call_str
     mov rdx, 4
     call write_one_arg_inst
+    ret
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Input
+; rdi -> fp
+; rsi -> function name string
+; rdx -> function name length
+write_label_to_file:
+    push rdi
+
+        ; write the label name
+        call write_str_to_file
+        
+        ; write colon
+        mov rdi, [rsp]
+        mov rsi, colon_str
+        mov rdx, 1
+        call write_str_to_file
+
+        ; newline
+        mov rdi, [rsp]
+        call write_newline_to_file
+
+    pop rdi
+
     ret
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -583,8 +750,29 @@ forth_grab_token_literal_notfound:
     jmp forth_grab_token_end
 
 forth_grab_token_comment:
-    ; TODO
-    jmp forth_grab_token_end
+    mov rdi, r12
+    mov rsi, r13
+    mov dl , 41  ; )
+    call str_search_char
+
+    ; TODO handle the error case
+    add r12, rax
+    add r12, 1  ; add 1 to get off the )
+    
+    sub r13, rax
+    sub r13, 1
+
+    ; clean the stack
+    pop rax
+    pop rax
+
+    ; setup parameters
+    mov rdi, r12
+    mov rsi, r13
+
+    ; go back to the top and start again
+    ; note that this is not a call ;)
+    jmp forth_grab_token
 
 forth_grab_token_default:
     mov rdi, r12
@@ -610,33 +798,6 @@ forth_grab_token_end:
     pop r12
 
     ret
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-; Input
-; rdi -> fd
-; rsi -> val
-forth_translate_pushval:
-    push r12
-    push r13
-
-        mov r12, rdi
-        
-        ; parse the value into a string
-        mov rsi, rdi
-        call int_to_string
-
-        mov r13, rax
-
-        ; write "mov r11, " to the file
-
-        mov rax, 1
-        mov rdi, r12
-        mov rsi, int_to_string_buff
-        mov rdx, r13
-        syscall
-    
-    pop r13
-    pop r12
 
 _start:
     ; open the file
@@ -665,8 +826,11 @@ _start:
     ; open output file, O_CREAT, O_RDWR, 777 permissions
     mov rax, 2
     mov rdi, output_filename_str
-    mov rsi, 0100o
-    or  rsi, 2
+    ;mov rsi, 0
+    ;or  rsi, [O_CREAT]
+    ;or  rsi, [O_TRUNC]
+    ;or  rsi, [O_RDWR]
+    mov rsi, 1102o
     mov rdx, 777o
     syscall
 
@@ -675,8 +839,11 @@ _start:
     ; open string file, O_CREAT, O_RDWR, 777 permissions
     mov rax, 2
     mov rdi, strings_filename_str
-    mov rsi, 0100o
-    or  rsi, 2
+    ; mov rsi, 0
+    ; or  rsi, [O_CREAT]
+    ; or  rsi, [O_TRUNC]
+    ; or  rsi, [O_RDWR]
+    mov rsi, 1102o
     mov rdx, 777o
     syscall
 
@@ -751,7 +918,7 @@ parse_notfunc_decl:
 
 parse_notfunc_ret:
     ; not a function declaration, or string literal, or function return
-    ; must be a number or a function call
+    ; check if it is a number
     push rax
     push rdx
         mov rsi, rdx
@@ -764,7 +931,190 @@ parse_notfunc_ret:
 
     je parse_int
 
-    ; not a number, must be a function call
+    ; not a number, check for loop keywords
+    push rax
+    push rdx
+
+        mov rdi, [rsp + 8]
+        mov rsi, [rsp]
+        mov rdx, IF_str
+        mov rcx, 2
+        call str_ncmp
+        cmp rax, 1
+        je parse_if
+
+        mov rdi, [rsp + 8]
+        mov rsi, [rsp]
+        mov rdx, ELSE_str
+        mov rcx, 4
+        call str_ncmp
+        cmp rax, 1
+        je parse_else
+
+        mov rdi, [rsp + 8]
+        mov rsi, [rsp]
+        mov rdx, THEN_str
+        mov rcx, 4
+        call str_ncmp
+        cmp rax, 1
+        je parse_then
+
+        jmp parse_branch_default
+
+parse_if:
+        ; pops the top value on the *FORTH* stack and branches
+        ; the structure will be as follows
+        ;
+        ; if_x:
+        ; ...
+        ; if_else_x:
+        ; ...
+        ; if_then_x:
+        ; 
+        ; where x is the unique id for the scope
+        ; the else is also optional
+
+        ; pop the top value on the stack 
+        mov rdi, r14
+        mov rsi, r11_str
+        mov rdx, 3
+        call write_forth_stack_pop_to_file
+
+        ; compare this value to 0
+        mov rdi, r14
+        mov rsi, r11_str
+        mov rdx, 3
+        mov rcx, zero_str
+        mov r8 , 1
+        call write_cmp_to_file
+
+        ; jump to the else label if equal to 0
+        ; make the label 
+        mov rdi, if_else_label_str
+        mov rsi, 8
+        mov rdx, [if_stack_nextid]
+        call str_append_int
+
+        ; write the jump to the else
+        mov rdi, r14
+        mov rsi, string_build_buff
+        mov rdx, rax
+        call write_je_to_file
+        
+        ; build the name for the if label
+        mov rdi, if_label_str
+        mov rsi, 3
+        mov rdx, [if_stack_nextid]
+        call str_append_int
+
+        ; write the if label
+        mov rdi, r14
+        mov rsi, string_build_buff
+        mov rdx, rax
+        call write_label_to_file
+
+        ; put the id onto the stack (double dereference)
+        mov rdi, [if_stack_nextid]
+        mov rsi, [if_stack_nextptr]
+        mov [rsi], rdi
+
+        ; TODO check length
+        mov rdi, [if_stack_nextptr]
+        add rdi, 8
+        mov [if_stack_nextptr], rdi
+
+        mov rdi, [if_stack_nextid]
+        inc rdi
+        mov [if_stack_nextid], rdi
+
+        jmp parse_branch_end
+
+parse_else:
+        mov qword [if_elseset], 1
+        
+        ; just above the "else" section of the code is the "if"
+        ; hence, the end of the "if" section must jump to the
+        ; "then" section of code
+        mov rdi, if_then_label_str
+        mov rsi, 8
+        mov rdx, [if_stack_nextptr]
+        mov rdx, [rdx - 8]
+        call str_append_int
+
+        mov rdi, r14
+        mov rsi, string_build_buff
+        mov rdx, rax
+        call write_jmp_to_file
+
+        ; write the else label
+        ; TODO check this pointer dereference
+        mov rdi, if_else_label_str
+        mov rsi, 8
+        mov rdx, [if_stack_nextptr]
+        mov rdx, [rdx - 8]
+        call str_append_int
+
+        mov rdi, r14
+        mov rsi, string_build_buff
+        mov rdx, rax
+        call write_label_to_file
+
+        jmp parse_branch_end
+
+parse_then:
+        ; not needed, but nice to have a label here
+        mov rdi, if_then_label_str
+        mov rsi, 8
+        mov rdx, [if_stack_nextptr]
+        mov rdx, [rdx]
+        call str_append_int
+
+        mov rdi, r14
+        mov rsi, string_build_buff
+        mov rdx, rax
+        call write_label_to_file
+
+        ; pop the top ID off the stack
+        mov rdi, [if_stack_nextptr]
+        sub rdi, 8
+        mov [if_stack_nextptr], rdi
+
+        cmp qword [if_elseset], 0
+        jne parse_then_end
+
+parse_then_noelse:
+        ; make the label for the else, effevtively nop
+        ; (the if always jumps to the else if the condition fails)
+
+        ; make the label 
+        mov rdi, if_else_label_str
+        mov rsi, 8
+        mov rdx, [if_stack]
+        call str_append_int
+
+        mov rdi, r14
+        mov rsi, string_build_buff
+        mov rdx, rax
+        call write_label_to_file
+
+parse_then_end:
+        ; reset the else flag
+        mov qword [if_elseset], 0
+        jmp parse_branch_end
+
+parse_branch_end:
+    pop rdx
+    pop rax
+
+    ; it was some kind of branch keyword. End token parsing
+    jmp parse_loop_end
+
+parse_branch_default:
+    pop rdx
+    pop rax
+
+    ; it was not a branch keyword
+    ; must be some kind of function call
     jmp parse_func_call
 
 parse_func_decl:    
@@ -1233,7 +1583,7 @@ parse_literal:
     push rax
     push rdx
         ; mov rdi, r15
-        ; mov rsi, str_name_str
+        ; mov rsi, string_label_name_str
         ; mov rdx, 7
         ; call write_str_to_file
 
@@ -1250,7 +1600,7 @@ parse_literal:
         
         ; copy "string_" into the string build buffer
         mov rdi, string_build_buff
-        mov rsi, str_name_str
+        mov rsi, string_label_name_str
         mov rdx, 7
         call memcpy
 

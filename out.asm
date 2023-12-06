@@ -2,7 +2,7 @@
 %include "std.asm"
 
 section .bss
-the_stack resb 1024
+the_stack resb 8192
 
 section .text
     global _start
@@ -236,6 +236,38 @@ mov [r12],rsi
 add r12,8
 mov [r12],rdi
 
+mov r11,1
+add r12,8
+mov [r12],r11
+
+mov r11,1
+add r12,8
+mov [r12],r11
+
+mov r11,1
+add r12,8
+mov [r12],r11
+
+mov r11,1
+add r12,8
+mov [r12],r11
+
+mov r11,1
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+cmp r11,0
+je if_else_0
+if_0:
+mov r11,string_5
+add r12,8
+mov [r12],r11
+mov r11,19
+add r12,8
+mov [r12],r11
+
 mov rsi,[r12]
 sub r12,8
 mov rdi,[r12]
@@ -243,6 +275,15 @@ sub r12,8
 call print
 
 call print_newline
+
+if_then_0:
+if_else_0:
+mov r11,string_6
+add r12,8
+mov [r12],r11
+mov r11,5
+add r12,8
+mov [r12],r11
 
 mov rsi,[r12]
 sub r12,8

@@ -1,5 +1,6 @@
 1 2 + 5 + .
 
+
 3 10 * .
 
 "Hello World!" TYPE CR
@@ -21,6 +22,14 @@ TYPE CR
 
 2SWAP
 
-TYPE CR
+1 
+1
+1
+1
 
-TYPE CR
+1 IF 
+    "Condition was true!" TYPE CR
+THEN
+
+"After" TYPE CR
+

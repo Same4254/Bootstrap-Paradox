@@ -1,5 +1,9 @@
 #!/bin/bash
 
+rm forth
+rm out.asm
+rm out
+
 nasm -g -f elf64 forth.asm -o forth.o
 ld forth.o -o forth
 
