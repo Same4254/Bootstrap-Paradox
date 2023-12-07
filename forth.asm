@@ -127,7 +127,6 @@ section .data
     ; conditional state variables
     if_stack_nextptr dq if_stack 
     if_stack_nextid dq 0
-    if_elseset dq 0
     
     ;modes
     O_RDONLY: db 0        ;read-only
@@ -1257,8 +1256,6 @@ parse_if:
         jmp parse_branch_end
 
 parse_else:
-        mov qword [if_elseset], 1
-        
         ; just above the "else" section of the code is the "if"
         ; hence, the end of the "if" section must jump to the
         ; "then" section of code
@@ -1286,11 +1283,29 @@ parse_else:
         mov rdx, rax
         call write_label_to_file
 
+        ; set a flag at the high bit of the id to mark there was an else
+        mov rdx, [if_stack_nextptr]
+        mov rsi, [rdx - 8]
+
+        mov rdi, 1 << 30
+        or  rsi, rdi
+        mov [rdx - 8], rsi
+        
         jmp parse_branch_end
 
 parse_then:
-        cmp qword [if_elseset], 0
-        jne parse_then_end
+        ; cmp qword [if_elseset], 0
+
+        ; set a flag at the high bit of the id to mark there was an else
+        mov rdx, [if_stack_nextptr]
+        mov rsi, [rdx - 8]
+
+        mov rdi, 1 << 30
+        and rsi, rdi
+
+        cmp rsi, 0
+
+        jne parse_then_remove_flag
 
         ; if there was no "else" label
         ; make the label for the else, effevtively nop
@@ -1299,7 +1314,8 @@ parse_then:
         ; make the label 
         mov rdi, if_else_label_str
         mov rsi, 8
-        mov rdx, [if_stack]
+        mov rdx, [if_stack_nextptr]
+        mov rdx, [rdx - 8]
         call str_append_int
 
         mov rdi, r14
@@ -1307,12 +1323,21 @@ parse_then:
         mov rdx, rax
         call write_label_to_file
 
+        jmp parse_then_end
+
+parse_then_remove_flag:
+    mov rsi, [rdx - 8]
+
+    mov rdi, 1 << 30
+    xor rsi, rdi
+    mov [rdx - 8], rsi
+
 parse_then_end:
         ; not needed, but nice to have a label here
         mov rdi, if_then_label_str
         mov rsi, 8
         mov rdx, [if_stack_nextptr]
-        mov rdx, [rdx]
+        mov rdx, [rdx - 8]
         call str_append_int
 
         mov rdi, r14
@@ -1326,7 +1351,7 @@ parse_then_end:
         mov [if_stack_nextptr], rdi
 
         ; reset the else flag
-        mov qword [if_elseset], 0
+        ; mov qword [if_elseset], 0
         jmp parse_branch_end
 
 parse_branch_end:

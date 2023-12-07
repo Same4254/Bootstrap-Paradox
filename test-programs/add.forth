@@ -1,43 +1,32 @@
-: TEST_FUNC 1 ;
+(
+: FIB 
+    DUP 0 = IF
+        0
+    ELSE DUP 1 = IF
+        1
+    THEN 
+    THEN
+    
+    DUP 1 - FIB
+    SWAP 2 - FIB
+    +
+;
+)
 
-TEST_FUNC
-TEST_FUNC
+: FIB 
+    DUP 0 = IF
+        DROP
+        0
+    ELSE DUP 1 = IF
+        DROP
+        1
+    ELSE
+        DUP 1 - FIB
+        SWAP 2 - FIB
+        +
+    THEN 
+    THEN
+;
 
-. .
+7 FIB .
 
-CR
-
-CR
-
-1 1 AND .
-1 0 AND .
-0 1 AND .
-0 0 AND .
-
-CR
-
-1 1 OR .
-1 0 OR .
-0 1 OR .
-0 0 OR .
-
-CR
-
-1 1 XOR .
-1 0 XOR .
-0 1 XOR .
-0 0 XOR .
-
-1 1 != IF
-    "Condition is true!" TYPE CR
-ELSE
-    "Condition is false!" TYPE CR
-THEN
-
-2 1 > .
-2 1 >= .
-2 1 < .
-2 1 <= .
-
-
-5 3 - .
