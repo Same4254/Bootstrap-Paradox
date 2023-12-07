@@ -14,14 +14,16 @@ section .bss
 section .data
     ; define bytes with pointer named "text", 10 is newline
     input_filename_str db "./test-programs/add.forth", 0
+    func_filename_str db "func.asm", 0
     output_filename_str db "out.asm", 0
     strings_filename_str db "strings.asm", 0
 
-    template_str db "%include ", 34, "strings.asm", 34, 10, "%include ", 34, "std.asm", 34, 10, 10, "section .bss", 10, "the_stack resb 8192", 10, 10, "section .text", 10, "    global _start", 10, 10, "_start:", 10, "mov r12, the_stack", 10, 10
+    template_str db "%include ", 34, "strings.asm", 34, 10, "%include ", 34, "std.asm", 34, 10, "%include ", 34, "func.asm", 34, 10, 10, "section .bss", 10, "the_stack resb 8192", 10, 10, "section .text", 10, "    global _start", 10, 10, "_start:", 10, "mov r12, the_stack", 10, 10
 
     end_template_str db "; exit", 10, "mov rax, 60", 10, "mov rdi, 0", 10, "syscall", 10
 
     str_file_template_str db "section .data", 10
+    func_file_template_str db "section .text", 10
 
     begin_parse_str db "Begin Parsing!", 10
 
@@ -40,6 +42,11 @@ section .data
     star_str db "*"
 
     equal_str db "="
+    greater_than_str db ">"
+    greater_than_equal_str db ">="
+    less_than_str db "<"
+    less_than_equal_str db "<="
+    not_equal_str db "!="
 
     zero_str db "0"
 
@@ -69,16 +76,28 @@ section .data
     add_str db "add"
     sub_str db "sub"
     mul_str db "imul"
+
     cmp_str db "cmp"
+
     setz_str db "setz"
+    setnz_str db "setnz"
+    setg_str db "setg"
+    setge_str db "setge"
+    setl_str db "setl"
+    setle_str db "setle"
+
     mov_str db "mov"
     movzx_str db "movzx"
+
     jmp_str db "jmp"
     jne_str db "jne"
     je_str  db "je"
+
     push_str db "push"
     pop_str  db "pop"
+
     call_str db "call"
+    ret_str db "ret"
     db_str   db "db"
 
     ;;; register strings
@@ -468,6 +487,76 @@ write_setz_to_file:
 ; rdi -> fp
 ; rsi -> label string
 ; rdx -> label length
+write_setnz_to_file:
+    mov rcx, rsi
+    mov r8 , rdx
+    
+    mov rsi, setnz_str
+    mov rdx, 5
+    call write_one_arg_inst
+    ret
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Input
+; rdi -> fp
+; rsi -> label string
+; rdx -> label length
+write_setg_to_file:
+    mov rcx, rsi
+    mov r8 , rdx
+    
+    mov rsi, setg_str
+    mov rdx, 4
+    call write_one_arg_inst
+    ret
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Input
+; rdi -> fp
+; rsi -> label string
+; rdx -> label length
+write_setge_to_file:
+    mov rcx, rsi
+    mov r8 , rdx
+    
+    mov rsi, setge_str
+    mov rdx, 5
+    call write_one_arg_inst
+    ret
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Input
+; rdi -> fp
+; rsi -> label string
+; rdx -> label length
+write_setl_to_file:
+    mov rcx, rsi
+    mov r8 , rdx
+    
+    mov rsi, setl_str
+    mov rdx, 4
+    call write_one_arg_inst
+    ret
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Input
+; rdi -> fp
+; rsi -> label string
+; rdx -> label length
+write_setle_to_file:
+    mov rcx, rsi
+    mov r8 , rdx
+    
+    mov rsi, setle_str
+    mov rdx, 5
+    call write_one_arg_inst
+    ret
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Input
+; rdi -> fp
+; rsi -> label string
+; rdx -> label length
 write_jne_to_file:
     mov rcx, rsi
     mov r8 , rdx
@@ -545,6 +634,19 @@ write_call_to_file:
     mov rsi, call_str
     mov rdx, 4
     call write_one_arg_inst
+    ret
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Input
+; rdi -> fp
+write_ret_to_file:
+    push rdi
+        mov rsi, ret_str
+        mov rdx, 3
+        call write_str_to_file
+    pop rdi
+
+    call write_newline_to_file
     ret
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -942,10 +1044,6 @@ _start:
     ; open output file, O_CREAT, O_RDWR, 777 permissions
     mov rax, 2
     mov rdi, output_filename_str
-    ;mov rsi, 0
-    ;or  rsi, [O_CREAT]
-    ;or  rsi, [O_TRUNC]
-    ;or  rsi, [O_RDWR]
     mov rsi, 1102o
     mov rdx, 777o
     syscall
@@ -955,27 +1053,39 @@ _start:
     ; open string file, O_CREAT, O_RDWR, 777 permissions
     mov rax, 2
     mov rdi, strings_filename_str
-    ; mov rsi, 0
-    ; or  rsi, [O_CREAT]
-    ; or  rsi, [O_TRUNC]
-    ; or  rsi, [O_RDWR]
     mov rsi, 1102o
     mov rdx, 777o
     syscall
 
     mov r15, rax
 
+    ; open string file, O_CREAT, O_RDWR, 777 permissions
+    mov rax, 2
+    mov rdi, func_filename_str
+    mov rsi, 1102o
+    mov rdx, 777o
+    syscall
+
+    mov rbx, rax
+
     ; Write start of code output file
     mov rax, 1
     mov rdi, r14
     mov rsi, template_str
-    mov rdx, 138
+    mov rdx, 158
     syscall
 
     ; Write start of str file
     mov rax, 1
     mov rdi, r15
     mov rsi, str_file_template_str
+    mov rdx, 14
+    syscall
+
+    ; Write start of func file
+    mov rax, 1
+    mov rdi, rbx
+    mov rsi, func_file_template_str
     mov rdx, 14
     syscall
 
@@ -991,6 +1101,7 @@ _start:
     ; r13 -> input buffer length
     ; r14 -> code output file
     ; r15 -> strings file
+    ; rbx -> func file
 
     ; stack
     ; num strings (0)
@@ -1244,6 +1355,7 @@ parse_func_decl:
     ; subtract the length of the token to the total length of the buffer 
     sub r13, rdx
 
+    ; grab the name of the function
     mov rdi, r12
     mov rsi, r13
     call forth_grab_token
@@ -1260,6 +1372,21 @@ parse_func_decl:
         call print
 
         call print_newline
+    pop rdx
+    pop rax
+
+    push rax
+    push rdx
+        ; swap r14 and rbx
+        ; this makes all code output direct to the func file
+        mov r8, r14
+        mov r14, rbx
+        mov rbx, r8
+
+        mov rdi, r14
+        mov rsi, [rsp + 8]
+        mov rdx, [rsp]
+        call write_label_to_file
     pop rdx
     pop rax
 
@@ -1280,6 +1407,19 @@ parse_func_ret:
         call print_newline
     pop rdx
     pop rax
+
+    push rax
+    push rdx
+        mov rdi, r14
+        call write_ret_to_file
+    pop rdx
+    pop rax
+
+    ; swap r14 and rbx
+    ; this makes all code output direct back to the output file
+    mov r8, r14
+    mov r14, rbx
+    mov rbx, r8
 
     jmp parse_loop_end
 
@@ -1408,6 +1548,51 @@ parse_func_call:
         call str_ncmp
         cmp rax, 1
         je parse_func_call_is_equal
+
+        ; check if the function being called is !=
+        mov rdi, [rsp + 8]
+        mov rsi, [rsp]
+        mov rdx, not_equal_str
+        mov rcx, 2
+        call str_ncmp
+        cmp rax, 1
+        je parse_func_call_is_not_equal
+
+        ; check if the function being called is >
+        mov rdi, [rsp + 8]
+        mov rsi, [rsp]
+        mov rdx, greater_than_str
+        mov rcx, 1
+        call str_ncmp
+        cmp rax, 1
+        je parse_func_call_greater_than
+
+        ; check if the function being called is >=
+        mov rdi, [rsp + 8]
+        mov rsi, [rsp]
+        mov rdx, greater_than_equal_str
+        mov rcx, 2
+        call str_ncmp
+        cmp rax, 1
+        je parse_func_call_greater_than_equal
+        
+        ; check if the function being called is <
+        mov rdi, [rsp + 8]
+        mov rsi, [rsp]
+        mov rdx, less_than_str
+        mov rcx, 1
+        call str_ncmp
+        cmp rax, 1
+        je parse_func_call_less_than
+
+        ; check if the function being called is <=
+        mov rdi, [rsp + 8]
+        mov rsi, [rsp]
+        mov rdx, less_than_equal_str
+        mov rcx, 2
+        call str_ncmp
+        cmp rax, 1
+        je parse_func_call_less_than_equal
 
         ; check if the function being called is AND
         mov rdi, [rsp + 8]
@@ -1785,11 +1970,226 @@ parse_func_call_is_equal:
 
     ; movzx r11, r11B
     mov rdi, r14
-    mov rsi, r11B_str
-    mov rdx, 4
+    mov rsi, r11_str
+    mov rdx , 3
+    mov rcx, r11B_str
+    mov r8 , 4
+    call write_movzx_to_file
+
+    ; push r11 to stack
+    mov rdi, r14
+    mov rsi, r11_str
+    mov rdx, 3
+    call write_forth_stack_push_to_file
+
+    jmp parse_func_call_end
+
+parse_func_call_is_not_equal:
+    ; pop top value
+    mov rdi, r14
+    mov rsi, rcx_str
+    mov rdx, 3
+    call write_forth_stack_pop_to_file
+    
+    ; pop top value
+    mov rdi, r14
+    mov rsi, r11_str
+    mov rdx, 3
+    call write_forth_stack_pop_to_file
+
+    ; cmp rcx, r11
+    mov rdi, r14
+    mov rsi, rcx_str
+    mov rdx, 3
     mov rcx, r11_str
     mov r8 , 3
-    call write_setz_to_file
+    call write_cmp_to_file
+
+    ; setnz r11B
+    mov rdi, r14
+    mov rsi, r11B_str
+    mov rdx, 4
+    call write_setnz_to_file
+
+    ; movzx r11, r11B
+    mov rdi, r14
+    mov rsi, r11_str
+    mov rdx , 3
+    mov rcx, r11B_str
+    mov r8 , 4
+    call write_movzx_to_file
+
+    ; push r11 to stack
+    mov rdi, r14
+    mov rsi, r11_str
+    mov rdx, 3
+    call write_forth_stack_push_to_file
+
+    jmp parse_func_call_end
+
+parse_func_call_greater_than:
+    ; pop top value
+    mov rdi, r14
+    mov rsi, r11_str
+    mov rdx, 3
+    call write_forth_stack_pop_to_file
+
+    ; pop top value
+    mov rdi, r14
+    mov rsi, rcx_str
+    mov rdx, 3
+    call write_forth_stack_pop_to_file
+    
+    ; cmp rcx, r11
+    mov rdi, r14
+    mov rsi, rcx_str
+    mov rdx, 3
+    mov rcx, r11_str
+    mov r8 , 3
+    call write_cmp_to_file
+
+    ; setg r11B
+    mov rdi, r14
+    mov rsi, r11B_str
+    mov rdx, 4
+    call write_setg_to_file
+
+    ; movzx r11, r11B
+    mov rdi, r14
+    mov rsi, r11_str
+    mov rdx , 3
+    mov rcx, r11B_str
+    mov r8 , 4
+    call write_movzx_to_file
+
+    ; push r11 to stack
+    mov rdi, r14
+    mov rsi, r11_str
+    mov rdx, 3
+    call write_forth_stack_push_to_file
+
+    jmp parse_func_call_end
+
+parse_func_call_greater_than_equal:
+    ; pop top value
+    mov rdi, r14
+    mov rsi, r11_str
+    mov rdx, 3
+    call write_forth_stack_pop_to_file
+
+    ; pop top value
+    mov rdi, r14
+    mov rsi, rcx_str
+    mov rdx, 3
+    call write_forth_stack_pop_to_file
+
+    ; cmp rcx, r11
+    mov rdi, r14
+    mov rsi, rcx_str
+    mov rdx, 3
+    mov rcx, r11_str
+    mov r8 , 3
+    call write_cmp_to_file
+
+    ; setg r11B
+    mov rdi, r14
+    mov rsi, r11B_str
+    mov rdx, 4
+    call write_setge_to_file
+
+    ; movzx r11, r11B
+    mov rdi, r14
+    mov rsi, r11_str
+    mov rdx , 3
+    mov rcx, r11B_str
+    mov r8 , 4
+    call write_movzx_to_file
+
+    ; push r11 to stack
+    mov rdi, r14
+    mov rsi, r11_str
+    mov rdx, 3
+    call write_forth_stack_push_to_file
+
+    jmp parse_func_call_end
+
+parse_func_call_less_than:
+    ; pop top value
+    mov rdi, r14
+    mov rsi, r11_str
+    mov rdx, 3
+    call write_forth_stack_pop_to_file
+
+    ; pop top value
+    mov rdi, r14
+    mov rsi, rcx_str
+    mov rdx, 3
+    call write_forth_stack_pop_to_file
+    
+    ; cmp rcx, r11
+    mov rdi, r14
+    mov rsi, rcx_str
+    mov rdx, 3
+    mov rcx, r11_str
+    mov r8 , 3
+    call write_cmp_to_file
+
+    ; setg r11B
+    mov rdi, r14
+    mov rsi, r11B_str
+    mov rdx, 4
+    call write_setl_to_file
+
+    ; movzx r11, r11B
+    mov rdi, r14
+    mov rsi, r11_str
+    mov rdx , 3
+    mov rcx, r11B_str
+    mov r8 , 4
+    call write_movzx_to_file
+
+    ; push r11 to stack
+    mov rdi, r14
+    mov rsi, r11_str
+    mov rdx, 3
+    call write_forth_stack_push_to_file
+
+    jmp parse_func_call_end
+
+parse_func_call_less_than_equal:
+    ; pop top value
+    mov rdi, r14
+    mov rsi, r11_str
+    mov rdx, 3
+    call write_forth_stack_pop_to_file
+
+    ; pop top value
+    mov rdi, r14
+    mov rsi, rcx_str
+    mov rdx, 3
+    call write_forth_stack_pop_to_file
+    
+    ; cmp rcx, r11
+    mov rdi, r14
+    mov rsi, rcx_str
+    mov rdx, 3
+    mov rcx, r11_str
+    mov r8 , 3
+    call write_cmp_to_file
+
+    ; setg r11B
+    mov rdi, r14
+    mov rsi, r11B_str
+    mov rdx, 4
+    call write_setle_to_file
+
+    ; movzx r11, r11B
+    mov rdi, r14
+    mov rsi, r11_str
+    mov rdx , 3
+    mov rcx, r11B_str
+    mov r8 , 4
+    call write_movzx_to_file
 
     ; push r11 to stack
     mov rdi, r14
@@ -2096,108 +2496,6 @@ parse_loop_end:
     sub r13, rdx
     jmp parse
 
-    ; mov rdi, r12
-    ; mov rsi, r13
-
-    ; call forth_grab_token
-
-    ; ; move the pointer ahead
-    ; mov r12, rax
-    ; add r12, rdx
-    ; sub r13, rdx
-
-    ; mov rdi, rax
-    ; mov rsi, rdx
-
-    ; call print
-
-    ; mov rdi, r12
-    ; mov rsi, r13
-
-    ; call forth_grab_token
-
-    ; mov rdi, rax
-    ; mov rsi, rdx
-
-    ; call print
-
-; parse:
-;     mov rdi, r12
-;     mov rsi, r13
-; 
-;     call str_skip_whitespace
-; 
-;     cmp rax, -1
-;     je parse_end
-; 
-;     add r12, rax
-;     sub r13, rax
-; 
-;     ; compare first character to "
-;     mov r8B, byte [r12]
-;     cmp r8B, 34
-;     jne parse_not_str
-; 
-;     ; first character is a quote. Parsing string
-; 
-;     ; address
-;     mov rdi, r12
-;     ; offset by 1 to skip first character
-;     add rdi, 1
-;     ; length
-;     mov rsi, r13
-;     sub rsi, 1
-;     ; quote
-;     mov dl, 34
-;     
-;     call str_search_char
-;     cmp rax, -1
-;     je parse_token_found
-; 
-;     ; account for the original offset
-;     ; also skip to the whitespace after the quote
-;     add rax, 2
-;     jmp parse_token_found
-; 
-; parse_not_str:
-;     ; address
-;     mov rdi, r12
-;     ; length
-;     mov rsi, r13
-; 
-;     call str_skip_to_whitespace
-; 
-; parse_token_found:
-;     cmp rax, -1
-;     je parse_end
-; 
-;     push rax
-;         mov rdi, r12
-;         mov rsi, rax
-; 
-;         call print
-; 
-;         ;mov rdi, newline_str
-;         ;mov rsi, 1
-;         ;call print
-;         call print_newline
-;         ; call forth_parse_token 
-;     pop rax
-; 
-;     add r12, rax
-;     sub r13, rax
-; 
-;     cmp r13, 0
-;     jne parse
-;     
-; parse_end:
-;     mov rdi, test_str
-;     mov rsi, 5
-;     call str_to_int
-; 
-;     mov rdi, rax
-;     call print_int
-
 end:
     ; exit code
     mov rax, 1
@@ -2217,6 +2515,10 @@ end:
 
     mov rax, 3
     mov rdi, r15
+    syscall
+
+    mov rax, 3
+    mov rdi, rbx
     syscall
 
      ;;; exit
