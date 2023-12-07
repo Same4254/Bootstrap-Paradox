@@ -56,6 +56,9 @@ section .data
     THEN_str db "THEN"
     ELSE_str db "ELSE"
     DROP_str db "DROP"
+    AND_str db "AND"
+    OR_str db "OR"
+    XOR_str db "XOR"
 
     ;;; NATIVE function strings
     print_asm_str db "print"
@@ -81,6 +84,9 @@ section .data
     ;;; register strings
     r11_str db "r11"
     r11B_str db "r11B"
+
+    r8_str db "r8"
+    r8B_str db "r8B"
 
     r12_str db "r12"
     rcx_str db "rcx"
@@ -350,6 +356,72 @@ write_cmp_to_file:
     mov r8 , rdx
 
     mov rsi, cmp_str
+    mov rdx, 3
+
+    call write_two_arg_inst
+    ret
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Input
+; rdi -> fp
+; 
+; rsi -> arg1 string ptr
+; rdx -> arg1 string length
+; 
+; rcx -> arg2 string ptr
+; r8  -> arg2 string length
+write_and_to_file:
+    mov r10, r8
+    mov r9 , rcx
+
+    mov rcx, rsi
+    mov r8 , rdx
+
+    mov rsi, AND_str
+    mov rdx, 3
+
+    call write_two_arg_inst
+    ret
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Input
+; rdi -> fp
+; 
+; rsi -> arg1 string ptr
+; rdx -> arg1 string length
+; 
+; rcx -> arg2 string ptr
+; r8  -> arg2 string length
+write_or_to_file:
+    mov r10, r8
+    mov r9 , rcx
+
+    mov rcx, rsi
+    mov r8 , rdx
+
+    mov rsi, OR_str
+    mov rdx, 2
+
+    call write_two_arg_inst
+    ret
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Input
+; rdi -> fp
+; 
+; rsi -> arg1 string ptr
+; rdx -> arg1 string length
+; 
+; rcx -> arg2 string ptr
+; r8  -> arg2 string length
+write_xor_to_file:
+    mov r10, r8
+    mov r9 , rcx
+
+    mov rcx, rsi
+    mov r8 , rdx
+
+    mov rsi, XOR_str
     mov rdx, 3
 
     call write_two_arg_inst
@@ -1337,6 +1409,33 @@ parse_func_call:
         cmp rax, 1
         je parse_func_call_is_equal
 
+        ; check if the function being called is AND
+        mov rdi, [rsp + 8]
+        mov rsi, [rsp]
+        mov rdx, AND_str
+        mov rcx, 3
+        call str_ncmp
+        cmp rax, 1
+        je parse_func_call_and
+
+        ; check if the function being called is OR
+        mov rdi, [rsp + 8]
+        mov rsi, [rsp]
+        mov rdx, OR_str
+        mov rcx, 2
+        call str_ncmp
+        cmp rax, 1
+        je parse_func_call_or
+
+        ; check if the function being called is XOR
+        mov rdi, [rsp + 8]
+        mov rsi, [rsp]
+        mov rdx, XOR_str
+        mov rcx, 3
+        call str_ncmp
+        cmp rax, 1
+        je parse_func_call_xor
+
         jmp parse_func_call_default
 
 parse_func_call_printint:
@@ -1697,6 +1796,99 @@ parse_func_call_is_equal:
     mov rsi, r11_str
     mov rdx, 3
     call write_forth_stack_push_to_file
+
+    jmp parse_func_call_end
+
+parse_func_call_and:
+    ; pop top value
+    mov rdi, r14
+    mov rsi, rcx_str
+    mov rdx, 3
+    call write_forth_stack_pop_to_file
+    
+    ; pop top value
+    mov rdi, r14
+    mov rsi, r11_str
+    mov rdx, 3
+    call write_forth_stack_pop_to_file
+
+    ; and r11, rcx
+    mov rdi, r14
+    mov rsi, r11_str
+    mov rdx, 3
+    mov rcx, rcx_str
+    mov r8 , 3
+    call write_and_to_file
+
+    ; push r11 to stack
+    mov rdi, r14
+    mov rsi, r11_str
+    mov rdx, 3
+    call write_forth_stack_push_to_file
+
+    call write_newline_to_file
+
+    jmp parse_func_call_end
+
+parse_func_call_or:
+    ; pop top value
+    mov rdi, r14
+    mov rsi, rcx_str
+    mov rdx, 3
+    call write_forth_stack_pop_to_file
+    
+    ; pop top value
+    mov rdi, r14
+    mov rsi, r11_str
+    mov rdx, 3
+    call write_forth_stack_pop_to_file
+
+    ; or r11, rcx
+    mov rdi, r14
+    mov rsi, r11_str
+    mov rdx, 3
+    mov rcx, rcx_str
+    mov r8 , 3
+    call write_or_to_file
+
+    ; push r11 to stack
+    mov rdi, r14
+    mov rsi, r11_str
+    mov rdx, 3
+    call write_forth_stack_push_to_file
+
+    call write_newline_to_file
+
+    jmp parse_func_call_end
+
+parse_func_call_xor:
+    ; pop top value
+    mov rdi, r14
+    mov rsi, rcx_str
+    mov rdx, 3
+    call write_forth_stack_pop_to_file
+    
+    ; pop top value
+    mov rdi, r14
+    mov rsi, r11_str
+    mov rdx, 3
+    call write_forth_stack_pop_to_file
+
+    ; xor r11, rcx
+    mov rdi, r14
+    mov rsi, r11_str
+    mov rdx, 3
+    mov rcx, rcx_str
+    mov r8 , 3
+    call write_xor_to_file
+
+    ; push r11 to stack
+    mov rdi, r14
+    mov rsi, r11_str
+    mov rdx, 3
+    call write_forth_stack_push_to_file
+
+    call write_newline_to_file
 
     jmp parse_func_call_end
 

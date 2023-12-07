@@ -1,51 +1,18 @@
-1 2 + 5 + .
+1 1 AND .
+1 0 AND .
+0 1 AND .
+0 0 AND .
 
+CR
 
-3 10 * .
+1 1 OR .
+1 0 OR .
+0 1 OR .
+0 0 OR .
 
-"Hello World!" TYPE CR
+CR
 
-"Another One!" TYPE CR
-
-1 DUP + .
-
-"SOME THING" 2DUP
-TYPE CR
-TYPE CR
-
-14 25 . .
-14 25 SWAP . .
-
-"Something"
-
-"Whatever"
-
-2SWAP
-
-1 
-1
-1
-1
-
-1 2 = IF 
-    "Condition was true!" TYPE CR
-    1 2 + .
-ELSE
-    "Condition was false!" TYPE CR
-THEN
-
-"After" TYPE CR
-
-5 3 - .
-
-11
-
-12
-
-13
-
-14
-
-DROP
-
-.
+1 1 XOR .
+1 0 XOR .
+0 1 XOR .
+0 0 XOR .
