@@ -1,19 +1,6 @@
-(
-: FIB 
-    DUP 0 = IF
-        0
-    ELSE DUP 1 = IF
-        1
-    THEN 
-    THEN
-    
-    DUP 1 - FIB
-    SWAP 2 - FIB
-    +
-;
-)
+VARIABLE out_fp
 
-: FIB 
+: FIB (n -> n)
     DUP 0 = IF
         DROP
         0
@@ -28,5 +15,13 @@
     THEN
 ;
 
-7 FIB .
+: PRINT_FIBS (n)
+    DUP 0 = IF
+        FIB .
+    ELSE
+        DUP 1 - PRINT_FIBS
+        FIB .
+    THEN
+;
 
+19 PRINT_FIBS

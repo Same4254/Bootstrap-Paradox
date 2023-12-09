@@ -118,3 +118,68 @@ mov [r12],r11
 if_then_1:
 if_then_0:
 ret
+PRINT_FIBS:
+mov r11,[r12]
+sub r12,8
+add r12,8
+mov [r12],r11
+add r12,8
+mov [r12],r11
+mov r11,0
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+cmp rcx,r11
+setz r11B
+movzx r11,r11B
+add r12,8
+mov [r12],r11
+mov r11,[r12]
+sub r12,8
+cmp r11,0
+je if_else_2
+if_2:
+call FIB
+
+mov rdi,[r12]
+sub r12,8
+call print_int
+
+call print_newline
+
+jmp if_then_2
+if_else_2:
+mov r11,[r12]
+sub r12,8
+add r12,8
+mov [r12],r11
+add r12,8
+mov [r12],r11
+mov r11,1
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+sub r11,rcx
+add r12,8
+mov [r12],r11
+
+call PRINT_FIBS
+
+call FIB
+
+mov rdi,[r12]
+sub r12,8
+call print_int
+
+call print_newline
+
+if_then_2:
+ret

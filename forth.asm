@@ -11,22 +11,28 @@ section .bss
     ; these are popped as THEN statements are made
     if_stack resb 8192
 
+    ; 256 strings of length 64
+    vars resb 16384
+
 section .data
     ; define bytes with pointer named "text", 10 is newline
     input_filename_str db "./test-programs/add.forth", 0
     func_filename_str db "func.asm", 0
     output_filename_str db "out.asm", 0
-    strings_filename_str db "strings.asm", 0
+    data_filename_str db "data.asm", 0
+    resb_filename_str db "resb.asm", 0
 
-    template_str db "%include ", 34, "strings.asm", 34, 10, "%include ", 34, "std.asm", 34, 10, "%include ", 34, "func.asm", 34, 10, 10, "section .bss", 10, "the_stack resb 8192", 10, 10, "section .text", 10, "    global _start", 10, 10, "_start:", 10, "mov r12, the_stack", 10, 10
+    template_str db "%include ", 34, "data.asm", 34, 10, "%include ", 34, "std.asm", 34, 10, "%include ", 34, "func.asm", 34, 10, 10, "section .bss", 10, "the_stack resb 8192", 10, 10, "section .text", 10, "    global _start", 10, 10, "_start:", 10, "mov r12, the_stack", 10, 10
 
     end_template_str db "; exit", 10, "mov rax, 60", 10, "mov rdi, 0", 10, "syscall", 10
 
-    str_file_template_str db "section .data", 10
+    data_file_template_str db "section .data", 10
     func_file_template_str db "section .text", 10
+    resb_file_template_str db "section .bss", 10
 
     begin_parse_str db "Begin Parsing!", 10
 
+    token_var_decl_str  db "TOKEN [Var Decl]  : "
     token_func_decl_str db "TOKEN [Func Decl] : "
     token_func_ret_str  db "TOKEN [Func Ret]  : "
     token_func_call_str db "TOKEN [Func Call] : "
@@ -36,6 +42,7 @@ section .data
     comma_str db ","
     space_str db " "
     colon_str db ":"
+    quote_str db 34
 
     plus_str db "+"
     minus_str db "-"
@@ -66,6 +73,9 @@ section .data
     AND_str db "AND"
     OR_str db "OR"
     XOR_str db "XOR"
+    VARIABLE_DECL_str db "VARIABLE"
+    FUNC_DECL_str db ":"
+    RET_str db ";"
 
     ;;; NATIVE function strings
     print_asm_str db "print"
@@ -99,6 +109,7 @@ section .data
     call_str db "call"
     ret_str db "ret"
     db_str   db "db"
+    dq_str   db "dq"
 
     ;;; register strings
     r11_str db "r11"
@@ -127,6 +138,12 @@ section .data
     ; conditional state variables
     if_stack_nextptr dq if_stack 
     if_stack_nextid dq 0
+
+    ; var names index
+    var_name_nextindex dq 0
+
+    data_fp dq 0
+    resb_fp dq 0
     
     ;modes
     O_RDONLY: db 0        ;read-only
@@ -137,16 +154,6 @@ section .data
     O_CREAT:  dw 100o     ;create file if file doesnt exists
     O_TRUNC:  dw 1000o    ;truncate file
     O_APPEND: dw 2000o    ;append to file
-
-    ; ;modes
-    ; O_RDONLY: db 0        ;read-only
-    ; O_WRONLY: db 1        ;wirte-only
-    ; O_RDWR:   db 2        ;read and write
-
-    ; ;flags
-    ; O_CREAT:  dw 100o     ;create file if file doesnt exists
-    ; O_TRUNC:  dw 1000o    ;truncate file
-    ; O_APPEND: dw 2000o    ;append to file
 
 section .text
     ; global exports the method 
@@ -1051,12 +1058,21 @@ _start:
 
     ; open string file, O_CREAT, O_RDWR, 777 permissions
     mov rax, 2
-    mov rdi, strings_filename_str
+    mov rdi, data_filename_str
     mov rsi, 1102o
     mov rdx, 777o
     syscall
 
-    mov r15, rax
+    mov [data_fp], rax
+
+    ; open string file, O_CREAT, O_RDWR, 777 permissions
+    mov rax, 2
+    mov rdi, resb_filename_str
+    mov rsi, 1102o
+    mov rdx, 777o
+    syscall
+
+    mov [resb_fp], rax
 
     ; open string file, O_CREAT, O_RDWR, 777 permissions
     mov rax, 2
@@ -1071,14 +1087,21 @@ _start:
     mov rax, 1
     mov rdi, r14
     mov rsi, template_str
-    mov rdx, 158
+    mov rdx, 155
     syscall
 
-    ; Write start of str file
+    ; Write start of data file
     mov rax, 1
-    mov rdi, r15
-    mov rsi, str_file_template_str
+    mov rdi, [data_fp]
+    mov rsi, data_file_template_str
     mov rdx, 14
+    syscall
+
+    ; Write start of resb file
+    mov rax, 1
+    mov rdi, [resb_fp]
+    mov rsi, resb_file_template_str
+    mov rdx, 13
     syscall
 
     ; Write start of func file
@@ -1099,7 +1122,6 @@ _start:
     ; r12 -> input buffer pointer
     ; r13 -> input buffer length
     ; r14 -> code output file
-    ; r15 -> strings file
     ; rbx -> func file
 
     ; stack
@@ -1116,214 +1138,487 @@ parse:
     cmp rax, 0
     je end
 
-    mov r8B, byte [rax]
+    push rax
+    push rdx
 
-    ; check if first character is a quote
+    ; check if the token is the function declaration string
+    mov rdi, [rsp + 8]
+    mov rsi, [rsp]
+    mov rdx, FUNC_DECL_str
+    mov rcx, 1
+    call str_ncmp
+    cmp rax, 1
+    je parse_func_decl
+
+    ; check if the token is the variable declaration string
+    mov rdi, [rsp + 8]
+    mov rsi, [rsp]
+    mov rdx, VARIABLE_DECL_str
+    mov rcx, 8
+    call str_ncmp
+    cmp rax, 1
+    je parse_var_decl
+
+    ; check if the token starts with a quote (string literal)
+    mov r8, [rsp + 8]
+    mov r8B, byte [r8]
     cmp r8B, 34
     je parse_literal
 
-    ; check if first character is a colon and the length is 1
-    ; (function declaration)
-    cmp r8B, 58
-    jne parse_notfunc_decl
+    ; check if the token is the return statement
+    mov rdi, [rsp + 8]
+    mov rsi, [rsp]
+    mov rdx, RET_str
+    mov rcx, 1
+    call str_ncmp
+    cmp rax, 1
+    je parse_func_ret
 
-    cmp rdx, 1
-    jne parse_notfunc_decl
-
-    jmp parse_func_decl
-
-parse_notfunc_decl:
-    ; check if semi-colon for ending the function call
-    cmp r8B, 59
-    jne parse_notfunc_ret
-
-    cmp rdx, 1
-    jne parse_notfunc_ret
-
-    jmp parse_func_ret
-
-parse_notfunc_ret:
-    ; not a function declaration, or string literal, or function return
-    ; check if it is a number
-    push rax
-    push rdx
-        mov rsi, rdx
-        mov rdi, rax
-        call str_is_int
-
-        cmp rax, 1
-    pop rdx
-    pop rax
-
+    ; check if the token is a plain number
+    mov rsi, [rsp]
+    mov rdi, [rsp + 8]
+    call str_is_int
+    cmp rax, 1
     je parse_int
 
-    ; not a number, check for loop keywords
-    push rax
-    push rdx
+    ; check if the token is an IF statement
+    mov rdi, [rsp + 8]
+    mov rsi, [rsp]
+    mov rdx, IF_str
+    mov rcx, 2
+    call str_ncmp
+    cmp rax, 1
+    je parse_if
 
-        mov rdi, [rsp + 8]
-        mov rsi, [rsp]
-        mov rdx, IF_str
-        mov rcx, 2
+    ; check if the token is an ELSE statement
+    mov rdi, [rsp + 8]
+    mov rsi, [rsp]
+    mov rdx, ELSE_str
+    mov rcx, 4
+    call str_ncmp
+    cmp rax, 1
+    je parse_else
+
+    ; check if the token is a THEN statement
+    mov rdi, [rsp + 8]
+    mov rsi, [rsp]
+    mov rdx, THEN_str
+    mov rcx, 4
+    call str_ncmp
+    cmp rax, 1
+    je parse_then
+
+    ; check if the function being called is +
+    mov rdi, [rsp + 8]
+    mov rsi, [rsp]
+    mov rdx, plus_str
+    mov rcx, 1
+    call str_ncmp
+    cmp rax, 1
+    je parse_func_call_add
+
+    ; check if the function being called is -
+    mov rdi, [rsp + 8]
+    mov rsi, [rsp]
+    mov rdx, minus_str
+    mov rcx, 1
+    call str_ncmp
+    cmp rax, 1
+    je parse_func_call_sub
+
+    ; check if the function being called is *
+    mov rdi, [rsp + 8]
+    mov rsi, [rsp]
+    mov rdx, star_str
+    mov rcx, 1
+    call str_ncmp
+    cmp rax, 1
+    je parse_func_call_mul
+
+    ; check if the function being called is .
+    mov rdi, [rsp + 8]
+    mov rsi, [rsp]
+    mov rdx, print_int_forth_str
+    mov rcx, 1
+    call str_ncmp
+    cmp rax, 1
+    je parse_func_call_printint
+
+    ; check if the function being called is TYPE
+    mov rdi, [rsp + 8]
+    mov rsi, [rsp]
+    mov rdx, TYPE_str
+    mov rcx, 4
+    call str_ncmp
+    cmp rax, 1
+    je parse_func_call_TYPE
+
+    ; check if the function being called is CR
+    mov rdi, [rsp + 8]
+    mov rsi, [rsp]
+    mov rdx, CR_str
+    mov rcx, 2
+    call str_ncmp
+    cmp rax, 1
+    je parse_func_call_CR
+
+    ; check if the function being called is DUP
+    mov rdi, [rsp + 8]
+    mov rsi, [rsp]
+    mov rdx, DUP_str
+    mov rcx, 3
+    call str_ncmp
+    cmp rax, 1
+    je parse_func_call_DUP
+
+    ; check if the function being called is 2DUP
+    mov rdi, [rsp + 8]
+    mov rsi, [rsp]
+    mov rdx, two_DUP_str
+    mov rcx, 4
+    call str_ncmp
+    cmp rax, 1
+    je parse_func_call_2DUP
+
+    ; check if the function being called is SWAP
+    mov rdi, [rsp + 8]
+    mov rsi, [rsp]
+    mov rdx, SWAP_str
+    mov rcx, 4
+    call str_ncmp
+    cmp rax, 1
+    je parse_func_call_SWAP
+
+    ; check if the function being called is 2SWAP
+    mov rdi, [rsp + 8]
+    mov rsi, [rsp]
+    mov rdx, two_SWAP_str
+    mov rcx, 5
+    call str_ncmp
+    cmp rax, 1
+    je parse_func_call_2SWAP
+
+    ; check if the function being called is DROP
+    mov rdi, [rsp + 8]
+    mov rsi, [rsp]
+    mov rdx, DROP_str
+    mov rcx, 4
+    call str_ncmp
+    cmp rax, 1
+    je parse_func_call_drop
+
+    ; check if the function being called is =
+    mov rdi, [rsp + 8]
+    mov rsi, [rsp]
+    mov rdx, equal_str
+    mov rcx, 1
+    call str_ncmp
+    cmp rax, 1
+    je parse_func_call_is_equal
+
+    ; check if the function being called is !=
+    mov rdi, [rsp + 8]
+    mov rsi, [rsp]
+    mov rdx, not_equal_str
+    mov rcx, 2
+    call str_ncmp
+    cmp rax, 1
+    je parse_func_call_is_not_equal
+
+    ; check if the function being called is >
+    mov rdi, [rsp + 8]
+    mov rsi, [rsp]
+    mov rdx, greater_than_str
+    mov rcx, 1
+    call str_ncmp
+    cmp rax, 1
+    je parse_func_call_greater_than
+
+    ; check if the function being called is >=
+    mov rdi, [rsp + 8]
+    mov rsi, [rsp]
+    mov rdx, greater_than_equal_str
+    mov rcx, 2
+    call str_ncmp
+    cmp rax, 1
+    je parse_func_call_greater_than_equal
+    
+    ; check if the function being called is <
+    mov rdi, [rsp + 8]
+    mov rsi, [rsp]
+    mov rdx, less_than_str
+    mov rcx, 1
+    call str_ncmp
+    cmp rax, 1
+    je parse_func_call_less_than
+
+    ; check if the function being called is <=
+    mov rdi, [rsp + 8]
+    mov rsi, [rsp]
+    mov rdx, less_than_equal_str
+    mov rcx, 2
+    call str_ncmp
+    cmp rax, 1
+    je parse_func_call_less_than_equal
+
+    ; check if the function being called is AND
+    mov rdi, [rsp + 8]
+    mov rsi, [rsp]
+    mov rdx, AND_str
+    mov rcx, 3
+    call str_ncmp
+    cmp rax, 1
+    je parse_func_call_and
+
+    ; check if the function being called is OR
+    mov rdi, [rsp + 8]
+    mov rsi, [rsp]
+    mov rdx, OR_str
+    mov rcx, 2
+    call str_ncmp
+    cmp rax, 1
+    je parse_func_call_or
+
+    ; check if the function being called is XOR
+    mov rdi, [rsp + 8]
+    mov rsi, [rsp]
+    mov rdx, XOR_str
+    mov rcx, 3
+    call str_ncmp
+    cmp rax, 1
+    je parse_func_call_xor
+
+    ;;; NO MORE BUILT IN KEYWORDS FROM HERE
+
+    ; must be a variable name, function name, or garbage
+
+    ; check if the token is a variable name
+    ; r8 -> index of current variable name
+    mov r8, 0
+
+find_var_name_loop:
+    push r8
+        ; to avoid needing to also store the sizes of the strings
+        ; we will use the length of the token for str_ncmp
+        ; however, if the token is a substring of the name, then this code will give
+        ; a false positive match. Thus, we must check if there is a null terminator
+        ; to check that the variable name also ends at the same point as the 
+        ; name being looked up
+        ; TODO: start using null terminators everywhere, rather than hardcoded lengths
+
+        ; convert the index to memory address. Each string has a space within the 
+        ; memory block
+        imul r8, 64
+        mov rdi, r8
+        add rdi, vars
+        mov rsi, [rsp + 8]
+        mov rdx, [rsp + 16]
+        mov rcx, [rsp + 8]
         call str_ncmp
         cmp rax, 1
-        je parse_if
+    pop r8
 
-        mov rdi, [rsp + 8]
-        mov rsi, [rsp]
-        mov rdx, ELSE_str
-        mov rcx, 4
-        call str_ncmp
-        cmp rax, 1
-        je parse_else
+    jne find_var_name_loop_check
+    
+    push r8
+        ; string matched, but need to check for a null terminator
+        ; to make sure the token is an exact match, and not just a substring
+        mov r9, 0
 
-        mov rdi, [rsp + 8]
-        mov rsi, [rsp]
-        mov rdx, THEN_str
-        mov rcx, 4
-        call str_ncmp
-        cmp rax, 1
-        je parse_then
+        ; get the address of the chracter at the index equivalent to the 
+        ; length of the token (checking if the stored variable name ends
+        ; at the same length as the token name)
+        imul r8, 64
+        mov rdi, r8
+        add rdi, vars
+        add rdi, [rsp]
+        mov r9, 0
+        mov r9B, byte [rdi]
+        cmp r9B, 0
+    pop r8
+    je parse_variable_reference
 
-        jmp parse_branch_default
+find_var_name_loop_check:
+    inc r8
+    mov r9, [var_name_nextindex]
+    cmp r8, r9
+    jl find_var_name_loop
+
+    ; check if the token is a user-defined function name
+find_func_name_loop:
+    ; the name is a function that was previously defined. Call it
+    mov rdi, r14
+    mov rsi, [rsp + 8]
+    mov rdx, [rsp]
+    call write_call_to_file
+
+    mov rdi, r14
+    call write_newline_to_file
+
+    jmp parse_loop_end
+
+    ; programmer is an idiot, lets yell at them!
+
+    jmp end
+
+;;;;;;; IMPLEMENTATION OF SWITCH CASE STATEMENTS
+
+parse_variable_reference:
+    ; mov r11, <variable>
+    mov rdi, r14
+    mov rsi, r11_str
+    mov rdx, 3
+    mov rcx, [rsp + 8]
+    mov r8 , [rsp]
+    call write_mov_to_file
+
+    ; push r11
+    mov rdi, r14
+    mov rsi, r11_str
+    mov rdx, 3
+    call write_forth_stack_push_to_file
+
+    call write_newline_to_file
+
+    jmp parse_loop_end
 
 parse_if:
-        ; pops the top value on the *FORTH* stack and branches
-        ; the structure will be as follows
-        ;
-        ; if_x:
-        ; ...
-        ; if_else_x:
-        ; ...
-        ; if_then_x:
-        ; 
-        ; where x is the unique id for the scope
-        ; the else is also optional
+    ; pops the top value on the *FORTH* stack and branches
+    ; the structure will be as follows
+    ;
+    ; if_x:
+    ; ...
+    ; if_else_x:
+    ; ...
+    ; if_then_x:
+    ; 
+    ; where x is the unique id for the scope
+    ; the else is also optional
 
-        ; pop the top value on the stack 
-        mov rdi, r14
-        mov rsi, r11_str
-        mov rdx, 3
-        call write_forth_stack_pop_to_file
+    ; pop the top value on the stack 
+    mov rdi, r14
+    mov rsi, r11_str
+    mov rdx, 3
+    call write_forth_stack_pop_to_file
 
-        ; compare this value to 0
-        mov rdi, r14
-        mov rsi, r11_str
-        mov rdx, 3
-        mov rcx, zero_str
-        mov r8 , 1
-        call write_cmp_to_file
+    ; compare this value to 0
+    mov rdi, r14
+    mov rsi, r11_str
+    mov rdx, 3
+    mov rcx, zero_str
+    mov r8 , 1
+    call write_cmp_to_file
 
-        ; jump to the else label if equal to 0
-        ; make the label 
-        mov rdi, if_else_label_str
-        mov rsi, 8
-        mov rdx, [if_stack_nextid]
-        call str_append_int
+    ; jump to the else label if equal to 0
+    ; make the label 
+    mov rdi, if_else_label_str
+    mov rsi, 8
+    mov rdx, [if_stack_nextid]
+    call str_append_int
 
-        ; write the jump to the else
-        mov rdi, r14
-        mov rsi, string_build_buff
-        mov rdx, rax
-        call write_je_to_file
-        
-        ; build the name for the if label
-        mov rdi, if_label_str
-        mov rsi, 3
-        mov rdx, [if_stack_nextid]
-        call str_append_int
+    ; write the jump to the else
+    mov rdi, r14
+    mov rsi, string_build_buff
+    mov rdx, rax
+    call write_je_to_file
+    
+    ; build the name for the if label
+    mov rdi, if_label_str
+    mov rsi, 3
+    mov rdx, [if_stack_nextid]
+    call str_append_int
 
-        ; write the if label
-        mov rdi, r14
-        mov rsi, string_build_buff
-        mov rdx, rax
-        call write_label_to_file
+    ; write the if label
+    mov rdi, r14
+    mov rsi, string_build_buff
+    mov rdx, rax
+    call write_label_to_file
 
-        ; put the id onto the stack (double dereference)
-        mov rdi, [if_stack_nextid]
-        mov rsi, [if_stack_nextptr]
-        mov [rsi], rdi
+    ; put the id onto the stack (double dereference)
+    mov rdi, [if_stack_nextid]
+    mov rsi, [if_stack_nextptr]
+    mov [rsi], rdi
 
-        ; TODO check length
-        mov rdi, [if_stack_nextptr]
-        add rdi, 8
-        mov [if_stack_nextptr], rdi
+    ; TODO check length
+    mov rdi, [if_stack_nextptr]
+    add rdi, 8
+    mov [if_stack_nextptr], rdi
 
-        mov rdi, [if_stack_nextid]
-        inc rdi
-        mov [if_stack_nextid], rdi
+    mov rdi, [if_stack_nextid]
+    inc rdi
+    mov [if_stack_nextid], rdi
 
-        jmp parse_branch_end
+    jmp parse_loop_end
 
 parse_else:
-        ; just above the "else" section of the code is the "if"
-        ; hence, the end of the "if" section must jump to the
-        ; "then" section of code
-        mov rdi, if_then_label_str
-        mov rsi, 8
-        mov rdx, [if_stack_nextptr]
-        mov rdx, [rdx - 8]
-        call str_append_int
+    ; just above the "else" section of the code is the "if"
+    ; hence, the end of the "if" section must jump to the
+    ; "then" section of code
+    mov rdi, if_then_label_str
+    mov rsi, 8
+    mov rdx, [if_stack_nextptr]
+    mov rdx, [rdx - 8]
+    call str_append_int
 
-        mov rdi, r14
-        mov rsi, string_build_buff
-        mov rdx, rax
-        call write_jmp_to_file
+    mov rdi, r14
+    mov rsi, string_build_buff
+    mov rdx, rax
+    call write_jmp_to_file
 
-        ; write the else label
-        ; TODO check this pointer dereference
-        mov rdi, if_else_label_str
-        mov rsi, 8
-        mov rdx, [if_stack_nextptr]
-        mov rdx, [rdx - 8]
-        call str_append_int
+    ; write the else label
+    ; TODO check this pointer dereference
+    mov rdi, if_else_label_str
+    mov rsi, 8
+    mov rdx, [if_stack_nextptr]
+    mov rdx, [rdx - 8]
+    call str_append_int
 
-        mov rdi, r14
-        mov rsi, string_build_buff
-        mov rdx, rax
-        call write_label_to_file
+    mov rdi, r14
+    mov rsi, string_build_buff
+    mov rdx, rax
+    call write_label_to_file
 
-        ; set a flag at the high bit of the id to mark there was an else
-        mov rdx, [if_stack_nextptr]
-        mov rsi, [rdx - 8]
+    ; set a flag at the high bit of the id to mark there was an else
+    mov rdx, [if_stack_nextptr]
+    mov rsi, [rdx - 8]
 
-        mov rdi, 1 << 30
-        or  rsi, rdi
-        mov [rdx - 8], rsi
-        
-        jmp parse_branch_end
+    mov rdi, 1 << 30
+    or  rsi, rdi
+    mov [rdx - 8], rsi
+    
+    jmp parse_loop_end
 
 parse_then:
-        ; cmp qword [if_elseset], 0
+    ; cmp qword [if_elseset], 0
 
-        ; set a flag at the high bit of the id to mark there was an else
-        mov rdx, [if_stack_nextptr]
-        mov rsi, [rdx - 8]
+    ; set a flag at the high bit of the id to mark there was an else
+    mov rdx, [if_stack_nextptr]
+    mov rsi, [rdx - 8]
 
-        mov rdi, 1 << 30
-        and rsi, rdi
+    mov rdi, 1 << 30
+    and rsi, rdi
 
-        cmp rsi, 0
+    cmp rsi, 0
 
-        jne parse_then_remove_flag
+    jne parse_then_remove_flag
 
-        ; if there was no "else" label
-        ; make the label for the else, effevtively nop
-        ; (the if always jumps to the else if the condition fails)
+    ; if there was no "else" label
+    ; make the label for the else, effevtively nop
+    ; (the if always jumps to the else if the condition fails)
 
-        ; make the label 
-        mov rdi, if_else_label_str
-        mov rsi, 8
-        mov rdx, [if_stack_nextptr]
-        mov rdx, [rdx - 8]
-        call str_append_int
+    ; make the label 
+    mov rdi, if_else_label_str
+    mov rsi, 8
+    mov rdx, [if_stack_nextptr]
+    mov rdx, [rdx - 8]
+    call str_append_int
 
-        mov rdi, r14
-        mov rsi, string_build_buff
-        mov rdx, rax
-        call write_label_to_file
+    mov rdi, r14
+    mov rsi, string_build_buff
+    mov rdx, rax
+    call write_label_to_file
 
-        jmp parse_then_end
+    jmp parse_then_end
 
 parse_then_remove_flag:
     mov rsi, [rdx - 8]
@@ -1333,112 +1628,170 @@ parse_then_remove_flag:
     mov [rdx - 8], rsi
 
 parse_then_end:
-        ; not needed, but nice to have a label here
-        mov rdi, if_then_label_str
-        mov rsi, 8
-        mov rdx, [if_stack_nextptr]
-        mov rdx, [rdx - 8]
-        call str_append_int
+    ; not needed, but nice to have a label here
+    mov rdi, if_then_label_str
+    mov rsi, 8
+    mov rdx, [if_stack_nextptr]
+    mov rdx, [rdx - 8]
+    call str_append_int
 
-        mov rdi, r14
-        mov rsi, string_build_buff
-        mov rdx, rax
-        call write_label_to_file
+    mov rdi, r14
+    mov rsi, string_build_buff
+    mov rdx, rax
+    call write_label_to_file
 
-        ; pop the top ID off the stack
-        mov rdi, [if_stack_nextptr]
-        sub rdi, 8
-        mov [if_stack_nextptr], rdi
+    ; pop the top ID off the stack
+    mov rdi, [if_stack_nextptr]
+    sub rdi, 8
+    mov [if_stack_nextptr], rdi
 
-        ; reset the else flag
-        ; mov qword [if_elseset], 0
-        jmp parse_branch_end
-
-parse_branch_end:
-    pop rdx
-    pop rax
-
-    ; it was some kind of branch keyword. End token parsing
+    ; reset the else flag
+    ; mov qword [if_elseset], 0
     jmp parse_loop_end
-
-parse_branch_default:
-    pop rdx
-    pop rax
-
-    ; it was not a branch keyword
-    ; must be some kind of function call
-    jmp parse_func_call
 
 parse_func_decl:    
     ; this is a function decl, get the next token for the name of the function
     ; being declared
 
     ; move the pointer to the start of the token
-    mov r12, rax
+    mov r12, [rsp + 8]
     ; move the pointer to the end of the token
-    add r12, rdx
+    add r12, [rsp]
     ; subtract the length of the token to the total length of the buffer 
-    sub r13, rdx
+    sub r13, [rsp]
 
     ; grab the name of the function
     mov rdi, r12
     mov rsi, r13
     call forth_grab_token
 
+    ; make the next token the token that is being processed
+    mov [rsp + 8], rax
+    mov [rsp], rdx
+
     ; print
-    push rax
-    push rdx
-        mov rdi, token_func_decl_str
-        mov rsi, 20
-        call print
+    mov rdi, token_func_decl_str
+    mov rsi, 20
+    call print
 
-        mov rdi, [rsp + 8]
-        mov rsi, [rsp]
-        call print
+    mov rdi, [rsp + 8]
+    mov rsi, [rsp]
+    call print
 
-        call print_newline
-    pop rdx
-    pop rax
+    call print_newline
 
-    push rax
-    push rdx
-        ; swap r14 and rbx
-        ; this makes all code output direct to the func file
-        mov r8, r14
-        mov r14, rbx
-        mov rbx, r8
+    ; swap r14 and rbx
+    ; this makes all code output direct to the func file
+    mov r8, r14
+    mov r14, rbx
+    mov rbx, r8
 
-        mov rdi, r14
-        mov rsi, [rsp + 8]
-        mov rdx, [rsp]
-        call write_label_to_file
-    pop rdx
-    pop rax
+    ; write the label for the function to the file
+    mov rdi, r14
+    mov rsi, [rsp + 8]
+    mov rdx, [rsp]
+    call write_label_to_file
+
+    jmp parse_loop_end
+
+parse_var_decl:
+    ; this is a variable decl, get the next token for the name of the function
+    ; being declared
+
+    ; move the pointer to the start of the token
+    mov r12, [rsp + 8]
+    ; move the pointer to the end of the token
+    add r12, [rsp]
+    ; subtract the length of the token to the total length of the buffer 
+    sub r13, [rsp]
+
+    ; grab the name of the function
+    mov rdi, r12
+    mov rsi, r13
+    call forth_grab_token
+
+    ; make the next token the token that is being processed
+    mov [rsp + 8], rax
+    mov [rsp], rdx
+
+    ; print
+    mov rdi, token_var_decl_str
+    mov rsi, 20
+    call print
+
+    mov rdi, [rsp + 8]
+    mov rsi, [rsp]
+    call print
+
+    call print_newline
+
+    ; write this variable name to the list of variables
+    mov rdi, [var_name_nextindex]
+    imul rdi, 64
+    add rdi, vars
+    mov rsi, [rsp + 8]
+    mov rdx, [rsp]
+
+    push rdi
+        call memcpy
+    pop rdi
+
+    ; write a null terminator at the end of the string
+    add rdi, [rsp]
+    mov byte [rdi], 0
+
+    inc qword [var_name_nextindex]
+
+    ; add this variable to the data file
+    mov rdi, [data_fp]
+    mov rsi, [rsp + 8]
+    mov rdx, [rsp]
+    call write_str_to_file
+
+    ; write a space
+    mov rdi, [data_fp]
+    mov rsi, space_str
+    mov rdx, 1
+    call write_str_to_file
+
+    ; write "dq"
+    mov rdi, [data_fp]
+    mov rsi, dq_str
+    mov rdx, 2
+    call write_str_to_file
+
+    ; write a space
+    mov rdi, [data_fp]
+    mov rsi, space_str
+    mov rdx, 1
+    call write_str_to_file
+
+    ; write a 0
+    mov rdi, [data_fp]
+    mov rsi, zero_str
+    mov rdx, 1
+    call write_str_to_file
+
+    mov rdi, [data_fp]
+    call write_newline_to_file
 
     jmp parse_loop_end
 
 parse_func_ret:
     ; print
-    push rax
-    push rdx
-        mov rdi, token_func_ret_str
-        mov rsi, 20
-        call print
+    mov rdi, token_func_ret_str
+    mov rsi, 20
+    call print
 
-        mov rdi, [rsp + 8]
-        mov rsi, [rsp]
-        call print
+    mov rdi, [rsp + 8]
+    mov rsi, [rsp]
+    call print
 
-        call print_newline
-    pop rdx
-    pop rax
+    call print_newline
 
-    push rax
-    push rdx
-        mov rdi, r14
-        call write_ret_to_file
-    pop rdx
-    pop rax
+    ; Write the return statement to the file
+    mov rdi, r14
+    call write_ret_to_file
 
     ; swap r14 and rbx
     ; this makes all code output direct back to the output file
@@ -1447,206 +1800,6 @@ parse_func_ret:
     mov rbx, r8
 
     jmp parse_loop_end
-
-parse_func_call:
-    ; print
-    push rax
-    push rdx
-        mov rdi, token_func_call_str
-        mov rsi, 20
-        call print
-
-        mov rdi, [rsp + 8]
-        mov rsi, [rsp]
-        call print
-
-        call print_newline
-    pop rdx
-    pop rax
-
-    push rax
-    push rdx
-        ; check if the function being called is +
-        mov rdi, [rsp + 8]
-        mov rsi, [rsp]
-        mov rdx, plus_str
-        mov rcx, 1
-        call str_ncmp
-        cmp rax, 1
-        je parse_func_call_add
-
-        ; check if the function being called is -
-        mov rdi, [rsp + 8]
-        mov rsi, [rsp]
-        mov rdx, minus_str
-        mov rcx, 1
-        call str_ncmp
-        cmp rax, 1
-        je parse_func_call_sub
-
-        ; check if the function being called is *
-        mov rdi, [rsp + 8]
-        mov rsi, [rsp]
-        mov rdx, star_str
-        mov rcx, 1
-        call str_ncmp
-        cmp rax, 1
-        je parse_func_call_mul
-
-        ; check if the function being called is .
-        mov rdi, [rsp + 8]
-        mov rsi, [rsp]
-        mov rdx, print_int_forth_str
-        mov rcx, 1
-        call str_ncmp
-        cmp rax, 1
-        je parse_func_call_printint
-
-        ; check if the function being called is TYPE
-        mov rdi, [rsp + 8]
-        mov rsi, [rsp]
-        mov rdx, TYPE_str
-        mov rcx, 4
-        call str_ncmp
-        cmp rax, 1
-        je parse_func_call_TYPE
-
-        ; check if the function being called is CR
-        mov rdi, [rsp + 8]
-        mov rsi, [rsp]
-        mov rdx, CR_str
-        mov rcx, 2
-        call str_ncmp
-        cmp rax, 1
-        je parse_func_call_CR
-
-        ; check if the function being called is DUP
-        mov rdi, [rsp + 8]
-        mov rsi, [rsp]
-        mov rdx, DUP_str
-        mov rcx, 3
-        call str_ncmp
-        cmp rax, 1
-        je parse_func_call_DUP
-
-        ; check if the function being called is 2DUP
-        mov rdi, [rsp + 8]
-        mov rsi, [rsp]
-        mov rdx, two_DUP_str
-        mov rcx, 4
-        call str_ncmp
-        cmp rax, 1
-        je parse_func_call_2DUP
-
-        ; check if the function being called is SWAP
-        mov rdi, [rsp + 8]
-        mov rsi, [rsp]
-        mov rdx, SWAP_str
-        mov rcx, 4
-        call str_ncmp
-        cmp rax, 1
-        je parse_func_call_SWAP
-
-        ; check if the function being called is 2SWAP
-        mov rdi, [rsp + 8]
-        mov rsi, [rsp]
-        mov rdx, two_SWAP_str
-        mov rcx, 5
-        call str_ncmp
-        cmp rax, 1
-        je parse_func_call_2SWAP
-
-        ; check if the function being called is DROP
-        mov rdi, [rsp + 8]
-        mov rsi, [rsp]
-        mov rdx, DROP_str
-        mov rcx, 4
-        call str_ncmp
-        cmp rax, 1
-        je parse_func_call_drop
-
-        ; check if the function being called is =
-        mov rdi, [rsp + 8]
-        mov rsi, [rsp]
-        mov rdx, equal_str
-        mov rcx, 1
-        call str_ncmp
-        cmp rax, 1
-        je parse_func_call_is_equal
-
-        ; check if the function being called is !=
-        mov rdi, [rsp + 8]
-        mov rsi, [rsp]
-        mov rdx, not_equal_str
-        mov rcx, 2
-        call str_ncmp
-        cmp rax, 1
-        je parse_func_call_is_not_equal
-
-        ; check if the function being called is >
-        mov rdi, [rsp + 8]
-        mov rsi, [rsp]
-        mov rdx, greater_than_str
-        mov rcx, 1
-        call str_ncmp
-        cmp rax, 1
-        je parse_func_call_greater_than
-
-        ; check if the function being called is >=
-        mov rdi, [rsp + 8]
-        mov rsi, [rsp]
-        mov rdx, greater_than_equal_str
-        mov rcx, 2
-        call str_ncmp
-        cmp rax, 1
-        je parse_func_call_greater_than_equal
-        
-        ; check if the function being called is <
-        mov rdi, [rsp + 8]
-        mov rsi, [rsp]
-        mov rdx, less_than_str
-        mov rcx, 1
-        call str_ncmp
-        cmp rax, 1
-        je parse_func_call_less_than
-
-        ; check if the function being called is <=
-        mov rdi, [rsp + 8]
-        mov rsi, [rsp]
-        mov rdx, less_than_equal_str
-        mov rcx, 2
-        call str_ncmp
-        cmp rax, 1
-        je parse_func_call_less_than_equal
-
-        ; check if the function being called is AND
-        mov rdi, [rsp + 8]
-        mov rsi, [rsp]
-        mov rdx, AND_str
-        mov rcx, 3
-        call str_ncmp
-        cmp rax, 1
-        je parse_func_call_and
-
-        ; check if the function being called is OR
-        mov rdi, [rsp + 8]
-        mov rsi, [rsp]
-        mov rdx, OR_str
-        mov rcx, 2
-        call str_ncmp
-        cmp rax, 1
-        je parse_func_call_or
-
-        ; check if the function being called is XOR
-        mov rdi, [rsp + 8]
-        mov rsi, [rsp]
-        mov rdx, XOR_str
-        mov rcx, 3
-        call str_ncmp
-        cmp rax, 1
-        je parse_func_call_xor
-
-        jmp parse_func_call_default
 
 parse_func_call_printint:
     ; pop r11
@@ -1673,7 +1826,7 @@ parse_func_call_printint:
     mov rdi, r14
     call write_newline_to_file
     
-    jmp parse_func_call_end
+    jmp parse_builtin_func_call_end
 
 parse_func_call_add:
     ; pop r11
@@ -1705,7 +1858,7 @@ parse_func_call_add:
     mov rdi, r14
     call write_newline_to_file
 
-    jmp parse_func_call_end
+    jmp parse_builtin_func_call_end
 
 parse_func_call_sub:
     ; pop rcx
@@ -1737,7 +1890,7 @@ parse_func_call_sub:
     mov rdi, r14
     call write_newline_to_file
 
-    jmp parse_func_call_end
+    jmp parse_builtin_func_call_end
 
 parse_func_call_mul:
     ; pop r11
@@ -1769,7 +1922,7 @@ parse_func_call_mul:
     mov rdi, r14
     call write_newline_to_file
 
-    jmp parse_func_call_end
+    jmp parse_builtin_func_call_end
 
 parse_func_call_TYPE:
     ; pop the string length off of the stack
@@ -1793,7 +1946,7 @@ parse_func_call_TYPE:
     mov rdi, r14
     call write_newline_to_file
 
-    jmp parse_func_call_end
+    jmp parse_builtin_func_call_end
 
 parse_func_call_CR:
     mov rdi, r14
@@ -1804,7 +1957,7 @@ parse_func_call_CR:
     mov rdi, r14
     call write_newline_to_file
 
-    jmp parse_func_call_end
+    jmp parse_builtin_func_call_end
 
 parse_func_call_DUP:
     ; pop top value
@@ -1825,7 +1978,7 @@ parse_func_call_DUP:
     mov rdx, 3
     call write_forth_stack_push_to_file
 
-    jmp parse_func_call_end
+    jmp parse_builtin_func_call_end
 
 parse_func_call_2DUP:
     ; pop top value
@@ -1869,7 +2022,7 @@ parse_func_call_2DUP:
     mov rdi, r14
     call write_newline_to_file
 
-    jmp parse_func_call_end
+    jmp parse_builtin_func_call_end
 
 parse_func_call_SWAP:
     ; pop top value
@@ -1899,7 +2052,7 @@ parse_func_call_SWAP:
     mov rdi, r14
     call write_newline_to_file
 
-    jmp parse_func_call_end
+    jmp parse_builtin_func_call_end
 
 parse_func_call_2SWAP:
     ; pop top value
@@ -1955,7 +2108,7 @@ parse_func_call_2SWAP:
     mov rdi, r14
     call write_newline_to_file
 
-    jmp parse_func_call_end
+    jmp parse_builtin_func_call_end
 
 parse_func_call_drop:
     ; pop top value
@@ -1964,7 +2117,7 @@ parse_func_call_drop:
     mov rdx, 3
     call write_forth_stack_pop_to_file
 
-    jmp parse_func_call_end
+    jmp parse_builtin_func_call_end
 
 parse_func_call_is_equal:
     ; pop top value
@@ -2007,7 +2160,7 @@ parse_func_call_is_equal:
     mov rdx, 3
     call write_forth_stack_push_to_file
 
-    jmp parse_func_call_end
+    jmp parse_builtin_func_call_end
 
 parse_func_call_is_not_equal:
     ; pop top value
@@ -2050,7 +2203,7 @@ parse_func_call_is_not_equal:
     mov rdx, 3
     call write_forth_stack_push_to_file
 
-    jmp parse_func_call_end
+    jmp parse_builtin_func_call_end
 
 parse_func_call_greater_than:
     ; pop top value
@@ -2093,7 +2246,7 @@ parse_func_call_greater_than:
     mov rdx, 3
     call write_forth_stack_push_to_file
 
-    jmp parse_func_call_end
+    jmp parse_builtin_func_call_end
 
 parse_func_call_greater_than_equal:
     ; pop top value
@@ -2136,7 +2289,7 @@ parse_func_call_greater_than_equal:
     mov rdx, 3
     call write_forth_stack_push_to_file
 
-    jmp parse_func_call_end
+    jmp parse_builtin_func_call_end
 
 parse_func_call_less_than:
     ; pop top value
@@ -2179,7 +2332,7 @@ parse_func_call_less_than:
     mov rdx, 3
     call write_forth_stack_push_to_file
 
-    jmp parse_func_call_end
+    jmp parse_builtin_func_call_end
 
 parse_func_call_less_than_equal:
     ; pop top value
@@ -2222,7 +2375,7 @@ parse_func_call_less_than_equal:
     mov rdx, 3
     call write_forth_stack_push_to_file
 
-    jmp parse_func_call_end
+    jmp parse_builtin_func_call_end
 
 parse_func_call_and:
     ; pop top value
@@ -2253,7 +2406,7 @@ parse_func_call_and:
 
     call write_newline_to_file
 
-    jmp parse_func_call_end
+    jmp parse_builtin_func_call_end
 
 parse_func_call_or:
     ; pop top value
@@ -2284,7 +2437,7 @@ parse_func_call_or:
 
     call write_newline_to_file
 
-    jmp parse_func_call_end
+    jmp parse_builtin_func_call_end
 
 parse_func_call_xor:
     ; pop top value
@@ -2315,190 +2468,127 @@ parse_func_call_xor:
 
     call write_newline_to_file
 
-    jmp parse_func_call_end
-
-parse_func_call_default:
-    ; the name is a function that was previously defined. Call it
-    mov rdi, r14
-    mov rsi, [rsp + 8]
-    mov rdx, [rsp]
-    call write_call_to_file
-
-    mov rdi, r14
-    call write_newline_to_file
-
-    jmp parse_func_call_end
-
-parse_func_call_end:
-    pop rdx
-    pop rax
-
-    jmp parse_loop_end
+    jmp parse_builtin_func_call_end
 
 parse_literal:
     ; print
-    push rax
-    push rdx
-        mov rdi, token_literal_str
-        mov rsi, 20
-        call print
+    mov rdi, token_literal_str
+    mov rsi, 20
+    call print
 
-        mov rdi, [rsp + 8]
-        mov rsi, [rsp]
-        call print
+    mov rdi, [rsp + 8]
+    mov rsi, [rsp]
+    call print
 
-        call print_newline
-    pop rdx
-    pop rax
+    call print_newline
 
     ; write "string_"
-    push rax
+    ; mov rdi, r15
+    ; mov rsi, string_label_name_str
+    ; mov rdx, 7
+    ; call write_str_to_file
+
+    ; ; convert the number of counted strings to a string
+    ; mov rdi, [rsp + 16]
+    ; mov rsi, int_to_string_buff
+    ; call int_to_string
+
+    ; ; write the number after the underscore to make the name unique
+    ; mov rdi, r15
+    ; mov rsi, int_to_string_buff
+    ; mov rdx, rax
+    ; call write_str_to_file
+    
+    ; copy "string_" into the string build buffer
+    mov rdi, string_build_buff
+    mov rsi, string_label_name_str
+    mov rdx, 7
+    call memcpy
+
+    ; convert the number of counted strings to a string
+    mov rdi, [rsp + 16]
+    mov rsi, int_to_string_buff
+    call int_to_string
+
+    ; add the number after the underscore
+    mov rdi, string_build_buff
+    add rdi, 7 ; accounts for the length of the existing string
+    mov rsi, int_to_string_buff
+    mov rdx, rax
+
+    ; increment the number of string literals seen (to keep names unique)
+    inc qword [rsp + 16]
+
+    ; save the length of the integer string
     push rdx
-        ; mov rdi, r15
-        ; mov rsi, string_label_name_str
-        ; mov rdx, 7
-        ; call write_str_to_file
-
-        ; ; convert the number of counted strings to a string
-        ; mov rdi, [rsp + 16]
-        ; mov rsi, int_to_string_buff
-        ; call int_to_string
-
-        ; ; write the number after the underscore to make the name unique
-        ; mov rdi, r15
-        ; mov rsi, int_to_string_buff
-        ; mov rdx, rax
-        ; call write_str_to_file
-        
-        ; copy "string_" into the string build buffer
-        mov rdi, string_build_buff
-        mov rsi, string_label_name_str
-        mov rdx, 7
         call memcpy
 
-        ; convert the number of counted strings to a string
-        mov rdi, [rsp + 16]
-        mov rsi, int_to_string_buff
-        call int_to_string
+        ; add the length of the prefix "string_"
+        add qword [rsp], 7
 
-        ; add the number after the underscore
-        mov rdi, string_build_buff
-        add rdi, 7 ; accounts for the length of the existing string
-        mov rsi, int_to_string_buff
-        mov rdx, rax
+        ; write the string
+        mov rdi, [data_fp]
+        mov rsi, string_build_buff
+        mov rdx, [rsp]
+        call write_str_to_file
 
-        ; increment the number of string literals seen (to keep names unique)
-        inc qword [rsp + 16]
+        ; write a space
+        mov rdi, [data_fp]
+        mov rsi, space_str
+        mov rdx, 1
+        call write_str_to_file
 
-        ; save the length of the integer string
-        push rdx
-            call memcpy
+        ; write "db"
+        mov rdi, [data_fp]
+        mov rsi, db_str
+        mov rdx, 2
+        call write_str_to_file
 
-            ; add the length of the prefix "string_"
-            add qword [rsp], 7
+        ; write a space
+        mov rdi, [data_fp]
+        mov rsi, space_str
+        mov rdx, 1
+        call write_str_to_file
 
-            ; write the string
-            mov rdi, r15
-            mov rsi, string_build_buff
-            mov rdx, [rsp]
-            call write_str_to_file
+        ; write the string literal
+        mov rdi, [data_fp]
+        mov rsi, [rsp + 16]
+        mov rdx, [rsp + 8]
+        call write_str_to_file
 
-            ; write a space
-            mov rdi, r15
-            mov rsi, space_str
-            mov rdx, 1
-            call write_str_to_file
+        mov rdi, [data_fp]
+        call write_newline_to_file
 
-            ; write "db"
-            mov rdi, r15
-            mov rsi, db_str
-            mov rdx, 2
-            call write_str_to_file
-
-            ; write a space
-            mov rdi, r15
-            mov rsi, space_str
-            mov rdx, 1
-            call write_str_to_file
-
-            ; write the string literal
-            mov rdi, r15
-            mov rsi, [rsp + 16]
-            mov rdx, [rsp + 8]
-            call write_str_to_file
-
-            mov rdi, r15
-            call write_newline_to_file
-
-            ; the string has been allocated, now we may reference the address
-            ; write "mov r11, string_build_buff"
-            mov rdi, r14
-            mov rsi, r11_str
-            mov rdx, 3
-            mov rcx, string_build_buff
-            mov r8 , [rsp] ; length was put onto the stack after the tostring was computed
-            call write_mov_to_file
-
-            ; push the address onto the stack
-            mov rdi, r14
-            mov rsi, r11_str
-            mov rdx, 3
-            call write_forth_stack_push_to_file
-
-            ; convert the length of the string (an integer) into a string
-            mov rdi, [rsp + 8] ; length was put onto the stack
-            sub rdi, 2 ; remove 2 because this includes both of the quotes
-            mov rsi, int_to_string_buff
-            call int_to_string
-
-            ; load the length of the string onto register
-            mov rdi, r14
-            mov rsi, r11_str
-            mov rdx, 3
-            mov rcx, int_to_string_buff
-            mov r8 , rax
-            call write_mov_to_file
-
-            ; push onto the stack
-            mov rdi, r14
-            mov rsi, r11_str
-            mov rdx, 3
-            call write_forth_stack_push_to_file
-
-            mov rdi, r14
-            call write_newline_to_file
-        pop rdx
-    pop rdx
-    pop rax
-
-    jmp parse_loop_end
-
-parse_int:
-    ; print
-    push rax
-    push rdx
-        mov rdi, token_int_str
-        mov rsi, 20
-        call print
-
-        mov rdi, [rsp + 8]
-        mov rsi, [rsp]
-        call print
-
-        call print_newline
-    pop rdx
-    pop rax
-
-    ;;; load the value into a register and push it onto stack
-    push rax
-    push rdx
+        ; the string has been allocated, now we may reference the address
+        ; write "mov r11, string_build_buff"
         mov rdi, r14
         mov rsi, r11_str
         mov rdx, 3
-        mov rcx, [rsp + 8]
-        mov r8,  [rsp]
-        call write_mov_to_file 
+        mov rcx, string_build_buff
+        mov r8 , [rsp] ; length was put onto the stack after the tostring was computed
+        call write_mov_to_file
 
+        ; push the address onto the stack
+        mov rdi, r14
+        mov rsi, r11_str
+        mov rdx, 3
+        call write_forth_stack_push_to_file
+
+        ; convert the length of the string (an integer) into a string
+        mov rdi, [rsp + 8] ; length was put onto the stack
+        sub rdi, 2 ; remove 2 because this includes both of the quotes
+        mov rsi, int_to_string_buff
+        call int_to_string
+
+        ; load the length of the string onto register
+        mov rdi, r14
+        mov rsi, r11_str
+        mov rdx, 3
+        mov rcx, int_to_string_buff
+        mov r8 , rax
+        call write_mov_to_file
+
+        ; push onto the stack
         mov rdi, r14
         mov rsi, r11_str
         mov rdx, 3
@@ -2507,11 +2597,54 @@ parse_int:
         mov rdi, r14
         call write_newline_to_file
     pop rdx
-    pop rax
 
     jmp parse_loop_end
 
+parse_int:
+    ; print
+    mov rdi, token_int_str
+    mov rsi, 20
+    call print
+
+    mov rdi, [rsp + 8]
+    mov rsi, [rsp]
+    call print
+
+    call print_newline
+
+    ;;; load the value into a register and push it onto stack
+    mov rdi, r14
+    mov rsi, r11_str
+    mov rdx, 3
+    mov rcx, [rsp + 8]
+    mov r8,  [rsp]
+    call write_mov_to_file 
+
+    mov rdi, r14
+    mov rsi, r11_str
+    mov rdx, 3
+    call write_forth_stack_push_to_file
+
+    mov rdi, r14
+    call write_newline_to_file
+
+    jmp parse_loop_end
+
+parse_builtin_func_call_end:
+    mov rdi, token_func_call_str
+    mov rsi, 20
+    call print
+
+    mov rdi, [rsp + 8]
+    mov rsi, [rsp]
+    call print
+
+    call print_newline
+
 parse_loop_end:
+    pop rdx
+    pop rax
+
     ; move the pointer to the start of the token
     mov r12, rax
     ; move the pointer to the end of the token
@@ -2539,7 +2672,11 @@ end:
     syscall
 
     mov rax, 3
-    mov rdi, r15
+    mov rdi, [data_fp]
+    syscall
+
+    mov rax, 3
+    mov rdi, [resb_fp]
     syscall
 
     mov rax, 3

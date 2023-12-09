@@ -2,3 +2,5 @@
 ./test-programs/*.o
 *.swp
 forth
+out
+Debug

@@ -1,4 +1,4 @@
-%include "strings.asm"
+%include "data.asm"
 %include "std.asm"
 %include "func.asm"
 
@@ -11,17 +11,11 @@ section .text
 _start:
 mov r12, the_stack
 
-mov r11,7
+mov r11,19
 add r12,8
 mov [r12],r11
 
-call FIB
-
-mov rdi,[r12]
-sub r12,8
-call print_int
-
-call print_newline
+call PRINT_FIBS
 
 ; exit
 mov rax, 60
