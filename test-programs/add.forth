@@ -24,4 +24,11 @@ VARIABLE out_fp
     THEN
 ;
 
-19 PRINT_FIBS
+8 PRINT_FIBS
+
+CR CR
+
+"Var Testing!" TYPE CR
+1 out_fp ! 
+
+out_fp @ .

@@ -32,12 +32,14 @@ section .data
 
     begin_parse_str db "Begin Parsing!", 10
 
-    token_var_decl_str  db "TOKEN [Var Decl]  : "
-    token_func_decl_str db "TOKEN [Func Decl] : "
-    token_func_ret_str  db "TOKEN [Func Ret]  : "
-    token_func_call_str db "TOKEN [Func Call] : "
-    token_literal_str   db "TOKEN [Literal]   : "
-    token_int_str       db "TOKEN [Int]       : "
+    token_var_decl_str     db "TOKEN [Var Decl]  : "
+    token_var_ref_str      db "TOKEN [Var Ref]   : "
+    token_func_decl_str    db "TOKEN [Func Decl] : "
+    token_func_ret_str     db "TOKEN [Func Ret]  : "
+    token_func_call_str    db "TOKEN [Func Call] : "
+    token_usrfunc_call_str db "TOKEN [Usr Call]  : "
+    token_literal_str      db "TOKEN [Literal]   : "
+    token_int_str          db "TOKEN [Int]       : "
 
     comma_str db ","
     space_str db " "
@@ -76,6 +78,8 @@ section .data
     VARIABLE_DECL_str db "VARIABLE"
     FUNC_DECL_str db ":"
     RET_str db ";"
+    FETCH_str db "@"
+    STORE_str db "!"
 
     ;;; NATIVE function strings
     print_asm_str db "print"
@@ -127,6 +131,7 @@ section .data
     ;;; stack access strings
     stack_access_current_str db "[r12]"
     eight_str db "8" ; used to increment stack_ptr
+    access_r11_str db "[r11]"
 
     ;;; string define name
     ; worst name ever, but it makes sense I swear
@@ -1388,6 +1393,24 @@ parse:
     cmp rax, 1
     je parse_func_call_xor
 
+    ; check if the function being called is FETCH
+    mov rdi, [rsp + 8]
+    mov rsi, [rsp]
+    mov rdx, FETCH_str
+    mov rcx, 1
+    call str_ncmp
+    cmp rax, 1
+    je parse_func_call_fetch
+
+    ; check if the function being called is FETCH
+    mov rdi, [rsp + 8]
+    mov rsi, [rsp]
+    mov rdx, STORE_str
+    mov rcx, 1
+    call str_ncmp
+    cmp rax, 1
+    je parse_func_call_store
+
     ;;; NO MORE BUILT IN KEYWORDS FROM HERE
 
     ; must be a variable name, function name, or garbage
@@ -1395,6 +1418,11 @@ parse:
     ; check if the token is a variable name
     ; r8 -> index of current variable name
     mov r8, 0
+
+    ; skip if no variable names have been written yet
+    mov r9, [var_name_nextindex]
+    cmp r8, r9
+    jge find_func_name_loop
 
 find_var_name_loop:
     push r8
@@ -1431,7 +1459,7 @@ find_var_name_loop:
         imul r8, 64
         mov rdi, r8
         add rdi, vars
-        add rdi, [rsp]
+        add rdi, [rsp + 8]
         mov r9, 0
         mov r9B, byte [rdi]
         cmp r9B, 0
@@ -1446,6 +1474,17 @@ find_var_name_loop_check:
 
     ; check if the token is a user-defined function name
 find_func_name_loop:
+    ; print
+    mov rdi, token_usrfunc_call_str
+    mov rsi, 20
+    call print
+
+    mov rdi, [rsp + 8]
+    mov rsi, [rsp]
+    call print
+
+    call print_newline
+    
     ; the name is a function that was previously defined. Call it
     mov rdi, r14
     mov rsi, [rsp + 8]
@@ -1464,6 +1503,17 @@ find_func_name_loop:
 ;;;;;;; IMPLEMENTATION OF SWITCH CASE STATEMENTS
 
 parse_variable_reference:
+    ; print
+    mov rdi, token_var_ref_str
+    mov rsi, 20
+    call print
+
+    mov rdi, [rsp + 8]
+    mov rsi, [rsp]
+    call print
+
+    call print_newline
+
     ; mov r11, <variable>
     mov rdi, r14
     mov rsi, r11_str
@@ -2467,6 +2517,54 @@ parse_func_call_xor:
     call write_forth_stack_push_to_file
 
     call write_newline_to_file
+
+    jmp parse_builtin_func_call_end
+
+parse_func_call_fetch:
+    ; pop top value
+    mov rdi, r14
+    mov rsi, r11_str
+    mov rdx, 3
+    call write_forth_stack_pop_to_file
+
+    ; assume that this value is a memory address...
+    ; get the value at this memory address
+    mov rdi, r14
+    mov rsi, r11_str
+    mov rdx, 3
+    mov rcx, access_r11_str
+    mov r8 , 5
+    call write_mov_to_file
+
+    ; push r11 to stack
+    mov rdi, r14
+    mov rsi, r11_str
+    mov rdx, 3
+    call write_forth_stack_push_to_file
+
+    call write_newline_to_file
+
+    jmp parse_builtin_func_call_end
+
+parse_func_call_store:
+    ; pop top value
+    mov rdi, r14
+    mov rsi, r11_str
+    mov rdx, 3
+    call write_forth_stack_pop_to_file
+
+    ; pop top value
+    mov rdi, r14
+    mov rsi, rcx_str
+    mov rdx, 3
+    call write_forth_stack_pop_to_file
+
+    mov rdi, r14
+    mov rsi, access_r11_str
+    mov rdx, 5
+    mov rcx, rcx_str
+    mov r8 , 3
+    call write_mov_to_file
 
     jmp parse_builtin_func_call_end
 
