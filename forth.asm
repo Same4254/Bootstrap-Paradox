@@ -22,7 +22,7 @@ section .data
     data_filename_str db "data.asm", 0
     resb_filename_str db "resb.asm", 0
 
-    template_str db "%include ", 34, "data.asm", 34, 10, "%include ", 34, "std.asm", 34, 10, "%include ", 34, "func.asm", 34, 10, 10, "section .bss", 10, "the_stack resb 8192", 10, 10, "section .text", 10, "    global _start", 10, 10, "_start:", 10, "mov r12, the_stack", 10, 10
+    template_str db "%include ", 34, "data.asm", 34, 10, "%include ", 34, "std.asm", 34, 10, "%include ", 34, "func.asm", 34, 10, "%include ", 34, "resb.asm", 34, 10, 10, "section .bss", 10, "the_stack resb 8192", 10, 10, "section .text", 10, "    global _start", 10, 10, "_start:", 10, "mov r12, the_stack", 10, 10
 
     end_template_str db "; exit", 10, "mov rax, 60", 10, "mov rdi, 0", 10, "syscall", 10
 
@@ -32,6 +32,7 @@ section .data
 
     begin_parse_str db "Begin Parsing!", 10
 
+    token_arr_decl_str     db "TOKEN [Arr Decl]  : "
     token_var_decl_str     db "TOKEN [Var Decl]  : "
     token_var_ref_str      db "TOKEN [Var Ref]   : "
     token_func_decl_str    db "TOKEN [Func Decl] : "
@@ -58,6 +59,9 @@ section .data
     not_equal_str db "!="
 
     zero_str db "0"
+    one_str db "1"
+    two_str db "2"
+    three_str db "3"
 
     ;;; FORTH function strings/keywords
     ; these are functions that are moreso macros to a native call
@@ -76,10 +80,19 @@ section .data
     OR_str db "OR"
     XOR_str db "XOR"
     VARIABLE_DECL_str db "VARIABLE"
+    ARRAY_DECL_str db "ARRAY"
     FUNC_DECL_str db ":"
     RET_str db ";"
+    SYS_READ_str  db "SYS_READ"
+    SYS_WRITE_str db "SYS_WRITE"
+    SYS_OPEN_str  db "SYS_OPEN"
+    SYS_CLOSE_str db "SYS_CLOSE"
+
     FETCH_str db "@"
+    FETCH_BYTE_str db "@b"
+
     STORE_str db "!"
+    STORE_BYTE_str db "!b"
 
     ;;; NATIVE function strings
     print_asm_str db "print"
@@ -114,6 +127,10 @@ section .data
     ret_str db "ret"
     db_str   db "db"
     dq_str   db "dq"
+    resb_str   db "resb"
+    null_term_str db ", 0"
+
+    syscall_str db "syscall"
 
     ;;; register strings
     r11_str db "r11"
@@ -124,6 +141,8 @@ section .data
 
     r12_str db "r12"
     rcx_str db "rcx"
+    rdx_str db "rdx"
+    cl_str db  "cl"
     rdi_str db "rdi"
     rsi_str db "rsi"
     rax_str db "rax"
@@ -132,6 +151,7 @@ section .data
     stack_access_current_str db "[r12]"
     eight_str db "8" ; used to increment stack_ptr
     access_r11_str db "[r11]"
+    access_byte_r11_str db "byte [r11]"
 
     ;;; string define name
     ; worst name ever, but it makes sense I swear
@@ -1092,7 +1112,7 @@ _start:
     mov rax, 1
     mov rdi, r14
     mov rsi, template_str
-    mov rdx, 155
+    mov rdx, 175
     syscall
 
     ; Write start of data file
@@ -1164,10 +1184,20 @@ parse:
     cmp rax, 1
     je parse_var_decl
 
+    ; check if the token is the variable declaration string
+    mov rdi, [rsp + 8]
+    mov rsi, [rsp]
+    mov rdx, ARRAY_DECL_str
+    mov rcx, 5
+    call str_ncmp
+    cmp rax, 1
+    je parse_array_decl
+
     ; check if the token starts with a quote (string literal)
+    mov rcx, 0
     mov r8, [rsp + 8]
-    mov r8B, byte [r8]
-    cmp r8B, 34
+    mov cl, byte [r8]
+    cmp cl, 34
     je parse_literal
 
     ; check if the token is the return statement
@@ -1402,7 +1432,16 @@ parse:
     cmp rax, 1
     je parse_func_call_fetch
 
-    ; check if the function being called is FETCH
+    ; check if the function being called is FETCH BYTE
+    mov rdi, [rsp + 8]
+    mov rsi, [rsp]
+    mov rdx, FETCH_BYTE_str
+    mov rcx, 2
+    call str_ncmp
+    cmp rax, 1
+    je parse_func_call_fetch_byte
+
+    ; check if the function being called is STORE
     mov rdi, [rsp + 8]
     mov rsi, [rsp]
     mov rdx, STORE_str
@@ -1410,6 +1449,51 @@ parse:
     call str_ncmp
     cmp rax, 1
     je parse_func_call_store
+
+    ; check if the function being called is STORE BYTE
+    mov rdi, [rsp + 8]
+    mov rsi, [rsp]
+    mov rdx, STORE_BYTE_str
+    mov rcx, 2
+    call str_ncmp
+    cmp rax, 1
+    je parse_func_call_store_byte
+
+    ; check if the function being called is SYS_READ
+    mov rdi, [rsp + 8]
+    mov rsi, [rsp]
+    mov rdx, SYS_READ_str
+    mov rcx, 8
+    call str_ncmp
+    cmp rax, 1
+    je parse_func_call_sys_read
+
+    ; check if the function being called is SYS_WRITE
+    mov rdi, [rsp + 8]
+    mov rsi, [rsp]
+    mov rdx, SYS_WRITE_str
+    mov rcx, 9
+    call str_ncmp
+    cmp rax, 1
+    je parse_func_call_sys_write
+
+    ; check if the function being called is SYS_OPEN
+    mov rdi, [rsp + 8]
+    mov rsi, [rsp]
+    mov rdx, SYS_OPEN_str
+    mov rcx, 8
+    call str_ncmp
+    cmp rax, 1
+    je parse_func_call_sys_open
+
+    ; check if the function being called is SYS_CLOSE
+    mov rdi, [rsp + 8]
+    mov rsi, [rsp]
+    mov rdx, SYS_CLOSE_str
+    mov rcx, 9
+    call str_ncmp
+    cmp rax, 1
+    je parse_func_call_sys_close
 
     ;;; NO MORE BUILT IN KEYWORDS FROM HERE
 
@@ -1755,7 +1839,7 @@ parse_var_decl:
     ; subtract the length of the token to the total length of the buffer 
     sub r13, [rsp]
 
-    ; grab the name of the function
+    ; grab the name of the variable
     mov rdi, r12
     mov rsi, r13
     call forth_grab_token
@@ -1823,6 +1907,118 @@ parse_var_decl:
     call write_str_to_file
 
     mov rdi, [data_fp]
+    call write_newline_to_file
+
+    jmp parse_loop_end
+
+parse_array_decl:
+    ; this is a variable decl, get the next token for the name of the function
+    ; being declared
+
+    ; move the pointer to the start of the token
+    mov r12, [rsp + 8]
+    ; move the pointer to the end of the token
+    add r12, [rsp]
+    ; subtract the length of the token to the total length of the buffer 
+    sub r13, [rsp]
+
+    ; grab the name of the array
+    mov rdi, r12
+    mov rsi, r13
+    call forth_grab_token
+
+    ; make the next token the token that is being processed
+    mov [rsp + 8], rax
+    mov [rsp], rdx
+
+    ; print
+    mov rdi, token_arr_decl_str
+    mov rsi, 20
+    call print
+
+    mov rdi, [rsp + 8]
+    mov rsi, [rsp]
+    call print
+
+    call print_newline
+
+    ; write this variable name to the list of variables
+    mov rdi, [var_name_nextindex]
+    imul rdi, 64
+    add rdi, vars
+    mov rsi, [rsp + 8]
+    mov rdx, [rsp]
+
+    push rdi
+        call memcpy
+    pop rdi
+
+    ; write a null terminator at the end of the string
+    add rdi, [rsp]
+    mov byte [rdi], 0
+
+    inc qword [var_name_nextindex]
+
+    ; add this variable to the data file
+    mov rdi, [resb_fp]
+    mov rsi, [rsp + 8]
+    mov rdx, [rsp]
+    call write_str_to_file
+
+    ; write a space
+    mov rdi, [resb_fp]
+    mov rsi, space_str
+    mov rdx, 1
+    call write_str_to_file
+
+    ; write "resb"
+    mov rdi, [resb_fp]
+    mov rsi, resb_str
+    mov rdx, 4
+    call write_str_to_file
+
+    ; write a space
+    mov rdi, [resb_fp]
+    mov rsi, space_str
+    mov rdx, 1
+    call write_str_to_file
+
+    ; grab another token for the number of integers to allocate
+    ; move the pointer to the start of the token
+    mov r12, [rsp + 8]
+    ; move the pointer to the end of the token
+    add r12, [rsp]
+    ; subtract the length of the token to the total length of the buffer 
+    sub r13, [rsp]
+
+    ; grab the number
+    mov rdi, r12
+    mov rsi, r13
+    call forth_grab_token
+
+    ; make the next token the token that is being processed
+    mov [rsp + 8], rax
+    mov [rsp], rdx
+
+    ; TODO: check if it is an integer
+    mov rdi, [rsp + 8]
+    mov rsi, [rsp]
+    call str_to_int
+
+    ; multiply the number of elements with 8 bytes each
+    imul rax, 8
+
+    mov rdi, rax
+    mov rsi, int_to_string_buff
+    call int_to_string
+    
+    ; write the number of bytes
+    mov rdi, [resb_fp]
+    mov rsi, int_to_string_buff
+    mov rdx, rax
+    call write_str_to_file
+
+    mov rdi, [resb_fp]
     call write_newline_to_file
 
     jmp parse_loop_end
@@ -2546,6 +2742,40 @@ parse_func_call_fetch:
 
     jmp parse_builtin_func_call_end
 
+parse_func_call_fetch_byte:
+    ; pop top value
+    mov rdi, r14
+    mov rsi, r11_str
+    mov rdx, 3
+    call write_forth_stack_pop_to_file
+
+    ; clear rcx
+    mov rdi, r14
+    mov rsi, rcx_str
+    mov rdx, 3
+    mov rcx, zero_str
+    mov r8 , 1
+    call write_mov_to_file
+
+    ; assume that this value is a memory address...
+    ; get the value at this memory address
+    mov rdi, r14
+    mov rsi, cl_str
+    mov rdx, 2
+    mov rcx, access_r11_str
+    mov r8 , 5
+    call write_mov_to_file
+
+    ; push rcx to stack
+    mov rdi, r14
+    mov rsi, rcx_str
+    mov rdx, 3
+    call write_forth_stack_push_to_file
+
+    call write_newline_to_file
+
+    jmp parse_builtin_func_call_end
+
 parse_func_call_store:
     ; pop top value
     mov rdi, r14
@@ -2565,6 +2795,204 @@ parse_func_call_store:
     mov rcx, rcx_str
     mov r8 , 3
     call write_mov_to_file
+
+    jmp parse_builtin_func_call_end
+
+parse_func_call_store_byte:
+    ; pop top value
+    mov rdi, r14
+    mov rsi, r11_str
+    mov rdx, 3
+    call write_forth_stack_pop_to_file
+
+    ; pop top value
+    mov rdi, r14
+    mov rsi, r8_str
+    mov rdx, 2
+    call write_forth_stack_pop_to_file
+
+    mov rdi, r14
+    mov rsi, access_byte_r11_str
+    mov rdx, 10
+    mov rcx, r8B_str
+    mov r8 , 3
+    call write_mov_to_file
+
+    jmp parse_builtin_func_call_end
+
+parse_func_call_sys_read:
+    ; pop top value for number of bytes to read
+    mov rdi, r14
+    mov rsi, rdx_str
+    mov rdx, 3
+    call write_forth_stack_pop_to_file
+
+    ; pop top value for buff ptr
+    mov rdi, r14
+    mov rsi, rsi_str
+    mov rdx, 3
+    call write_forth_stack_pop_to_file
+
+    ; pop top value for file descriptor
+    mov rdi, r14
+    mov rsi, rdi_str
+    mov rdx, 3
+    call write_forth_stack_pop_to_file
+
+    ; mov 0 into rax 
+    mov rdi, r14
+    mov rsi, rax_str
+    mov rdx, 3
+    mov rcx, zero_str
+    mov r8 , 1
+    call write_mov_to_file
+
+    ; call syscall
+    mov rdi, r14
+    mov rsi, syscall_str
+    mov rdx, 7
+    call write_str_to_file
+
+    mov rdi, r14
+    call write_newline_to_file
+
+    ; push the return value onto the forth stack
+    mov rdi, r14
+    mov rsi, rax_str
+    mov rdx, 3
+    call write_forth_stack_push_to_file
+
+    mov rdi, r14
+    call write_newline_to_file
+
+    jmp parse_builtin_func_call_end
+
+parse_func_call_sys_write:
+    ; pop top value for number of bytes to write
+    mov rdi, r14
+    mov rsi, rdx_str
+    mov rdx, 3
+    call write_forth_stack_pop_to_file
+
+    ; pop top value for buff ptr
+    mov rdi, r14
+    mov rsi, rsi_str
+    mov rdx, 3
+    call write_forth_stack_pop_to_file
+
+    ; pop top value for file descriptor
+    mov rdi, r14
+    mov rsi, rdi_str
+    mov rdx, 3
+    call write_forth_stack_pop_to_file
+
+    ; mov 1 into rax 
+    mov rdi, r14
+    mov rsi, rax_str
+    mov rdx, 3
+    mov rcx, one_str
+    mov r8 , 1
+    call write_mov_to_file
+
+    ; call syscall
+    mov rdi, r14
+    mov rsi, syscall_str
+    mov rdx, 7
+    call write_str_to_file
+
+    mov rdi, r14
+    call write_newline_to_file
+
+    ; push the return value onto the forth stack
+    mov rdi, r14
+    mov rsi, rax_str
+    mov rdx, 3
+    call write_forth_stack_push_to_file
+
+    mov rdi, r14
+    call write_newline_to_file
+
+    jmp parse_builtin_func_call_end
+
+parse_func_call_sys_open:
+    ; pop top value for mode
+    mov rdi, r14
+    mov rsi, rdx_str
+    mov rdx, 3
+    call write_forth_stack_pop_to_file
+
+    ; pop top value for flags
+    mov rdi, r14
+    mov rsi, rsi_str
+    mov rdx, 3
+    call write_forth_stack_pop_to_file
+
+    ; pop top value for file name
+    mov rdi, r14
+    mov rsi, rdi_str
+    mov rdx, 3
+    call write_forth_stack_pop_to_file
+
+    ; mov 2 into rax 
+    mov rdi, r14
+    mov rsi, rax_str
+    mov rdx, 3
+    mov rcx, two_str
+    mov r8 , 1
+    call write_mov_to_file
+
+    ; call syscall
+    mov rdi, r14
+    mov rsi, syscall_str
+    mov rdx, 7
+    call write_str_to_file
+
+    mov rdi, r14
+    call write_newline_to_file
+
+    ; push the return value onto the forth stack
+    mov rdi, r14
+    mov rsi, rax_str
+    mov rdx, 3
+    call write_forth_stack_push_to_file
+
+    mov rdi, r14
+    call write_newline_to_file
+
+    jmp parse_builtin_func_call_end
+
+parse_func_call_sys_close:
+    ; pop top value for file descriptor
+    mov rdi, r14
+    mov rsi, rdx_str
+    mov rdx, 3
+    call write_forth_stack_pop_to_file
+
+    ; mov 3 into rax 
+    mov rdi, r14
+    mov rsi, rax_str
+    mov rdx, 3
+    mov rcx, three_str
+    mov r8 , 1
+    call write_mov_to_file
+
+    ; call syscall
+    mov rdi, r14
+    mov rsi, syscall_str
+    mov rdx, 7
+    call write_str_to_file
+
+    mov rdi, r14
+    call write_newline_to_file
+
+    ; push the return value onto the forth stack
+    mov rdi, r14
+    mov rsi, rax_str
+    mov rdx, 3
+    call write_forth_stack_push_to_file
+
+    mov rdi, r14
+    call write_newline_to_file
 
     jmp parse_builtin_func_call_end
 
@@ -2652,6 +3080,11 @@ parse_literal:
         mov rdi, [data_fp]
         mov rsi, [rsp + 16]
         mov rdx, [rsp + 8]
+        call write_str_to_file
+
+        mov rdi, [data_fp]
+        mov rsi, null_term_str
+        mov rdx, 3
         call write_str_to_file
 
         mov rdi, [data_fp]

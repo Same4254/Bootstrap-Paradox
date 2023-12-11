@@ -1,34 +1,11 @@
-VARIABLE out_fp
+VARIABLE fp
+ARRAY mem 64
 
-: FIB (n -> n)
-    DUP 0 = IF
-        DROP
-        0
-    ELSE DUP 1 = IF
-        DROP
-        1
-    ELSE
-        DUP 1 - FIB
-        SWAP 2 - FIB
-        +
-    THEN 
-    THEN
-;
+( open the file )
+"./test-programs/add.forth" DROP 0 0 SYS_OPEN
+fp !
 
-: PRINT_FIBS (n)
-    DUP 0 = IF
-        FIB .
-    ELSE
-        DUP 1 - PRINT_FIBS
-        FIB .
-    THEN
-;
+( read the content )
+fp @ mem 1024 SYS_READ
 
-8 PRINT_FIBS
-
-CR CR
-
-"Var Testing!" TYPE CR
-1 out_fp ! 
-
-out_fp @ .
+mem SWAP TYPE
