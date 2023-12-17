@@ -52,4 +52,28 @@ The astute may realize that the top value on the stack is likely not the only im
 | 2SWAP | ( a1 a2 b1 b2 -> b1 b2 a1 a2 ) | Swaps the top two pairs of numbers                                        |
 | 2DUP  | ( a1 a2 -> a1 a2 a1 a2 )       | Duplicates the top two elements on the stack                              |
 
-### Variables
+### Variables and "Arrays"
+This compiler has light support for variables and feather light support for arrays. Variables are merely memory addresses that will be put onto the stack and can be dereferenced and stored into. Consider the example below:
+```
+VARIABLE myVar
+2 myVar !
+myVar @ .
+```
+- ! will pop the pointer off of the stack and pop the value after that and stor the value at the given memory address (value assumed to be a 64 bit integer)
+- @ will pop the pointer off of the stack and dereference it and push the value onto the stack (value assumed to be a 64 bit integer)
+There is also support for single byte storing and dereferencing denoted as !b and @b. These are used for string maipulations.
+
+Array are also, somewhat supported. Calling these "arrays" is a little misleading. The compiler just allows you to allocate a block of memory (at compile time) with a custom size, You can write your own array accessing methods! Below you can see the use of "arrays" to buffer the content of a file. This also demonstrates the function hooks to make Linux syscalls, that being to open and write to files. Memory blocks work the same way as variables do, they just have a custom size. 
+```
+VARIABLE fp
+MEM mem 1024
+
+( open the file )
+"./test-programs/add.forth" DROP 0 0 SYS_OPEN
+fp !
+
+( read the content )
+fp @ mem 1024 SYS_READ
+
+mem SWAP TYPE
+``` 
