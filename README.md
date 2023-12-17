@@ -80,3 +80,6 @@ fp @ mem 1024 SYS_READ
 
 mem SWAP TYPE
 ``` 
+
+## Lessons Learned
+C is in fact a high level language...
