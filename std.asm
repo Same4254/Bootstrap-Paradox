@@ -109,15 +109,17 @@ str_reverse:
     mov rdx, 0
     div r11
 
+    mov r9, 0
+
     mov r11, 0
     mov r8, rsi
     dec r8
 
 str_reverse_loop:
     mov cl, [rdi + r11]
-    mov bl, [rdi + r8]
+    mov r9B, [rdi + r8]
 
-    mov [rdi + r11], bl
+    mov [rdi + r11], r9B
     mov [rdi + r8], cl
     
     inc r11

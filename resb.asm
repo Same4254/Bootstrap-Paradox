@@ -1,2 +1,2 @@
 section .bss
-mem resb 512
+block resb 1024

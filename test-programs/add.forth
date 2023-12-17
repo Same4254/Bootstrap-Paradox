@@ -1,5 +1,5 @@
 VARIABLE fp
-ARRAY mem 64
+MEM mem 1024
 
 ( open the file )
 "./test-programs/add.forth" DROP 0 0 SYS_OPEN
