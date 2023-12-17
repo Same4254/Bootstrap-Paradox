@@ -1,6 +1,9 @@
 # Bootstrap-Paradox
 This project is a compiler for a language called Forth, written purely in x86 assembly from scratch. The assembly is handwritten and there is no cheating allowed with the use of an existing compiler to generate the assembly for me.
 
+## Forewarning 
+I make no promise that this compiler is 100% correct nor do I attest to the quality of the code thereof. The intent of this project was to learn about how compilers work and the challenges an implementation faces. In the long-term I wish to gain a further understanding of compiler optimizations; this project was a step to that end. Particularly learning x86 assembly and the challenges of a first compiler.
+
 ## Why?
 - The idea sounded ridiculous, that being to write a compiler from complete scratch in assembly. The reason it sounded so interesting is because of the notion that writing a compiler in a less featured language to produce a better language feels akin to pulling yourself up by your own bootstraps (hence the name of the project). 
 - I wanted to learn how to read assembly fluently, this seemed like a decent way of achieving that now having written thousands of lines of instructions.
