@@ -51,6 +51,7 @@ section .data
     minus_str db "-"
     star_str  db "*"
     slash_str db "/"
+    percent_str  db "%"
 
     equal_str db "="
     greater_than_str db ">"
@@ -1305,6 +1306,15 @@ parse:
     cmp rax, 1
     je parse_func_call_mul
 
+    ; check if the function being called is %
+    mov rdi, [rsp + 8]
+    mov rsi, [rsp]
+    mov rdx, percent_str
+    mov rcx, 1
+    call str_ncmp
+    cmp rax, 1
+    je parse_func_call_mod
+
     ; check if the function being called is /
     mov rdi, [rsp + 8]
     mov rsi, [rsp]
@@ -2236,6 +2246,44 @@ parse_func_call_mul:
     ; push rax
     mov rdi, r14
     mov rsi, rax_str
+    mov rdx, 3
+    call write_forth_stack_push_to_file
+
+    mov rdi, r14
+    call write_newline_to_file
+
+    jmp parse_builtin_func_call_end
+
+parse_func_call_mod:
+    ; pop r11
+    mov rdi, r14
+    mov rsi, r11_str
+    mov rdx, 3
+    call write_forth_stack_pop_to_file
+    
+    ; pop rax
+    mov rdi, r14
+    mov rsi, rax_str
+    mov rdx, 3
+    call write_forth_stack_pop_to_file
+    
+    ; mov rdx, 0
+    mov rdi, r14
+    mov rsi, rdx_str
+    mov rdx, 3
+    mov rcx, zero_str
+    mov r8 , 1
+    call write_mov_to_file
+
+    ; div r11
+    mov rdi, r14
+    mov rsi, r11_str
+    mov rdx, 3
+    call write_div_to_file
+
+    ; push rdx
+    mov rdi, r14
+    mov rsi, rdx_str
     mov rdx, 3
     call write_forth_stack_push_to_file
 

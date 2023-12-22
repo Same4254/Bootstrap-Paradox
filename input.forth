@@ -50,22 +50,6 @@ FUNC MEMCPY (dst src n)
 
     RET
 
-FUNC IS_INT ( str n )
-    DUP 0 = IF DROP DROP 1 RET THEN
-
-    SWAP DUP @b
-
-    DUP 48 < SWAP 57 > OR IF 
-        DROP DROP 
-        0 
-        RET
-    THEN
-
-    1 + SWAP
-    1 - IS_INT
-
-    RET
-
 FUNC STR_REVERSE_HELP ( str n )
     DUP 1 < IF 
         DROP DROP
@@ -116,8 +100,6 @@ FUNC STR_REVERSE ( str n )
     RET
 
 FUNC STR_FIND_CHAR_HELPER ( str len c i )
-    DUP . 
-
     ROT
     ( str c i len )
     2DUP 1 - = IF 
@@ -160,4 +142,125 @@ FUNC STR_FIND_CHAR ( str len c )
 
     RET
 
-"abcde" 100 STR_FIND_CHAR .
+FUNC STR_IS_INT ( str len -> bool )
+    DUP 0 <= IF 
+        DROP DROP
+        0
+        RET
+    THEN
+
+    SWAP DUP @b
+    DUP 48 < SWAP 57 > OR IF
+        DROP DROP 0
+        RET
+    THEN
+
+    1 + SWAP 1 -
+    DUP 0 = IF
+        DROP DROP
+        1
+    ELSE
+        STR_IS_INT
+    THEN
+    
+    RET
+
+FUNC POW ( base pow -> int )
+    DUP 0 = IF 
+        DROP DROP 1
+        RET
+    THEN
+
+    OVER SWAP
+
+    1 -
+
+    POW
+    *
+
+    RET
+
+FUNC STR_TO_INT ( str len -> int )
+    DUP 0 = IF
+        DROP DROP
+        0
+        RET
+    THEN
+
+    1 - SWAP
+    DUP @b
+    48 -
+    
+    ( len str n )
+    ROT DUP
+
+    ( str n len len )
+    10 SWAP POW
+
+    ( str n len base )
+    ROT *
+
+    ROT 
+    1 +
+    ROT 
+
+    STR_TO_INT
+    +
+
+    RET
+
+FUNC INT_TO_STRING_HELP ( buff int -> len )
+    DUP 10 %
+    ROT 
+
+    ( int n buff )
+    DUP
+
+    ROT 
+
+    ( int buff buff n )
+    48 +
+    !b
+
+    ( int buff )
+    1 + SWAP 10 /
+
+    DUP 0 = IF 
+        DROP DROP 
+        1
+        RET
+    THEN
+
+    INT_TO_STRING_HELP
+
+    1 +
+
+    RET
+
+FUNC INT_TO_STRING ( buff int -> buff len )
+    OVER SWAP 
+
+    DUP 0 < IF
+        INT_TO_STRING_HELP
+        2DUP +
+        45 !b
+        1 +
+    ELSE
+        INT_TO_STRING_HELP
+    THEN
+
+    ( buff len )
+    2DUP
+    STR_REVERSE
+
+    RET
+
+(        END OF STD        )
+
+VARIABLE line
+VARIABLE col
+
+VARIABLE scope_stack
+VARIABLE scope_stack_len
+
+VARIABLE 
