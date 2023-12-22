@@ -263,4 +263,3 @@ VARIABLE col
 VARIABLE scope_stack
 VARIABLE scope_stack_len
 
-VARIABLE 
