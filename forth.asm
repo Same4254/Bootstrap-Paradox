@@ -26,6 +26,8 @@ section .data
 
     end_template_str db "; exit", 10, "mov rax, 60", 10, "mov rdi, 0", 10, "syscall", 10
 
+    the_stack_str db "the_stack"
+
     data_file_template_str db "section .data", 10
     func_file_template_str db "section .text", 10
     resb_file_template_str db "section .bss", 10
@@ -80,6 +82,7 @@ section .data
     THEN_str db "THEN"
     ELSE_str db "ELSE"
     DROP_str db "DROP"
+    STACK_LEN_str db "STACK_LEN"
 
     NOT_str db "NOT"
     AND_str db "AND"
@@ -93,6 +96,7 @@ section .data
     SYS_WRITE_str db "SYS_WRITE"
     SYS_OPEN_str  db "SYS_OPEN"
     SYS_CLOSE_str db "SYS_CLOSE"
+
 
     FETCH_str db "@"
     FETCH_BYTE_str db "@b"
@@ -1396,6 +1400,15 @@ parse:
     cmp rax, 1
     je parse_func_call_drop
 
+    ; check if the function being called is STACK_LEN
+    mov rdi, [rsp + 8]
+    mov rsi, [rsp]
+    mov rdx, STACK_LEN_str
+    mov rcx, 9
+    call str_ncmp
+    cmp rax, 1
+    je parse_func_call_stack_len
+
     ; check if the function being called is OVER
     mov rdi, [rsp + 8]
     mov rsi, [rsp]
@@ -2600,6 +2613,53 @@ parse_func_call_drop:
     mov rsi, r11_str
     mov rdx, 3
     call write_forth_stack_pop_to_file
+
+    jmp parse_builtin_func_call_end
+
+parse_func_call_stack_len:
+    ; mov rdx, 0
+    mov rdi, r14
+    mov rsi, rdx_str
+    mov rdx, 3
+    mov rcx, zero_str
+    mov r8 , 1
+    call write_mov_to_file
+
+    ; mov rax, r12
+    mov rdi, r14
+    mov rsi, rax_str
+    mov rdx, 3
+    mov rcx, r12_str
+    mov r8 , 3
+    call write_mov_to_file
+
+    ; sub rax, the_stack
+    mov rdi, r14
+    mov rsi, rax_str
+    mov rdx, 3
+    mov rcx, the_stack_str
+    mov r8 , 9
+    call write_sub_to_file
+
+    ; mov r11, 8
+    mov rdi, r14
+    mov rsi, r11_str
+    mov rdx, 3
+    mov rcx, eight_str
+    mov r8 , 1
+    call write_mov_to_file
+
+    ; div r11
+    mov rdi, r14
+    mov rsi, r11_str
+    mov rdx, 3
+    call write_div_to_file
+
+    ; push rax
+    mov rdi, r14
+    mov rsi, rax_str
+    mov rdx, 3
+    call write_forth_stack_push_to_file
 
     jmp parse_builtin_func_call_end
 
