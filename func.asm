@@ -1755,22 +1755,6 @@ mov [r12],r11
 
 ret
 F_FLUSH:
-mov r11,output_buffer_length
-add r12,8
-mov [r12],r11
-
-mov r11,[r12]
-sub r12,8
-mov r11,[r11]
-add r12,8
-mov [r12],r11
-
-mov rdi,[r12]
-sub r12,8
-call print_int
-
-call print_newline
-
 mov r11,output_file
 add r12,8
 mov [r12],r11
@@ -2083,13 +2067,79 @@ call F_WRITELN
 call F_FLUSH
 
 ret
-SKIP_WHITESPACE:
+F_FILL_BUFFER:
+mov r11,input_file
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,input_buffer
+add r12,8
+mov [r12],r11
+
+mov r11,1024
+add r12,8
+mov [r12],r11
+
+mov rdx,[r12]
+sub r12,8
+mov rsi,[r12]
+sub r12,8
+mov rdi,[r12]
+sub r12,8
+mov rax,0
+syscall
+add r12,8
+mov [r12],rax
+
+mov r11,input_buffer_len
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
 mov r11,[r12]
 sub r12,8
 add r12,8
-mov [r12],r11
+mov [r12],rcx
 add r12,8
 mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+mov [r11],rcx
+mov r11,input_buffer_curr
+add r12,8
+mov [r12],r11
+
+mov r11,input_buffer
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+mov [r11],rcx
+ret
+SKIP_WHITESPACE:
+mov r11,input_buffer_len
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
 mov r11,0
 add r12,8
 mov [r12],r11
@@ -2108,35 +2158,55 @@ sub r12,8
 cmp r11,0
 je if_else_16
 if_16:
-mov rcx,[r12]
-sub r12,8
-mov r11,[r12]
-sub r12,8
-add r12,8
-mov [r12],rcx
+call F_FILL_BUFFER
+
+mov r11,input_buffer_len
 add r12,8
 mov [r12],r11
 
 mov r11,[r12]
 sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,0
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+cmp rcx,r11
+setz r11B
+movzx r11,r11B
+add r12,8
+mov [r12],r11
+mov r11,[r12]
+sub r12,8
+cmp r11,0
+je if_else_17
+if_17:
 ret
+jmp if_then_17
+if_else_17:
+call SKIP_WHITESPACE
+
+ret
+if_then_17:
 if_else_16:
 if_then_16:
-mov rcx,[r12]
-sub r12,8
-mov r11,[r12]
-sub r12,8
-add r12,8
-mov [r12],rcx
+mov r11,input_buffer_curr
 add r12,8
 mov [r12],r11
 
 mov r11,[r12]
 sub r12,8
+mov r11,[r11]
 add r12,8
 mov [r12],r11
-add r12,8
-mov [r12],r11
+
 mov r11,[r12]
 sub r12,8
 mov rcx,0
@@ -2166,8 +2236,8 @@ mov [r12],r11
 mov r11,[r12]
 sub r12,8
 cmp r11,0
-je if_else_17
-if_17:
+je if_else_18
+if_18:
 mov r11,[r12]
 sub r12,8
 mov r11,line
@@ -2214,8 +2284,8 @@ sub r12,8
 mov r11,[r12]
 sub r12,8
 mov [r11],rcx
-jmp if_then_17
-if_else_17:
+jmp if_then_18
+if_else_18:
 mov r11,[r12]
 sub r12,8
 add r12,8
@@ -2238,8 +2308,8 @@ mov [r12],r11
 mov r11,[r12]
 sub r12,8
 cmp r11,0
-je if_else_18
-if_18:
+je if_else_19
+if_19:
 mov r11,[r12]
 sub r12,8
 mov r11,col
@@ -2273,21 +2343,27 @@ sub r12,8
 mov r11,[r12]
 sub r12,8
 mov [r11],rcx
-jmp if_then_18
-if_else_18:
+jmp if_then_19
+if_else_19:
 mov r11,[r12]
 sub r12,8
-mov r11,[r12]
-sub r12,8
-mov r11,[r12]
-sub r12,8
-mov r11,0
+ret
+if_then_19:
+if_then_18:
+mov r11,input_buffer_curr
 add r12,8
 mov [r12],r11
 
-ret
-if_then_18:
-if_then_17:
+mov r11,input_buffer_curr
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
 mov r11,1
 add r12,8
 mov [r12],r11
@@ -2304,8 +2380,18 @@ mov rcx,[r12]
 sub r12,8
 mov r11,[r12]
 sub r12,8
+mov [r11],rcx
+mov r11,input_buffer_len
 add r12,8
-mov [r12],rcx
+mov [r12],r11
+
+mov r11,input_buffer_len
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
 add r12,8
 mov [r12],r11
 
@@ -2321,28 +2407,25 @@ sub r11,rcx
 add r12,8
 mov [r12],r11
 
-call SKIP_WHITESPACE
-
-mov r11,1
-add r12,8
-mov [r12],r11
-
-mov r11,[r12]
-sub r12,8
 mov rcx,[r12]
 sub r12,8
-add r11,rcx
+mov r11,[r12]
+sub r12,8
+mov [r11],rcx
+call SKIP_WHITESPACE
+
+ret
+COPY_TOKEN_TO_QUOTE:
+mov r11,input_buffer_len
 add r12,8
 mov [r12],r11
 
-ret
-SKIP_TO_WHITESPACE:
 mov r11,[r12]
 sub r12,8
+mov r11,[r11]
 add r12,8
 mov [r12],r11
-add r12,8
-mov [r12],r11
+
 mov r11,0
 add r12,8
 mov [r12],r11
@@ -2359,37 +2442,57 @@ mov [r12],r11
 mov r11,[r12]
 sub r12,8
 cmp r11,0
-je if_else_19
-if_19:
-mov rcx,[r12]
-sub r12,8
-mov r11,[r12]
-sub r12,8
-add r12,8
-mov [r12],rcx
+je if_else_20
+if_20:
+call F_FILL_BUFFER
+
+mov r11,input_buffer_len
 add r12,8
 mov [r12],r11
 
 mov r11,[r12]
 sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,0
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+cmp rcx,r11
+setz r11B
+movzx r11,r11B
+add r12,8
+mov [r12],r11
+mov r11,[r12]
+sub r12,8
+cmp r11,0
+je if_else_21
+if_21:
 ret
-if_else_19:
-if_then_19:
-mov rcx,[r12]
-sub r12,8
-mov r11,[r12]
-sub r12,8
-add r12,8
-mov [r12],rcx
+jmp if_then_21
+if_else_21:
+call COPY_TOKEN_TO_QUOTE
+
+ret
+if_then_21:
+if_else_20:
+if_then_20:
+mov r11,input_buffer_curr
 add r12,8
 mov [r12],r11
 
 mov r11,[r12]
 sub r12,8
+mov r11,[r11]
 add r12,8
 mov [r12],r11
-add r12,8
-mov [r12],r11
+
 mov r11,[r12]
 sub r12,8
 mov rcx,0
@@ -2397,6 +2500,394 @@ mov cl,[r11]
 add r12,8
 mov [r12],rcx
 
+mov r11,[r12]
+sub r12,8
+add r12,8
+mov [r12],r11
+add r12,8
+mov [r12],r11
+mov r11,10
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+cmp rcx,r11
+setz r11B
+movzx r11,r11B
+add r12,8
+mov [r12],r11
+mov r11,[r12]
+sub r12,8
+cmp r11,0
+je if_else_22
+if_22:
+mov r11,[r12]
+sub r12,8
+mov r11,string_8
+add r12,8
+mov [r12],r11
+mov r11,14
+add r12,8
+mov [r12],r11
+
+mov rsi,[r12]
+sub r12,8
+mov rdi,[r12]
+sub r12,8
+call print
+
+mov r11,line
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+call INT_TO_STRING
+
+mov rsi,[r12]
+sub r12,8
+mov rdi,[r12]
+sub r12,8
+call print
+
+mov r11,string_9
+add r12,8
+mov [r12],r11
+mov r11,5
+add r12,8
+mov [r12],r11
+
+mov rsi,[r12]
+sub r12,8
+mov rdi,[r12]
+sub r12,8
+call print
+
+mov r11,next_col
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+call INT_TO_STRING
+
+mov rsi,[r12]
+sub r12,8
+mov rdi,[r12]
+sub r12,8
+call print
+
+mov r11,string_10
+add r12,8
+mov [r12],r11
+mov r11,46
+add r12,8
+mov [r12],r11
+
+mov rsi,[r12]
+sub r12,8
+mov rdi,[r12]
+sub r12,8
+call print
+
+call print_newline
+
+mov rax,60
+mov rdi,0
+syscall
+if_else_22:
+if_then_22:
+mov r11,[r12]
+sub r12,8
+add r12,8
+mov [r12],r11
+add r12,8
+mov [r12],r11
+mov r11,token
+add r12,8
+mov [r12],r11
+
+mov r11,token_len
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov rcx,[r12]
+sub r12,8
+add r11,rcx
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+add r12,8
+mov [r12],rcx
+add r12,8
+mov [r12],r11
+
+mov r8,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+mov byte [r11],r8B
+mov r11,token_len
+add r12,8
+mov [r12],r11
+
+mov r11,token_len
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,1
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov rcx,[r12]
+sub r12,8
+add r11,rcx
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+mov [r11],rcx
+mov r11,next_col
+add r12,8
+mov [r12],r11
+
+mov r11,next_col
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,1
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov rcx,[r12]
+sub r12,8
+add r11,rcx
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+mov [r11],rcx
+mov r11,input_buffer_curr
+add r12,8
+mov [r12],r11
+
+mov r11,input_buffer_curr
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,1
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov rcx,[r12]
+sub r12,8
+add r11,rcx
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+mov [r11],rcx
+mov r11,input_buffer_len
+add r12,8
+mov [r12],r11
+
+mov r11,input_buffer_len
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,1
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+sub r11,rcx
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+mov [r11],rcx
+mov r11,34
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+cmp rcx,r11
+setnz r11B
+movzx r11,r11B
+add r12,8
+mov [r12],r11
+mov r11,[r12]
+sub r12,8
+cmp r11,0
+je if_else_23
+if_23:
+call COPY_TOKEN_TO_QUOTE
+
+if_else_23:
+if_then_23:
+ret
+COPY_TOKEN_TO_WHITESPACE:
+mov r11,input_buffer_len
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,0
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+cmp rcx,r11
+setz r11B
+movzx r11,r11B
+add r12,8
+mov [r12],r11
+mov r11,[r12]
+sub r12,8
+cmp r11,0
+je if_else_24
+if_24:
+call F_FILL_BUFFER
+
+mov r11,input_buffer_len
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,0
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+cmp rcx,r11
+setz r11B
+movzx r11,r11B
+add r12,8
+mov [r12],r11
+mov r11,[r12]
+sub r12,8
+cmp r11,0
+je if_else_25
+if_25:
+ret
+jmp if_then_25
+if_else_25:
+call COPY_TOKEN_TO_WHITESPACE
+
+ret
+if_then_25:
+if_else_24:
+if_then_24:
+mov r11,input_buffer_curr
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov rcx,0
+mov cl,[r11]
+add r12,8
+mov [r12],rcx
+
+mov r11,[r12]
+sub r12,8
+add r12,8
+mov [r12],r11
+add r12,8
+mov [r12],r11
 mov r11,[r12]
 sub r12,8
 add r12,8
@@ -2449,24 +2940,266 @@ mov [r12],r11
 mov r11,[r12]
 sub r12,8
 cmp r11,0
-je if_else_20
-if_20:
+je if_else_26
+if_26:
 mov r11,[r12]
+sub r12,8
+ret
+if_else_26:
+if_then_26:
+mov r11,token
+add r12,8
+mov [r12],r11
+
+mov r11,token_len
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov rcx,[r12]
+sub r12,8
+add r11,rcx
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
 sub r12,8
 mov r11,[r12]
 sub r12,8
+add r12,8
+mov [r12],rcx
+add r12,8
+mov [r12],r11
+
+mov r8,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+mov byte [r11],r8B
+mov r11,token_len
+add r12,8
+mov [r12],r11
+
+mov r11,token_len
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,1
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov rcx,[r12]
+sub r12,8
+add r11,rcx
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+mov [r11],rcx
+mov r11,next_col
+add r12,8
+mov [r12],r11
+
+mov r11,next_col
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,1
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov rcx,[r12]
+sub r12,8
+add r11,rcx
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+mov [r11],rcx
+mov r11,input_buffer_curr
+add r12,8
+mov [r12],r11
+
+mov r11,input_buffer_curr
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,1
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov rcx,[r12]
+sub r12,8
+add r11,rcx
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+mov [r11],rcx
+mov r11,input_buffer_len
+add r12,8
+mov [r12],r11
+
+mov r11,input_buffer_len
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,1
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+sub r11,rcx
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+mov [r11],rcx
+call COPY_TOKEN_TO_WHITESPACE
+
+ret
+SKIP_TO_NEWLINE:
+mov r11,input_buffer_len
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
 mov r11,0
 add r12,8
 mov [r12],r11
 
-ret
-if_else_20:
-if_then_20:
-mov r11,col
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+cmp rcx,r11
+setz r11B
+movzx r11,r11B
+add r12,8
+mov [r12],r11
+mov r11,[r12]
+sub r12,8
+cmp r11,0
+je if_else_27
+if_27:
+call F_FILL_BUFFER
+
+mov r11,input_buffer_len
 add r12,8
 mov [r12],r11
 
-mov r11,col
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,0
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+cmp rcx,r11
+setz r11B
+movzx r11,r11B
+add r12,8
+mov [r12],r11
+mov r11,[r12]
+sub r12,8
+cmp r11,0
+je if_else_28
+if_28:
+ret
+jmp if_then_28
+if_else_28:
+call SKIP_TO_NEWLINE
+
+ret
+if_then_28:
+if_else_27:
+if_then_27:
+mov r11,input_buffer_curr
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov rcx,0
+mov cl,[r11]
+add r12,8
+mov [r12],rcx
+
+mov r11,next_col
+add r12,8
+mov [r12],r11
+
+mov r11,next_col
 add r12,8
 mov [r12],r11
 
@@ -2493,6 +3226,20 @@ sub r12,8
 mov r11,[r12]
 sub r12,8
 mov [r11],rcx
+mov r11,input_buffer_curr
+add r12,8
+mov [r12],r11
+
+mov r11,input_buffer_curr
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
 mov r11,1
 add r12,8
 mov [r12],r11
@@ -2509,8 +3256,18 @@ mov rcx,[r12]
 sub r12,8
 mov r11,[r12]
 sub r12,8
+mov [r11],rcx
+mov r11,input_buffer_len
 add r12,8
-mov [r12],rcx
+mov [r12],r11
+
+mov r11,input_buffer_len
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
 add r12,8
 mov [r12],r11
 
@@ -2526,23 +3283,40 @@ sub r11,rcx
 add r12,8
 mov [r12],r11
 
-call SKIP_TO_WHITESPACE
-
-mov r11,1
-add r12,8
-mov [r12],r11
-
-mov r11,[r12]
-sub r12,8
 mov rcx,[r12]
 sub r12,8
-add r11,rcx
+mov r11,[r12]
+sub r12,8
+mov [r11],rcx
+mov r11,10
 add r12,8
 mov [r12],r11
 
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+cmp rcx,r11
+setnz r11B
+movzx r11,r11B
+add r12,8
+mov [r12],r11
+mov r11,[r12]
+sub r12,8
+cmp r11,0
+je if_else_29
+if_29:
+call SKIP_TO_NEWLINE
+
+if_else_29:
+if_then_29:
 ret
 GRAB_TOKEN:
-mov r11,input_buffer_curr
+mov r11,line
+add r12,8
+mov [r12],r11
+
+mov r11,next_line
 add r12,8
 mov [r12],r11
 
@@ -2552,7 +3326,16 @@ mov r11,[r11]
 add r12,8
 mov [r12],r11
 
-mov r11,input_buffer_len
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+mov [r11],rcx
+mov r11,col
+add r12,8
+mov [r12],r11
+
+mov r11,next_col
 add r12,8
 mov [r12],r11
 
@@ -2562,46 +3345,37 @@ mov r11,[r11]
 add r12,8
 mov [r12],r11
 
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+mov [r11],rcx
+mov r11,token_len
+add r12,8
+mov [r12],r11
+
+mov r11,0
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+mov [r11],rcx
 call SKIP_WHITESPACE
 
-mov r11,[r12]
-sub r12,8
-add r12,8
-mov [r12],r11
-add r12,8
-mov [r12],r11
-mov r11,input_buffer_len
+mov r11,next_line
 add r12,8
 mov [r12],r11
 
-mov r11,input_buffer_len
+mov r11,line
 add r12,8
 mov [r12],r11
 
 mov r11,[r12]
 sub r12,8
 mov r11,[r11]
-add r12,8
-mov [r12],r11
-
-mov rcx,[r12]
-sub r12,8
-mov r11,[r12]
-sub r12,8
-mov rdi,[r12]
-sub r12,8
-add r12,8
-mov [r12],r11
-add r12,8
-mov [r12],rcx
-add r12,8
-mov [r12],rdi
-
-mov rcx,[r12]
-sub r12,8
-mov r11,[r12]
-sub r12,8
-sub r11,rcx
 add r12,8
 mov [r12],r11
 
@@ -2610,11 +3384,11 @@ sub r12,8
 mov r11,[r12]
 sub r12,8
 mov [r11],rcx
-mov r11,input_buffer_curr
+mov r11,next_col
 add r12,8
 mov [r12],r11
 
-mov r11,input_buffer_curr
+mov r11,col
 add r12,8
 mov [r12],r11
 
@@ -2628,14 +3402,116 @@ mov rcx,[r12]
 sub r12,8
 mov r11,[r12]
 sub r12,8
-mov rdi,[r12]
-sub r12,8
+mov [r11],rcx
+mov r11,input_buffer_len
 add r12,8
 mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,0
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+cmp rcx,r11
+setz r11B
+movzx r11,r11B
+add r12,8
+mov [r12],r11
+mov r11,[r12]
+sub r12,8
+cmp r11,0
+je if_else_30
+if_30:
+ret
+if_else_30:
+if_then_30:
+mov r11,input_buffer_curr
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov rcx,0
+mov cl,[r11]
 add r12,8
 mov [r12],rcx
+
+mov r11,34
 add r12,8
-mov [r12],rdi
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+cmp rcx,r11
+setz r11B
+movzx r11,r11B
+add r12,8
+mov [r12],r11
+mov r11,[r12]
+sub r12,8
+cmp r11,0
+je if_else_31
+if_31:
+mov r11,token
+add r12,8
+mov [r12],r11
+
+mov r11,34
+add r12,8
+mov [r12],r11
+
+mov r8,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+mov byte [r11],r8B
+mov r11,token_len
+add r12,8
+mov [r12],r11
+
+mov r11,1
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+mov [r11],rcx
+mov r11,next_col
+add r12,8
+mov [r12],r11
+
+mov r11,next_col
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,1
+add r12,8
+mov [r12],r11
 
 mov r11,[r12]
 sub r12,8
@@ -2654,12 +3530,6 @@ mov r11,input_buffer_curr
 add r12,8
 mov [r12],r11
 
-mov r11,[r12]
-sub r12,8
-mov r11,[r11]
-add r12,8
-mov [r12],r11
-
 mov r11,input_buffer_curr
 add r12,8
 mov [r12],r11
@@ -2670,96 +3540,9 @@ mov r11,[r11]
 add r12,8
 mov [r12],r11
 
-mov r11,input_buffer_len
+mov r11,1
 add r12,8
 mov [r12],r11
-
-mov r11,[r12]
-sub r12,8
-mov r11,[r11]
-add r12,8
-mov [r12],r11
-
-call SKIP_TO_WHITESPACE
-
-mov r11,[r12]
-sub r12,8
-add r12,8
-mov [r12],r11
-add r12,8
-mov [r12],r11
-mov r11,[r12]
-sub r12,8
-add r12,8
-mov [r12],r11
-add r12,8
-mov [r12],r11
-mov r11,input_buffer_len
-add r12,8
-mov [r12],r11
-
-mov r11,input_buffer_len
-add r12,8
-mov [r12],r11
-
-mov r11,[r12]
-sub r12,8
-mov r11,[r11]
-add r12,8
-mov [r12],r11
-
-mov rcx,[r12]
-sub r12,8
-mov r11,[r12]
-sub r12,8
-mov rdi,[r12]
-sub r12,8
-add r12,8
-mov [r12],r11
-add r12,8
-mov [r12],rcx
-add r12,8
-mov [r12],rdi
-
-mov rcx,[r12]
-sub r12,8
-mov r11,[r12]
-sub r12,8
-sub r11,rcx
-add r12,8
-mov [r12],r11
-
-mov rcx,[r12]
-sub r12,8
-mov r11,[r12]
-sub r12,8
-mov [r11],rcx
-mov r11,input_buffer_curr
-add r12,8
-mov [r12],r11
-
-mov r11,input_buffer_curr
-add r12,8
-mov [r12],r11
-
-mov r11,[r12]
-sub r12,8
-mov r11,[r11]
-add r12,8
-mov [r12],r11
-
-mov rcx,[r12]
-sub r12,8
-mov r11,[r12]
-sub r12,8
-mov rdi,[r12]
-sub r12,8
-add r12,8
-mov [r12],r11
-add r12,8
-mov [r12],rcx
-add r12,8
-mov [r12],rdi
 
 mov r11,[r12]
 sub r12,8
@@ -2774,12 +3557,123 @@ sub r12,8
 mov r11,[r12]
 sub r12,8
 mov [r11],rcx
+mov r11,input_buffer_len
+add r12,8
+mov [r12],r11
+
+mov r11,input_buffer_len
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,1
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+sub r11,rcx
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+mov [r11],rcx
+call COPY_TOKEN_TO_QUOTE
+
+jmp if_then_31
+if_else_31:
+call COPY_TOKEN_TO_WHITESPACE
+
+if_then_31:
+mov r11,token
+add r12,8
+mov [r12],r11
+
+mov r11,token_len
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,string_11
+add r12,8
+mov [r12],r11
+mov r11,2
+add r12,8
+mov [r12],r11
+
+call STRNCMP
+
+mov r11,1
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+cmp rcx,r11
+setz r11B
+movzx r11,r11B
+add r12,8
+mov [r12],r11
+mov r11,[r12]
+sub r12,8
+cmp r11,0
+je if_else_32
+if_32:
+call SKIP_TO_NEWLINE
+
+call GRAB_TOKEN
+
+jmp if_then_32
+if_else_32:
+mov r11,token
+add r12,8
+mov [r12],r11
+
+mov r11,token_len
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+if_then_32:
 ret
 PASS_1:
+mov r11,string_26
+add r12,8
+mov [r12],r11
+mov r11,13
+add r12,8
+mov [r12],r11
+
+call F_WRITELN
+
 ret
 PASS_2:
 ret
 PASS_3:
 ret
 PASS_4:
+ret
+PASS_5:
 ret

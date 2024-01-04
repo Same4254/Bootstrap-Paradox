@@ -270,8 +270,14 @@ VARIABLE output_buffer_length
 
 output_buffer_cap 1024 !
 
+MEM      token 1024
+VARIABLE token_len
+
 VARIABLE line
 VARIABLE col
+
+VARIABLE next_line
+VARIABLE next_col
 
 MEM      scope_stack 1024
 VARIABLE scope_stack_len
@@ -289,7 +295,7 @@ newline 10 !
 FUNC SP_REG "r12" RET
 
 FUNC F_FLUSH ( )
-    output_buffer_length @ .
+    ( output_buffer_length @ . )
     output_file @ output_buffer output_buffer_length @
     SYS_WRITE
     output_buffer_length 0 !
@@ -335,14 +341,25 @@ FUNC F_OUTPUT_TEMPLATE
     F_FLUSH
 RET
 
-FUNC SKIP_WHITESPACE ( str len -> bytes_read )
-    DUP 0 = IF
-        SWAP DROP
-        RET
+FUNC F_FILL_BUFFER ( )
+    input_file @ input_buffer 1024 SYS_READ
+    input_buffer_len SWAP !
+    input_buffer_curr input_buffer !
+RET
+
+FUNC SKIP_WHITESPACE ( )
+    input_buffer_len @ 0 = IF
+        F_FILL_BUFFER
+
+        input_buffer_len @ 0 = IF
+            RET
+        ELSE 
+            SKIP_WHITESPACE
+            RET
+        THEN
     THEN
 
-    SWAP
-    DUP @b
+    input_buffer_curr @ @b
     DUP 10 = IF
         DROP
 
@@ -355,63 +372,151 @@ FUNC SKIP_WHITESPACE ( str len -> bytes_read )
             ( next column )
             col col @ 1 + !
         ELSE
+            ( non white-space character )
             DROP 
 
-            ( non white-space character )
-            DROP DROP
-            0
             RET
         THEN
     THEN
 
-    1 + SWAP 1 -
+    input_buffer_curr input_buffer_curr @ 1 + !
+    input_buffer_len input_buffer_len @ 1 - !
+
     SKIP_WHITESPACE
-    1 +
 RET
 
-FUNC SKIP_TO_WHITESPACE ( str len -> bytes_read )
-    DUP 0 = IF
-        SWAP DROP
-        RET
+( copy literal token to the end quote. Error if there is a newline )
+FUNC COPY_TOKEN_TO_QUOTE ( )
+    input_buffer_len @ 0 = IF
+        F_FILL_BUFFER
+
+        input_buffer_len @ 0 = IF
+            RET
+        ELSE 
+            COPY_TOKEN_TO_QUOTE
+            RET
+        THEN
     THEN
 
-    SWAP
-    DUP @b
+    input_buffer_curr @ @b
+    DUP 10 = IF
+        DROP
+
+        "[Error. Line: " TYPE
+
+        line @ INT_TO_STRING TYPE
+        "Col: " TYPE
+        next_col @ INT_TO_STRING TYPE
+
+        "]: Cannot have newline break in string literal" TYPE CR
+        SYS_EXIT
+    THEN
+
+    DUP
+
+    token token_len @ + SWAP !b
+    token_len token_len @ 1 + !
+
+    next_col next_col @ 1 + !
+    input_buffer_curr input_buffer_curr @ 1 + !
+    input_buffer_len input_buffer_len @ 1 - !
+
+    34 != IF
+        COPY_TOKEN_TO_QUOTE
+    THEN
+RET
+
+FUNC COPY_TOKEN_TO_WHITESPACE ( )
+    input_buffer_len @ 0 = IF
+        F_FILL_BUFFER
+
+        input_buffer_len @ 0 = IF
+            RET
+        ELSE
+            COPY_TOKEN_TO_WHITESPACE
+            RET
+        THEN
+    THEN
+
+    input_buffer_curr @ @b
+    DUP 
     DUP 10 = SWAP 32 = OR IF
-        DROP DROP 0 
+        DROP
         RET
     THEN
 
-    col col @ 1 + !
+    token token_len @ + SWAP !b
+    token_len token_len @ 1 + !
 
-    1 + SWAP 1 -
-    SKIP_TO_WHITESPACE
-    1 +
+    next_col next_col @ 1 + !
+    input_buffer_curr input_buffer_curr @ 1 + !
+    input_buffer_len input_buffer_len @ 1 - !
+
+    COPY_TOKEN_TO_WHITESPACE
 RET
-    
+
+FUNC SKIP_TO_NEWLINE ( )
+    input_buffer_len @ 0 = IF
+        F_FILL_BUFFER
+
+        input_buffer_len @ 0 = IF
+            RET
+        ELSE
+            SKIP_TO_NEWLINE
+            RET
+        THEN
+    THEN
+
+    input_buffer_curr @ @b
+
+    next_col next_col @ 1 + !
+    input_buffer_curr input_buffer_curr @ 1 + !
+    input_buffer_len input_buffer_len @ 1 - !
+
+    10 != IF
+        SKIP_TO_NEWLINE
+    THEN
+RET
+
 FUNC GRAB_TOKEN ( -> str len )
-    input_buffer_curr @
-    input_buffer_len @
+    ( store the next line/col so it can be set here )
+    ( line/col refers to the *start* of the token )
+    line next_line @ !
+    col next_col @ !
+
+    token_len 0 !
 
     SKIP_WHITESPACE
-    
-    DUP
 
-    input_buffer_len input_buffer_len @ ROT - !
-    input_buffer_curr input_buffer_curr @ ROT + !
+    next_line line @ !
+    next_col col @ !
 
-    input_buffer_curr @
+    input_buffer_len @ 0 = IF
+        RET
+    THEN
 
-    input_buffer_curr @
-    input_buffer_len @
+    input_buffer_curr @ @b
+    34 = IF
+        token 34 !b
+        token_len 1 !
+        next_col next_col @ 1 + !
 
-    SKIP_TO_WHITESPACE
+        input_buffer_curr input_buffer_curr @ 1 + !
+        input_buffer_len input_buffer_len @ 1 - !
 
-    DUP
-    DUP
+        COPY_TOKEN_TO_QUOTE
+    ELSE
+        COPY_TOKEN_TO_WHITESPACE
+    THEN
 
-    input_buffer_len input_buffer_len @ ROT - !
-    input_buffer_curr input_buffer_curr @ ROT + !
+    ( check if the token is a comment )
+    token token_len @ "//" STRNCMP 1 = IF
+        SKIP_TO_NEWLINE
+        GRAB_TOKEN
+    ELSE
+        token
+        token_len @
+    THEN
 RET
 
 ( open the file )
@@ -421,11 +526,43 @@ output_file SWAP !
 "input-forth.forth" DROP 0 0 SYS_OPEN
 input_file SWAP !
 
-F_OUTPUT_TEMPLATE
+( F_OUTPUT_TEMPLATE )
 
 ( read the input file )
-input_file @ input_buffer 1024 SYS_READ
-input_buffer_len SWAP !
+
+F_FILL_BUFFER
+( input_file @ input_buffer 1024 SYS_READ )
+( input_buffer_len SWAP ! )
+
+GRAB_TOKEN TYPE CR
+"Line : " TYPE line @ . 
+"Col: " TYPE col @ .
+CR
+
+GRAB_TOKEN TYPE CR
+"Line : " TYPE line @ . 
+"Col: " TYPE col @ .
+CR
+
+GRAB_TOKEN TYPE CR
+"Line : " TYPE line @ . 
+"Col: " TYPE col @ .
+CR
+
+GRAB_TOKEN TYPE CR
+"Line : " TYPE line @ . 
+"Col: " TYPE col @ .
+CR
+
+GRAB_TOKEN TYPE CR
+"Line : " TYPE line @ . 
+"Col: " TYPE col @ .
+CR
+
+GRAB_TOKEN TYPE CR
+"Line : " TYPE line @ . 
+"Col: " TYPE col @ .
+CR
 
 ( get string literals, variable names )
 FUNC PASS_1 

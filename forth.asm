@@ -1,6 +1,6 @@
 section .bss
     ; buffer for reading the input forth file
-    read_buff resb 10240
+    read_buff resb 80240
 
     ; used to build name strings
     ; usually append a number to the name
@@ -66,6 +66,7 @@ section .data
     one_str db "1"
     two_str db "2"
     three_str db "3"
+    sixty_str db "60"
 
     ;;; FORTH function strings/keywords
     ; these are functions that are moreso macros to a native call
@@ -96,7 +97,7 @@ section .data
     SYS_WRITE_str db "SYS_WRITE"
     SYS_OPEN_str  db "SYS_OPEN"
     SYS_CLOSE_str db "SYS_CLOSE"
-
+    SYS_EXIT_str  db "SYS_EXIT"
 
     FETCH_str db "@"
     FETCH_BYTE_str db "@b"
@@ -1588,6 +1589,15 @@ parse:
     call str_ncmp
     cmp rax, 1
     je parse_func_call_sys_close
+
+    ; check if the function being called is SYS_EXIT
+    mov rdi, [rsp + 8]
+    mov rsi, [rsp]
+    mov rdx, SYS_EXIT_str
+    mov rcx, 8
+    call str_ncmp
+    cmp rax, 1
+    je parse_func_call_sys_exit
 
     ;;; NO MORE BUILT IN KEYWORDS FROM HERE
 
@@ -3324,6 +3334,31 @@ parse_func_call_sys_close:
     mov rsi, rax_str
     mov rdx, 3
     call write_forth_stack_push_to_file
+
+    mov rdi, r14
+    call write_newline_to_file
+
+    jmp parse_builtin_func_call_end
+
+parse_func_call_sys_exit:
+    mov rdi, r14
+    mov rsi, rax_str
+    mov rdx, 3
+    mov rcx, sixty_str
+    mov r8 , 2
+    call write_mov_to_file
+
+    mov rdi, r14
+    mov rsi, rdi_str
+    mov rdx, 3
+    mov rcx, zero_str
+    mov r8 , 1
+    call write_mov_to_file
+
+    mov rdi, r14
+    mov rsi, syscall_str
+    mov rdx, 7
+    call write_str_to_file
 
     mov rdi, r14
     call write_newline_to_file
