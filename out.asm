@@ -51,7 +51,480 @@ sub r12,8
 mov r11,[r12]
 sub r12,8
 mov [r11],rcx
+call TOKEN_ADD
+
+mov r11,string_1
+add r12,8
+mov [r12],r11
+mov r11,1
+add r12,8
+mov [r12],r11
+
+call PUSH_TOKEN_NAME
+
+call TOKEN_SUB
+
+mov r11,string_2
+add r12,8
+mov [r12],r11
+mov r11,1
+add r12,8
+mov [r12],r11
+
+call PUSH_TOKEN_NAME
+
+call TOKEN_MUL
+
+mov r11,string_3
+add r12,8
+mov [r12],r11
+mov r11,1
+add r12,8
+mov [r12],r11
+
+call PUSH_TOKEN_NAME
+
+call TOKEN_DIV
+
+mov r11,string_4
+add r12,8
+mov [r12],r11
+mov r11,1
+add r12,8
+mov [r12],r11
+
+call PUSH_TOKEN_NAME
+
+call TOKEN_MOD
+
+mov r11,string_5
+add r12,8
+mov [r12],r11
+mov r11,1
+add r12,8
+mov [r12],r11
+
+call PUSH_TOKEN_NAME
+
+call TOKEN_PRINT_INT
+
+mov r11,string_6
+add r12,8
+mov [r12],r11
+mov r11,1
+add r12,8
+mov [r12],r11
+
+call PUSH_TOKEN_NAME
+
+call TOKEN_TYPE
+
+mov r11,string_7
+add r12,8
+mov [r12],r11
+mov r11,4
+add r12,8
+mov [r12],r11
+
+call PUSH_TOKEN_NAME
+
+call TOKEN_CR
+
+mov r11,string_8
+add r12,8
+mov [r12],r11
+mov r11,2
+add r12,8
+mov [r12],r11
+
+call PUSH_TOKEN_NAME
+
+call TOKEN_STACK_LEN
+
+mov r11,string_9
+add r12,8
+mov [r12],r11
+mov r11,9
+add r12,8
+mov [r12],r11
+
+call PUSH_TOKEN_NAME
+
+call TOKEN_DUP
+
+mov r11,string_10
+add r12,8
+mov [r12],r11
+mov r11,3
+add r12,8
+mov [r12],r11
+
+call PUSH_TOKEN_NAME
+
+call TOKEN_2DUP
+
+mov r11,string_11
+add r12,8
+mov [r12],r11
+mov r11,4
+add r12,8
+mov [r12],r11
+
+call PUSH_TOKEN_NAME
+
+call TOKEN_SWAP
+
 mov r11,string_12
+add r12,8
+mov [r12],r11
+mov r11,4
+add r12,8
+mov [r12],r11
+
+call PUSH_TOKEN_NAME
+
+call TOKEN_2SWAP
+
+mov r11,string_13
+add r12,8
+mov [r12],r11
+mov r11,5
+add r12,8
+mov [r12],r11
+
+call PUSH_TOKEN_NAME
+
+call TOKEN_DROP
+
+mov r11,string_14
+add r12,8
+mov [r12],r11
+mov r11,4
+add r12,8
+mov [r12],r11
+
+call PUSH_TOKEN_NAME
+
+call TOKEN_2DROP
+
+mov r11,string_15
+add r12,8
+mov [r12],r11
+mov r11,5
+add r12,8
+mov [r12],r11
+
+call PUSH_TOKEN_NAME
+
+call TOKEN_OVER
+
+mov r11,string_16
+add r12,8
+mov [r12],r11
+mov r11,4
+add r12,8
+mov [r12],r11
+
+call PUSH_TOKEN_NAME
+
+call TOKEN_ROT
+
+mov r11,string_17
+add r12,8
+mov [r12],r11
+mov r11,3
+add r12,8
+mov [r12],r11
+
+call PUSH_TOKEN_NAME
+
+call TOKEN_IS_EQUAL
+
+mov r11,string_18
+add r12,8
+mov [r12],r11
+mov r11,2
+add r12,8
+mov [r12],r11
+
+call PUSH_TOKEN_NAME
+
+call TOKEN_NOT_EQUAL
+
+mov r11,string_19
+add r12,8
+mov [r12],r11
+mov r11,2
+add r12,8
+mov [r12],r11
+
+call PUSH_TOKEN_NAME
+
+call TOKEN_GREATER
+
+mov r11,string_20
+add r12,8
+mov [r12],r11
+mov r11,1
+add r12,8
+mov [r12],r11
+
+call PUSH_TOKEN_NAME
+
+call TOKEN_GREATER_EQ
+
+mov r11,string_21
+add r12,8
+mov [r12],r11
+mov r11,2
+add r12,8
+mov [r12],r11
+
+call PUSH_TOKEN_NAME
+
+call TOKEN_LESS
+
+mov r11,string_22
+add r12,8
+mov [r12],r11
+mov r11,1
+add r12,8
+mov [r12],r11
+
+call PUSH_TOKEN_NAME
+
+call TOKEN_LESS_EQ
+
+mov r11,string_23
+add r12,8
+mov [r12],r11
+mov r11,2
+add r12,8
+mov [r12],r11
+
+call PUSH_TOKEN_NAME
+
+call TOKEN_AND
+
+mov r11,string_24
+add r12,8
+mov [r12],r11
+mov r11,3
+add r12,8
+mov [r12],r11
+
+call PUSH_TOKEN_NAME
+
+call TOKEN_NOT
+
+mov r11,string_25
+add r12,8
+mov [r12],r11
+mov r11,3
+add r12,8
+mov [r12],r11
+
+call PUSH_TOKEN_NAME
+
+call TOKEN_OR
+
+mov r11,string_26
+add r12,8
+mov [r12],r11
+mov r11,2
+add r12,8
+mov [r12],r11
+
+call PUSH_TOKEN_NAME
+
+call TOKEN_XOR
+
+mov r11,string_27
+add r12,8
+mov [r12],r11
+mov r11,3
+add r12,8
+mov [r12],r11
+
+call PUSH_TOKEN_NAME
+
+call TOKEN_IF
+
+mov r11,string_28
+add r12,8
+mov [r12],r11
+mov r11,2
+add r12,8
+mov [r12],r11
+
+call PUSH_TOKEN_NAME
+
+call TOKEN_ELSE
+
+mov r11,string_29
+add r12,8
+mov [r12],r11
+mov r11,4
+add r12,8
+mov [r12],r11
+
+call PUSH_TOKEN_NAME
+
+call TOKEN_THEN
+
+mov r11,string_30
+add r12,8
+mov [r12],r11
+mov r11,4
+add r12,8
+mov [r12],r11
+
+call PUSH_TOKEN_NAME
+
+call TOKEN_VARIABLE_DECL
+
+mov r11,string_31
+add r12,8
+mov [r12],r11
+mov r11,8
+add r12,8
+mov [r12],r11
+
+call PUSH_TOKEN_NAME
+
+call TOKEN_MEM_DECL
+
+mov r11,string_32
+add r12,8
+mov [r12],r11
+mov r11,3
+add r12,8
+mov [r12],r11
+
+call PUSH_TOKEN_NAME
+
+call TOKEN_FETCH
+
+mov r11,string_33
+add r12,8
+mov [r12],r11
+mov r11,1
+add r12,8
+mov [r12],r11
+
+call PUSH_TOKEN_NAME
+
+call TOKEN_FETCH_B
+
+mov r11,string_34
+add r12,8
+mov [r12],r11
+mov r11,2
+add r12,8
+mov [r12],r11
+
+call PUSH_TOKEN_NAME
+
+call TOKEN_STORE
+
+mov r11,string_35
+add r12,8
+mov [r12],r11
+mov r11,1
+add r12,8
+mov [r12],r11
+
+call PUSH_TOKEN_NAME
+
+call TOKEN_STORE_B
+
+mov r11,string_36
+add r12,8
+mov [r12],r11
+mov r11,2
+add r12,8
+mov [r12],r11
+
+call PUSH_TOKEN_NAME
+
+call TOKEN_FUNC_DECL
+
+mov r11,string_37
+add r12,8
+mov [r12],r11
+mov r11,4
+add r12,8
+mov [r12],r11
+
+call PUSH_TOKEN_NAME
+
+call TOKEN_RET
+
+mov r11,string_38
+add r12,8
+mov [r12],r11
+mov r11,3
+add r12,8
+mov [r12],r11
+
+call PUSH_TOKEN_NAME
+
+call TOKEN_SYS_READ
+
+mov r11,string_39
+add r12,8
+mov [r12],r11
+mov r11,8
+add r12,8
+mov [r12],r11
+
+call PUSH_TOKEN_NAME
+
+call TOKEN_SYS_WRITE
+
+mov r11,string_40
+add r12,8
+mov [r12],r11
+mov r11,9
+add r12,8
+mov [r12],r11
+
+call PUSH_TOKEN_NAME
+
+call TOKEN_SYS_OPEN
+
+mov r11,string_41
+add r12,8
+mov [r12],r11
+mov r11,8
+add r12,8
+mov [r12],r11
+
+call PUSH_TOKEN_NAME
+
+call TOKEN_SYS_CLOSE
+
+mov r11,string_42
+add r12,8
+mov [r12],r11
+mov r11,9
+add r12,8
+mov [r12],r11
+
+call PUSH_TOKEN_NAME
+
+call TOKEN_SYS_EXIT
+
+mov r11,string_43
+add r12,8
+mov [r12],r11
+mov r11,8
+add r12,8
+mov [r12],r11
+
+call PUSH_TOKEN_NAME
+
+mov r11,string_56
 add r12,8
 mov [r12],r11
 mov r11,16
@@ -97,7 +570,7 @@ sub r12,8
 mov r11,[r12]
 sub r12,8
 mov [r11],rcx
-mov r11,string_13
+mov r11,string_57
 add r12,8
 mov [r12],r11
 mov r11,17
@@ -145,425 +618,9 @@ sub r12,8
 mov [r11],rcx
 call F_FILL_BUFFER
 
-call GRAB_TOKEN
+call PASS_1
 
-mov rsi,[r12]
-sub r12,8
-mov rdi,[r12]
-sub r12,8
-call print
-
-call print_newline
-
-mov r11,string_14
-add r12,8
-mov [r12],r11
-mov r11,7
-add r12,8
-mov [r12],r11
-
-mov rsi,[r12]
-sub r12,8
-mov rdi,[r12]
-sub r12,8
-call print
-
-mov r11,line
-add r12,8
-mov [r12],r11
-
-mov r11,[r12]
-sub r12,8
-mov r11,[r11]
-add r12,8
-mov [r12],r11
-
-mov rdi,[r12]
-sub r12,8
-call print_int
-
-call print_newline
-
-mov r11,string_15
-add r12,8
-mov [r12],r11
-mov r11,5
-add r12,8
-mov [r12],r11
-
-mov rsi,[r12]
-sub r12,8
-mov rdi,[r12]
-sub r12,8
-call print
-
-mov r11,col
-add r12,8
-mov [r12],r11
-
-mov r11,[r12]
-sub r12,8
-mov r11,[r11]
-add r12,8
-mov [r12],r11
-
-mov rdi,[r12]
-sub r12,8
-call print_int
-
-call print_newline
-
-call print_newline
-
-call GRAB_TOKEN
-
-mov rsi,[r12]
-sub r12,8
-mov rdi,[r12]
-sub r12,8
-call print
-
-call print_newline
-
-mov r11,string_16
-add r12,8
-mov [r12],r11
-mov r11,7
-add r12,8
-mov [r12],r11
-
-mov rsi,[r12]
-sub r12,8
-mov rdi,[r12]
-sub r12,8
-call print
-
-mov r11,line
-add r12,8
-mov [r12],r11
-
-mov r11,[r12]
-sub r12,8
-mov r11,[r11]
-add r12,8
-mov [r12],r11
-
-mov rdi,[r12]
-sub r12,8
-call print_int
-
-call print_newline
-
-mov r11,string_17
-add r12,8
-mov [r12],r11
-mov r11,5
-add r12,8
-mov [r12],r11
-
-mov rsi,[r12]
-sub r12,8
-mov rdi,[r12]
-sub r12,8
-call print
-
-mov r11,col
-add r12,8
-mov [r12],r11
-
-mov r11,[r12]
-sub r12,8
-mov r11,[r11]
-add r12,8
-mov [r12],r11
-
-mov rdi,[r12]
-sub r12,8
-call print_int
-
-call print_newline
-
-call print_newline
-
-call GRAB_TOKEN
-
-mov rsi,[r12]
-sub r12,8
-mov rdi,[r12]
-sub r12,8
-call print
-
-call print_newline
-
-mov r11,string_18
-add r12,8
-mov [r12],r11
-mov r11,7
-add r12,8
-mov [r12],r11
-
-mov rsi,[r12]
-sub r12,8
-mov rdi,[r12]
-sub r12,8
-call print
-
-mov r11,line
-add r12,8
-mov [r12],r11
-
-mov r11,[r12]
-sub r12,8
-mov r11,[r11]
-add r12,8
-mov [r12],r11
-
-mov rdi,[r12]
-sub r12,8
-call print_int
-
-call print_newline
-
-mov r11,string_19
-add r12,8
-mov [r12],r11
-mov r11,5
-add r12,8
-mov [r12],r11
-
-mov rsi,[r12]
-sub r12,8
-mov rdi,[r12]
-sub r12,8
-call print
-
-mov r11,col
-add r12,8
-mov [r12],r11
-
-mov r11,[r12]
-sub r12,8
-mov r11,[r11]
-add r12,8
-mov [r12],r11
-
-mov rdi,[r12]
-sub r12,8
-call print_int
-
-call print_newline
-
-call print_newline
-
-call GRAB_TOKEN
-
-mov rsi,[r12]
-sub r12,8
-mov rdi,[r12]
-sub r12,8
-call print
-
-call print_newline
-
-mov r11,string_20
-add r12,8
-mov [r12],r11
-mov r11,7
-add r12,8
-mov [r12],r11
-
-mov rsi,[r12]
-sub r12,8
-mov rdi,[r12]
-sub r12,8
-call print
-
-mov r11,line
-add r12,8
-mov [r12],r11
-
-mov r11,[r12]
-sub r12,8
-mov r11,[r11]
-add r12,8
-mov [r12],r11
-
-mov rdi,[r12]
-sub r12,8
-call print_int
-
-call print_newline
-
-mov r11,string_21
-add r12,8
-mov [r12],r11
-mov r11,5
-add r12,8
-mov [r12],r11
-
-mov rsi,[r12]
-sub r12,8
-mov rdi,[r12]
-sub r12,8
-call print
-
-mov r11,col
-add r12,8
-mov [r12],r11
-
-mov r11,[r12]
-sub r12,8
-mov r11,[r11]
-add r12,8
-mov [r12],r11
-
-mov rdi,[r12]
-sub r12,8
-call print_int
-
-call print_newline
-
-call print_newline
-
-call GRAB_TOKEN
-
-mov rsi,[r12]
-sub r12,8
-mov rdi,[r12]
-sub r12,8
-call print
-
-call print_newline
-
-mov r11,string_22
-add r12,8
-mov [r12],r11
-mov r11,7
-add r12,8
-mov [r12],r11
-
-mov rsi,[r12]
-sub r12,8
-mov rdi,[r12]
-sub r12,8
-call print
-
-mov r11,line
-add r12,8
-mov [r12],r11
-
-mov r11,[r12]
-sub r12,8
-mov r11,[r11]
-add r12,8
-mov [r12],r11
-
-mov rdi,[r12]
-sub r12,8
-call print_int
-
-call print_newline
-
-mov r11,string_23
-add r12,8
-mov [r12],r11
-mov r11,5
-add r12,8
-mov [r12],r11
-
-mov rsi,[r12]
-sub r12,8
-mov rdi,[r12]
-sub r12,8
-call print
-
-mov r11,col
-add r12,8
-mov [r12],r11
-
-mov r11,[r12]
-sub r12,8
-mov r11,[r11]
-add r12,8
-mov [r12],r11
-
-mov rdi,[r12]
-sub r12,8
-call print_int
-
-call print_newline
-
-call print_newline
-
-call GRAB_TOKEN
-
-mov rsi,[r12]
-sub r12,8
-mov rdi,[r12]
-sub r12,8
-call print
-
-call print_newline
-
-mov r11,string_24
-add r12,8
-mov [r12],r11
-mov r11,7
-add r12,8
-mov [r12],r11
-
-mov rsi,[r12]
-sub r12,8
-mov rdi,[r12]
-sub r12,8
-call print
-
-mov r11,line
-add r12,8
-mov [r12],r11
-
-mov r11,[r12]
-sub r12,8
-mov r11,[r11]
-add r12,8
-mov [r12],r11
-
-mov rdi,[r12]
-sub r12,8
-call print_int
-
-call print_newline
-
-mov r11,string_25
-add r12,8
-mov [r12],r11
-mov r11,5
-add r12,8
-mov [r12],r11
-
-mov rsi,[r12]
-sub r12,8
-mov rdi,[r12]
-sub r12,8
-call print
-
-mov r11,col
-add r12,8
-mov [r12],r11
-
-mov r11,[r12]
-sub r12,8
-mov r11,[r11]
-add r12,8
-mov [r12],r11
-
-mov rdi,[r12]
-sub r12,8
-call print_int
-
-call print_newline
-
-call print_newline
+call PRINT_TOKENS
 
 ; exit
 mov rax, 60

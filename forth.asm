@@ -1,6 +1,6 @@
 section .bss
     ; buffer for reading the input forth file
-    read_buff resb 80240
+    read_buff resb 802400
 
     ; used to build name strings
     ; usually append a number to the name
@@ -43,6 +43,9 @@ section .data
     token_usrfunc_call_str db "TOKEN [Usr Call]  : "
     token_literal_str      db "TOKEN [Literal]   : "
     token_int_str          db "TOKEN [Int]       : "
+    token_IF_str           db "TOKEN [IF]        : "
+    token_ELSE_str         db "TOKEN [ELSE]      : "
+    token_THEN_str         db "TOKEN [THEN]      : "
 
     comma_str db ","
     space_str db " "
@@ -981,6 +984,13 @@ write_forth_stack_pop_to_file:
 ;  rax (pointer) -> 0
 ;  rdx (length)  -> 0
 forth_grab_token:
+    ; push rdi
+    ; push rsi
+    ;     mov rsi, 20
+    ;     call print
+    ; pop rsi
+    ; pop rdi
+
     push r12
     push r13
 
@@ -1102,7 +1112,7 @@ _start:
 
     mov rax, 0
     mov rsi, read_buff
-    mov rdx, 10240
+    mov rdx, 802400
     syscall
 
     mov r12, read_buff
@@ -1733,6 +1743,20 @@ parse_if:
     ; where x is the unique id for the scope
     ; the else is also optional
 
+    mov rdi, token_IF_str
+    mov rsi, 20
+    call print
+
+    mov rdi, [if_stack_nextid]
+    mov rsi, int_to_string_buff
+    call int_to_string
+
+    mov rdi, int_to_string_buff
+    mov rsi, rax
+    call print
+
+    call print_newline
+
     ; pop the top value on the stack 
     mov rdi, r14
     mov rsi, r11_str
@@ -1789,6 +1813,21 @@ parse_if:
     jmp parse_loop_end
 
 parse_else:
+    mov rdi, token_ELSE_str
+    mov rsi, 20
+    call print
+
+    mov rdi, [if_stack_nextptr]
+    mov rdi, [rdi - 8]
+    mov rsi, int_to_string_buff
+    call int_to_string
+
+    mov rdi, int_to_string_buff
+    mov rsi, rax
+    call print
+
+    call print_newline
+
     ; just above the "else" section of the code is the "if"
     ; hence, the end of the "if" section must jump to the
     ; "then" section of code
@@ -1827,6 +1866,21 @@ parse_else:
     jmp parse_loop_end
 
 parse_then:
+    mov rdi, token_THEN_str
+    mov rsi, 20
+    call print
+
+    mov rdi, [if_stack_nextptr]
+    mov rdi, [rdi - 8]
+    mov rsi, int_to_string_buff
+    call int_to_string
+
+    mov rdi, int_to_string_buff
+    mov rsi, rax
+    call print
+
+    call print_newline
+
     ; cmp qword [if_elseset], 0
 
     ; set a flag at the high bit of the id to mark there was an else
