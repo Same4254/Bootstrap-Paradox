@@ -4,3 +4,7 @@ VARIABLE var
 VARIABLE blah
 
 MEM block
+
+FUNC function
+
+RET

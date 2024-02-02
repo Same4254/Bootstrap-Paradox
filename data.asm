@@ -83,20 +83,30 @@ string_60 db "] ", 0
 string_61 db "Token: String Literal. String: ", 0
 string_62 db "Token: IMM INT. Value: ", 0
 string_63 db "Token: Variable Decl. Name: ", 0
-string_64 db "Token: ", 0
-string_65 db "Unkown token id: ", 0
-string_66 db "Ran out of space to write string literals", 0
-string_67 db "VARIABLE", 0
-string_68 db "[Error. Line: ", 0
-string_69 db " Col: ", 0
-string_70 db "]: Variable declaration expected a variable name!", 0
+string_64 db "Token: Mem Decl. Name: ", 0
+string_65 db "Token: Func Decl. Name: ", 0
+string_66 db "Token: ", 0
+string_67 db "Unkown token id: ", 0
+string_68 db "Ran out of space to write string literals", 0
+string_69 db "VARIABLE", 0
+string_70 db "MEM", 0
 string_71 db "[Error. Line: ", 0
 string_72 db " Col: ", 0
-string_73 db "]: Variable declaration cannot be a keyword!", 0
-string_74 db "Ran out of memory for variable names!", 0
-string_75 db "MEM", 0
-string_76 db "FUNC", 0
-string_77 db "Unrecognized Token. ", 0
-string_78 db "Line: ", 0
-string_79 db ", Col: ", 0
-string_80 db ". ", 0
+string_73 db "]: Variable declaration expected a variable name!", 0
+string_74 db "[Error. Line: ", 0
+string_75 db " Col: ", 0
+string_76 db "]: Variable declaration cannot be a keyword!", 0
+string_77 db "Ran out of memory for variable names!", 0
+string_78 db "MEM", 0
+string_79 db "FUNC", 0
+string_80 db "[Error. Line: ", 0
+string_81 db " Col: ", 0
+string_82 db "]: Function declaration expected a name!", 0
+string_83 db "[Error. Line: ", 0
+string_84 db " Col: ", 0
+string_85 db "]: Function name cannot be a keyword!", 0
+string_86 db "Ran out of memory for method names!", 0
+string_87 db "Unrecognized Token. ", 0
+string_88 db "Line: ", 0
+string_89 db ", Col: ", 0
+string_90 db ". ", 0

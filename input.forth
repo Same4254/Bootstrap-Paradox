@@ -851,6 +851,30 @@ FUNC PRINT_TOKEN ( ptr -> )
         RET
     THEN
 
+    DUP TOKEN_MEM_DECL = IF
+        DROP
+        "Token: Mem Decl. Name: " TYPE
+        DUP
+        24 + @
+        SWAP
+        32 + @
+
+        TYPE CR
+        RET
+    THEN
+
+    DUP TOKEN_FUNC_DECL = IF
+        DROP
+        "Token: Func Decl. Name: " TYPE
+        DUP
+        24 + @
+        SWAP
+        32 + @
+
+        TYPE CR
+        RET
+    THEN
+
     ( catch-all case )
     DUP FIND_TOKEN_BY_ID DUP 0 != IF
         "Token: " TYPE TYPE CR
@@ -992,9 +1016,19 @@ FUNC PASS_1
     THEN
 
     ( Variable Declaration )
-    2DUP "VARIABLE" STRNCMP IF
-        DROP DROP 
-        TOKEN_VARIABLE_DECL ADD_TOKEN
+
+    ( need to keep track of which is true, but keep common code )
+    2DUP 2DUP "VARIABLE" STRNCMP 
+    ROT ROT   "MEM"      STRNCMP
+    2DUP OR
+    IF
+        IF
+            DROP DROP DROP
+            TOKEN_MEM_DECL ADD_TOKEN
+        ELSE
+            DROP DROP DROP
+            TOKEN_VARIABLE_DECL ADD_TOKEN
+        THEN
 
         GRAB_TOKEN
 
@@ -1038,6 +1072,9 @@ FUNC PASS_1
 
         PASS_1
         RET
+    ELSE
+        ( drop the two flags for the OR )
+        DROP DROP
     THEN
 
     ( Mem Declaration )
@@ -1050,7 +1087,48 @@ FUNC PASS_1
 
     ( Method Declaration )
     2DUP "FUNC" STRNCMP 1 = IF
+        DROP DROP
         TOKEN_FUNC_DECL ADD_TOKEN
+
+        GRAB_TOKEN
+
+        DUP 0 = IF
+            "[Error. Line: " TYPE 
+            int_to_string_buffer line @ INT_TO_STRING TYPE
+
+            " Col: " TYPE
+            int_to_string_buffer col @ INT_TO_STRING TYPE
+            "]: Function declaration expected a name!" TYPE CR
+
+            SYS_EXIT
+        THEN
+
+        2DUP FIND_TOKEN_BY_STR 0 != IF
+            "[Error. Line: " TYPE 
+            int_to_string_buffer line @ INT_TO_STRING TYPE
+
+            " Col: " TYPE
+            int_to_string_buffer col @ INT_TO_STRING TYPE
+            "]: Function name cannot be a keyword!" TYPE CR
+        
+            SYS_EXIT
+        THEN
+
+        ROT DUP
+        24 + method_names method_names_len @ + !
+        32 + OVER !
+
+        DUP 1 + method_names_len @ + 1024 >= IF
+            "Ran out of memory for method names!" TYPE CR
+            SYS_EXIT
+        THEN
+        
+        DUP ROT ROT
+        method_names method_names_len @ + ROT ROT MEMCPY
+
+        method_names_len method_names_len @ ROT + !
+        method_names method_names_len @ + 0 !b
+        method_names_len method_names_len @ 1 + !
 
         PASS_1
         RET
