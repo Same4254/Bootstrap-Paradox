@@ -372,17 +372,17 @@ FUNC TOKEN_MOD            7  RET
 FUNC TOKEN_PRINT_INT      8  RET
 
 FUNC TOKEN_TYPE           9  RET
-FUNC TOKEN_CR             10  RET
+FUNC TOKEN_CR             10 RET
 
-FUNC TOKEN_STACK_LEN      11  RET
-FUNC TOKEN_DUP            12  RET
-FUNC TOKEN_2DUP           13  RET
-FUNC TOKEN_SWAP           14  RET
-FUNC TOKEN_2SWAP          15  RET
-FUNC TOKEN_DROP           16  RET
-FUNC TOKEN_2DROP          17  RET
-FUNC TOKEN_OVER           18  RET
-FUNC TOKEN_ROT            19  RET
+FUNC TOKEN_STACK_LEN      11 RET
+FUNC TOKEN_DUP            12 RET
+FUNC TOKEN_2DUP           13 RET
+FUNC TOKEN_SWAP           14 RET
+FUNC TOKEN_2SWAP          15 RET
+FUNC TOKEN_DROP           16 RET
+FUNC TOKEN_2DROP          17 RET
+FUNC TOKEN_OVER           18 RET
+FUNC TOKEN_ROT            19 RET
 
 FUNC TOKEN_IS_EQUAL       20 RET
 FUNC TOKEN_NOT_EQUAL      21 RET
@@ -400,26 +400,30 @@ FUNC TOKEN_IF             30 RET
 FUNC TOKEN_ELSE           31 RET
 FUNC TOKEN_THEN           32 RET
 
-FUNC TOKEN_VARIABLE_DECL  33 RET
-FUNC TOKEN_MEM_DECL       34 RET
+FUNC TOKEN_WHILE          33 RET
+FUNC TOKEN_DO             34 RET
+FUNC TOKEN_END            35 RET
 
-FUNC TOKEN_VARIABLE_REF   35 RET
-FUNC TOKEN_FETCH          36 RET
-FUNC TOKEN_FETCH_B        37 RET
-FUNC TOKEN_STORE          38 RET
-FUNC TOKEN_STORE_B        39 RET
+FUNC TOKEN_VARIABLE_DECL  36 RET
+FUNC TOKEN_MEM_DECL       37 RET
 
-FUNC TOKEN_FUNC_DECL      40 RET
-FUNC TOKEN_RET            41 RET
-FUNC TOKEN_FUNC_CALL      42 RET
+FUNC TOKEN_VARIABLE_REF   38 RET
+FUNC TOKEN_FETCH          39 RET
+FUNC TOKEN_FETCH_B        40 RET
+FUNC TOKEN_STORE          41 RET
+FUNC TOKEN_STORE_B        42 RET
 
-FUNC TOKEN_SYS_READ       43 RET
-FUNC TOKEN_SYS_WRITE      44 RET
-FUNC TOKEN_SYS_OPEN       45 RET
-FUNC TOKEN_SYS_CLOSE      46 RET
-FUNC TOKEN_SYS_EXIT       47 RET
+FUNC TOKEN_FUNC_DECL      43 RET
+FUNC TOKEN_RET            44 RET
+FUNC TOKEN_FUNC_CALL      45 RET
 
-FUNC TOKEN_UNKOWN_NAME    48 RET
+FUNC TOKEN_SYS_READ       46 RET
+FUNC TOKEN_SYS_WRITE      47 RET
+FUNC TOKEN_SYS_OPEN       48 RET
+FUNC TOKEN_SYS_CLOSE      49 RET
+FUNC TOKEN_SYS_EXIT       50 RET
+
+FUNC TOKEN_UNKOWN_NAME    51 RET
 
 FUNC PUSH_TOKEN_NAME ( token_id str str_len )
     token_id_to_string token_id_to_string_len @ + 16 + SWAP !
@@ -459,6 +463,9 @@ TOKEN_XOR           "XOR"       PUSH_TOKEN_NAME
 TOKEN_IF            "IF"        PUSH_TOKEN_NAME
 TOKEN_ELSE          "ELSE"      PUSH_TOKEN_NAME
 TOKEN_THEN          "THEN"      PUSH_TOKEN_NAME
+TOKEN_WHILE         "WHILE"     PUSH_TOKEN_NAME
+TOKEN_DO            "DO"        PUSH_TOKEN_NAME
+TOKEN_END           "END"       PUSH_TOKEN_NAME
 TOKEN_VARIABLE_DECL "VARIABLE"  PUSH_TOKEN_NAME
 TOKEN_MEM_DECL      "MEM"       PUSH_TOKEN_NAME
 TOKEN_FETCH         "@"         PUSH_TOKEN_NAME
@@ -569,6 +576,134 @@ FUNC ADD_TOKEN ( id -> token_ptr )
 
     ( change the amount of token structs )
     token_struct_len token_struct_len @ TOKEN_STRUCT_SIZE + !
+RET
+
+FUNC CREATE_SCOPE ( -> scope_id )
+    scope_next_id @
+    scope_next_id scope_next_id @ 1 + !
+RET
+
+FUNC PUSH_SCOPE ( scope_id -> )
+    scope_stack_len @ 1024 >= IF
+        "Out of memory to push scope!" TYPE CR
+        SYS_EXIT
+    THEN
+
+    ( store the id )
+    scope_stack scope_stack_len @ + SWAP !
+
+    ( increment length )
+    scope_stack_len scope_stack_len @ 8 + !
+RET
+
+FUNC PUSH_IF_SCOPE ( scope_id -> )
+    if_stack_len @ 1024 >= IF
+        "Out of memory in IF stack" TYPE CR
+        SYS_EXIT
+    THEN
+
+    DUP
+
+    if_stack if_stack_len @ + SWAP !
+    if_stack_len if_stack_len @ 8 + !
+    PUSH_SCOPE
+RET
+
+FUNC PUSH_WHILE_SCOPE ( scope_id -> )
+    while_stack_len @ 1024 >= IF
+        "Out of memory in WHILE stack" TYPE CR
+        SYS_EXIT
+    THEN
+
+    DUP
+
+    while_stack while_stack_len @ + SWAP !
+    while_stack_len while_stack_len @ 8 + !
+    PUSH_SCOPE
+RET
+
+( 
+pop the scope at the top of the stack
+makes sure that the scope belongs to the given IF
+scope and that it is also the top IF scope
+)
+
+FUNC POP_SCOPE ( scope_id -> )
+    scope_stack_len @ 0 = IF
+        "Cannot pop scope stack of length 0" TYPE CR
+        SYS_EXIT
+    THEN
+
+    scope_stack scope_stack_len @ 8 - + @ != IF 
+        "Scope at the top of the stack does not match given scope id" TYPE CR
+        SYS_EXIT
+    THEN
+
+    scope_stack_len scope_stack_len @ 8 - !
+RET
+
+FUNC POP_IF_SCOPE ( scope_id -> )
+    if_stack_len @ 0 = IF
+        "Cannot pop IF stack of length 0" TYPE CR
+        SYS_EXIT
+    THEN
+
+    DUP 
+    if_stack if_stack_len @ 8 - + @ != IF 
+        "IF at the top of the stack does not match given id" TYPE CR
+        SYS_EXIT
+    THEN
+
+    if_stack_len if_stack_len @ 8 - !
+    POP_SCOPE
+RET
+
+FUNC POP_WHILE_SCOPE ( scope_id -> )
+    while_stack_len @ 0 = IF
+        "Cannot pop WHILE stack of length 0" TYPE CR
+        SYS_EXIT
+    THEN
+
+    DUP 
+    while_stack while_stack_len @ 8 - + @ != IF 
+        "WHILE at the top of the stack does not match given id" TYPE CR
+        SYS_EXIT
+    THEN
+
+    while_stack_len while_stack_len @ 8 - !
+    POP_SCOPE
+RET
+
+FUNC IS_TOP_SCOPE_IF ( -> bool )
+    scope_stack_len @ 0 = IF
+        "Cannot check the top of an empty stack" TYPE CR
+        SYS_EXIT
+    THEN
+
+    if_stack_len @ 0 = IF
+        "Cannot check the top of IF stack when empty" TYPE CR
+        SYS_EXIT
+    THEN
+
+    scope_stack scope_stack_len @ 8 - + @
+    if_stack if_stack_len @ 8 - + @
+    =
+RET
+
+FUNC IS_TOP_SCOPE_WHILE ( -> bool )
+    scope_stack_len @ 0 = IF
+        "Cannot check the top of an empty stack" TYPE CR
+        SYS_EXIT
+    THEN
+
+    while_stack_len @ 0 = IF
+        "Cannot check the top of WHILE stack when empty" TYPE CR
+        SYS_EXIT
+    THEN
+
+    scope_stack scope_stack_len @ 8 - + @
+    while_stack while_stack_len @ 8 - + @
+    =
 RET
 
 FUNC F_FLUSH ( )
@@ -839,6 +974,54 @@ FUNC PRINT_TOKEN ( ptr -> )
         RET
     THEN
 
+    DUP TOKEN_IF = IF
+        DROP
+        "Token: IF. ID: " TYPE
+        24 + @ int_to_string_buffer SWAP INT_TO_STRING
+        TYPE CR
+        RET
+    THEN
+
+    DUP TOKEN_ELSE = IF
+        DROP
+        "Token: ELSE. ID: " TYPE
+        24 + @ int_to_string_buffer SWAP INT_TO_STRING
+        TYPE CR
+        RET
+    THEN
+
+    DUP TOKEN_THEN = IF
+        DROP
+        "Token: THEN. ID: " TYPE
+        24 + @ int_to_string_buffer SWAP INT_TO_STRING
+        TYPE CR
+        RET
+    THEN
+
+    DUP TOKEN_WHILE = IF
+        DROP
+        "Token: WHILE. ID: " TYPE
+        24 + @ int_to_string_buffer SWAP INT_TO_STRING
+        TYPE CR
+        RET
+    THEN
+
+    DUP TOKEN_DO = IF
+        DROP
+        "Token: DO. ID: " TYPE
+        24 + @ int_to_string_buffer SWAP INT_TO_STRING
+        TYPE CR
+        RET
+    THEN
+
+    DUP TOKEN_END = IF
+        DROP
+        "Token: THEN. ID: " TYPE
+        24 + @ int_to_string_buffer SWAP INT_TO_STRING
+        TYPE CR
+        RET
+    THEN
+
     DUP TOKEN_VARIABLE_DECL = IF
         DROP
         "Token: Variable Decl. Name: " TYPE
@@ -1077,10 +1260,136 @@ FUNC PASS_1
         DROP DROP
     THEN
 
-    ( Mem Declaration )
-    2DUP "MEM" STRNCMP 1 = IF
-        TOKEN_MEM_DECL ADD_TOKEN
+    ( IF )
+    2DUP "IF" STRNCMP 1 = IF
+        DROP DROP
+        TOKEN_IF ADD_TOKEN
+        
+        DUP
 
+        ( store the scope id in the token )
+        24 + CREATE_SCOPE !
+
+        PUSH_IF_SCOPE
+
+        PASS_1
+        RET
+    THEN
+
+    ( ELSE ) 
+    2DUP "ELSE" STRNCMP IF 
+        DROP DROP
+
+        TOKEN_ELSE ADD_TOKEN
+        24 +
+
+        IS_TOP_SCOPE_IF 1 != IF
+            "Attempted to add ELSE token in a non-IF scope" TYPE CR
+            SYS_EXIT
+        THEN
+
+        ( store the scope id by getting it from the IF token )
+        scope_stack scope_stack_len @ + 8 - @ 
+        24 + @
+        !
+        
+        PASS_1
+        RET
+    THEN
+
+    ( THEN ) 
+    2DUP "THEN" STRNCMP IF 
+        DROP DROP
+
+        TOKEN_THEN ADD_TOKEN
+        24 +
+
+        IS_TOP_SCOPE_IF 1 != IF
+            "Attempted to add THEN token in a non-IF scope" TYPE CR
+            SYS_EXIT
+        THEN
+
+        ( store the scope id by getting it from the IF token )
+        scope_stack scope_stack_len @ + 8 - @ 
+        24 + @
+        !
+
+        scope_stack scope_stack_len @ + 8 - @ 
+        POP_IF_SCOPE
+        
+        PASS_1
+        RET
+    THEN
+
+    ( WHILE )
+    2DUP "WHILE" STRNCMP 1 = IF
+        DROP DROP
+        TOKEN_WHILE ADD_TOKEN
+        
+        DUP
+        DUP
+
+        ( store the scope id in the token )
+        24 + CREATE_SCOPE !
+
+        ( write down that there is no DO )
+        32 + 0 !
+
+        PUSH_WHILE_SCOPE
+
+        PASS_1
+        RET
+    THEN
+
+    ( DO ) 
+    2DUP "DO" STRNCMP IF 
+        DROP DROP
+
+        TOKEN_DO ADD_TOKEN
+        24 +
+
+        IS_TOP_SCOPE_WHILE 1 != IF
+            "Attempted to add DO token in a non-WHILE scope" TYPE CR
+            SYS_EXIT
+        THEN
+
+        ( store the scope id by getting it from the WHILE token )
+        scope_stack scope_stack_len @ + 8 - @ 
+        24 + @
+        !
+
+        ( store a flag saying that there is a corresponding DO )
+        scope_stack scope_stack_len @ + 8 - @ 32 + 1 !
+        
+        PASS_1
+        RET
+    THEN
+
+    ( END ) 
+    2DUP "END" STRNCMP IF 
+        DROP DROP
+
+        TOKEN_END ADD_TOKEN
+        24 +
+
+        IS_TOP_SCOPE_WHILE 1 != IF
+            "Attempted to add END token in a non-WHILE scope" TYPE CR
+            SYS_EXIT
+        THEN
+
+        ( store the scope id by getting it from the WHILE token )
+        scope_stack scope_stack_len @ + 8 - @ 
+        24 + @
+        !
+
+        scope_stack scope_stack_len @ + 8 - @ 32 + @ 1 != IF
+            "WHILE loop does not have a corresponding DO" TYPE CR
+            SYS_EXIT
+        THEN
+
+        scope_stack scope_stack_len @ + 8 - @ 
+        POP_WHILE_SCOPE
+        
         PASS_1
         RET
     THEN

@@ -381,9 +381,42 @@ mov [r12],r11
 
 call PUSH_TOKEN_NAME
 
-call TOKEN_VARIABLE_DECL
+call TOKEN_WHILE
 
 mov r11,string_31
+add r12,8
+mov [r12],r11
+mov r11,5
+add r12,8
+mov [r12],r11
+
+call PUSH_TOKEN_NAME
+
+call TOKEN_DO
+
+mov r11,string_32
+add r12,8
+mov [r12],r11
+mov r11,2
+add r12,8
+mov [r12],r11
+
+call PUSH_TOKEN_NAME
+
+call TOKEN_END
+
+mov r11,string_33
+add r12,8
+mov [r12],r11
+mov r11,3
+add r12,8
+mov [r12],r11
+
+call PUSH_TOKEN_NAME
+
+call TOKEN_VARIABLE_DECL
+
+mov r11,string_34
 add r12,8
 mov [r12],r11
 mov r11,8
@@ -394,7 +427,7 @@ call PUSH_TOKEN_NAME
 
 call TOKEN_MEM_DECL
 
-mov r11,string_32
+mov r11,string_35
 add r12,8
 mov [r12],r11
 mov r11,3
@@ -405,7 +438,7 @@ call PUSH_TOKEN_NAME
 
 call TOKEN_FETCH
 
-mov r11,string_33
+mov r11,string_36
 add r12,8
 mov [r12],r11
 mov r11,1
@@ -416,7 +449,7 @@ call PUSH_TOKEN_NAME
 
 call TOKEN_FETCH_B
 
-mov r11,string_34
+mov r11,string_37
 add r12,8
 mov [r12],r11
 mov r11,2
@@ -427,7 +460,7 @@ call PUSH_TOKEN_NAME
 
 call TOKEN_STORE
 
-mov r11,string_35
+mov r11,string_38
 add r12,8
 mov [r12],r11
 mov r11,1
@@ -438,7 +471,7 @@ call PUSH_TOKEN_NAME
 
 call TOKEN_STORE_B
 
-mov r11,string_36
+mov r11,string_39
 add r12,8
 mov [r12],r11
 mov r11,2
@@ -449,7 +482,7 @@ call PUSH_TOKEN_NAME
 
 call TOKEN_FUNC_DECL
 
-mov r11,string_37
+mov r11,string_40
 add r12,8
 mov [r12],r11
 mov r11,4
@@ -460,7 +493,7 @@ call PUSH_TOKEN_NAME
 
 call TOKEN_RET
 
-mov r11,string_38
+mov r11,string_41
 add r12,8
 mov [r12],r11
 mov r11,3
@@ -471,7 +504,7 @@ call PUSH_TOKEN_NAME
 
 call TOKEN_SYS_READ
 
-mov r11,string_39
+mov r11,string_42
 add r12,8
 mov [r12],r11
 mov r11,8
@@ -482,7 +515,7 @@ call PUSH_TOKEN_NAME
 
 call TOKEN_SYS_WRITE
 
-mov r11,string_40
+mov r11,string_43
 add r12,8
 mov [r12],r11
 mov r11,9
@@ -493,7 +526,7 @@ call PUSH_TOKEN_NAME
 
 call TOKEN_SYS_OPEN
 
-mov r11,string_41
+mov r11,string_44
 add r12,8
 mov [r12],r11
 mov r11,8
@@ -504,7 +537,7 @@ call PUSH_TOKEN_NAME
 
 call TOKEN_SYS_CLOSE
 
-mov r11,string_42
+mov r11,string_45
 add r12,8
 mov [r12],r11
 mov r11,9
@@ -515,7 +548,7 @@ call PUSH_TOKEN_NAME
 
 call TOKEN_SYS_EXIT
 
-mov r11,string_43
+mov r11,string_46
 add r12,8
 mov [r12],r11
 mov r11,8
@@ -524,7 +557,7 @@ mov [r12],r11
 
 call PUSH_TOKEN_NAME
 
-mov r11,string_56
+mov r11,string_72
 add r12,8
 mov [r12],r11
 mov r11,16
@@ -570,7 +603,7 @@ sub r12,8
 mov r11,[r12]
 sub r12,8
 mov [r11],rcx
-mov r11,string_57
+mov r11,string_73
 add r12,8
 mov [r12],r11
 mov r11,17

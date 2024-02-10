@@ -2173,98 +2173,116 @@ add r12,8
 mov [r12],r11
 
 ret
-TOKEN_VARIABLE_DECL:
+TOKEN_WHILE:
 mov r11,33
 add r12,8
 mov [r12],r11
 
 ret
-TOKEN_MEM_DECL:
+TOKEN_DO:
 mov r11,34
 add r12,8
 mov [r12],r11
 
 ret
-TOKEN_VARIABLE_REF:
+TOKEN_END:
 mov r11,35
 add r12,8
 mov [r12],r11
 
 ret
-TOKEN_FETCH:
+TOKEN_VARIABLE_DECL:
 mov r11,36
 add r12,8
 mov [r12],r11
 
 ret
-TOKEN_FETCH_B:
+TOKEN_MEM_DECL:
 mov r11,37
 add r12,8
 mov [r12],r11
 
 ret
-TOKEN_STORE:
+TOKEN_VARIABLE_REF:
 mov r11,38
 add r12,8
 mov [r12],r11
 
 ret
-TOKEN_STORE_B:
+TOKEN_FETCH:
 mov r11,39
 add r12,8
 mov [r12],r11
 
 ret
-TOKEN_FUNC_DECL:
+TOKEN_FETCH_B:
 mov r11,40
 add r12,8
 mov [r12],r11
 
 ret
-TOKEN_RET:
+TOKEN_STORE:
 mov r11,41
 add r12,8
 mov [r12],r11
 
 ret
-TOKEN_FUNC_CALL:
+TOKEN_STORE_B:
 mov r11,42
 add r12,8
 mov [r12],r11
 
 ret
-TOKEN_SYS_READ:
+TOKEN_FUNC_DECL:
 mov r11,43
 add r12,8
 mov [r12],r11
 
 ret
-TOKEN_SYS_WRITE:
+TOKEN_RET:
 mov r11,44
 add r12,8
 mov [r12],r11
 
 ret
-TOKEN_SYS_OPEN:
+TOKEN_FUNC_CALL:
 mov r11,45
 add r12,8
 mov [r12],r11
 
 ret
-TOKEN_SYS_CLOSE:
+TOKEN_SYS_READ:
 mov r11,46
 add r12,8
 mov [r12],r11
 
 ret
-TOKEN_SYS_EXIT:
+TOKEN_SYS_WRITE:
 mov r11,47
 add r12,8
 mov [r12],r11
 
 ret
-TOKEN_UNKOWN_NAME:
+TOKEN_SYS_OPEN:
 mov r11,48
+add r12,8
+mov [r12],r11
+
+ret
+TOKEN_SYS_CLOSE:
+mov r11,49
+add r12,8
+mov [r12],r11
+
+ret
+TOKEN_SYS_EXIT:
+mov r11,50
+add r12,8
+mov [r12],r11
+
+ret
+TOKEN_UNKOWN_NAME:
+mov r11,51
 add r12,8
 mov [r12],r11
 
@@ -3073,7 +3091,7 @@ sub r12,8
 cmp r11,0
 je if_else_20
 if_20:
-mov r11,string_44
+mov r11,string_47
 add r12,8
 mov [r12],r11
 mov r11,25
@@ -3181,6 +3199,1271 @@ mov r11,[r12]
 sub r12,8
 mov [r11],rcx
 ret
+CREATE_SCOPE:
+mov r11,scope_next_id
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,scope_next_id
+add r12,8
+mov [r12],r11
+
+mov r11,scope_next_id
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,1
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov rcx,[r12]
+sub r12,8
+add r11,rcx
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+mov [r11],rcx
+ret
+PUSH_SCOPE:
+mov r11,scope_stack_len
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,1024
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov rcx,[r12]
+sub r12,8
+cmp rcx,r11
+setge r11B
+movzx r11,r11B
+add r12,8
+mov [r12],r11
+mov r11,[r12]
+sub r12,8
+cmp r11,0
+je if_else_21
+if_21:
+mov r11,string_48
+add r12,8
+mov [r12],r11
+mov r11,28
+add r12,8
+mov [r12],r11
+
+mov rsi,[r12]
+sub r12,8
+mov rdi,[r12]
+sub r12,8
+call print
+
+call print_newline
+
+mov rax,60
+mov rdi,0
+syscall
+if_else_21:
+if_then_21:
+mov r11,scope_stack
+add r12,8
+mov [r12],r11
+
+mov r11,scope_stack_len
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov rcx,[r12]
+sub r12,8
+add r11,rcx
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+add r12,8
+mov [r12],rcx
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+mov [r11],rcx
+mov r11,scope_stack_len
+add r12,8
+mov [r12],r11
+
+mov r11,scope_stack_len
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,8
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov rcx,[r12]
+sub r12,8
+add r11,rcx
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+mov [r11],rcx
+ret
+PUSH_IF_SCOPE:
+mov r11,if_stack_len
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,1024
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov rcx,[r12]
+sub r12,8
+cmp rcx,r11
+setge r11B
+movzx r11,r11B
+add r12,8
+mov [r12],r11
+mov r11,[r12]
+sub r12,8
+cmp r11,0
+je if_else_22
+if_22:
+mov r11,string_49
+add r12,8
+mov [r12],r11
+mov r11,25
+add r12,8
+mov [r12],r11
+
+mov rsi,[r12]
+sub r12,8
+mov rdi,[r12]
+sub r12,8
+call print
+
+call print_newline
+
+mov rax,60
+mov rdi,0
+syscall
+if_else_22:
+if_then_22:
+mov r11,[r12]
+sub r12,8
+add r12,8
+mov [r12],r11
+add r12,8
+mov [r12],r11
+mov r11,if_stack
+add r12,8
+mov [r12],r11
+
+mov r11,if_stack_len
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov rcx,[r12]
+sub r12,8
+add r11,rcx
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+add r12,8
+mov [r12],rcx
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+mov [r11],rcx
+mov r11,if_stack_len
+add r12,8
+mov [r12],r11
+
+mov r11,if_stack_len
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,8
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov rcx,[r12]
+sub r12,8
+add r11,rcx
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+mov [r11],rcx
+call PUSH_SCOPE
+
+ret
+PUSH_WHILE_SCOPE:
+mov r11,while_stack_len
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,1024
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov rcx,[r12]
+sub r12,8
+cmp rcx,r11
+setge r11B
+movzx r11,r11B
+add r12,8
+mov [r12],r11
+mov r11,[r12]
+sub r12,8
+cmp r11,0
+je if_else_23
+if_23:
+mov r11,string_50
+add r12,8
+mov [r12],r11
+mov r11,28
+add r12,8
+mov [r12],r11
+
+mov rsi,[r12]
+sub r12,8
+mov rdi,[r12]
+sub r12,8
+call print
+
+call print_newline
+
+mov rax,60
+mov rdi,0
+syscall
+if_else_23:
+if_then_23:
+mov r11,[r12]
+sub r12,8
+add r12,8
+mov [r12],r11
+add r12,8
+mov [r12],r11
+mov r11,while_stack
+add r12,8
+mov [r12],r11
+
+mov r11,while_stack_len
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov rcx,[r12]
+sub r12,8
+add r11,rcx
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+add r12,8
+mov [r12],rcx
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+mov [r11],rcx
+mov r11,while_stack_len
+add r12,8
+mov [r12],r11
+
+mov r11,while_stack_len
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,8
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov rcx,[r12]
+sub r12,8
+add r11,rcx
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+mov [r11],rcx
+call PUSH_SCOPE
+
+ret
+POP_SCOPE:
+mov r11,scope_stack_len
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,0
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+cmp rcx,r11
+setz r11B
+movzx r11,r11B
+add r12,8
+mov [r12],r11
+mov r11,[r12]
+sub r12,8
+cmp r11,0
+je if_else_24
+if_24:
+mov r11,string_51
+add r12,8
+mov [r12],r11
+mov r11,34
+add r12,8
+mov [r12],r11
+
+mov rsi,[r12]
+sub r12,8
+mov rdi,[r12]
+sub r12,8
+call print
+
+call print_newline
+
+mov rax,60
+mov rdi,0
+syscall
+if_else_24:
+if_then_24:
+mov r11,scope_stack
+add r12,8
+mov [r12],r11
+
+mov r11,scope_stack_len
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,8
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+sub r11,rcx
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov rcx,[r12]
+sub r12,8
+add r11,rcx
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+cmp rcx,r11
+setnz r11B
+movzx r11,r11B
+add r12,8
+mov [r12],r11
+mov r11,[r12]
+sub r12,8
+cmp r11,0
+je if_else_25
+if_25:
+mov r11,string_52
+add r12,8
+mov [r12],r11
+mov r11,59
+add r12,8
+mov [r12],r11
+
+mov rsi,[r12]
+sub r12,8
+mov rdi,[r12]
+sub r12,8
+call print
+
+call print_newline
+
+mov rax,60
+mov rdi,0
+syscall
+if_else_25:
+if_then_25:
+mov r11,scope_stack_len
+add r12,8
+mov [r12],r11
+
+mov r11,scope_stack_len
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,8
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+sub r11,rcx
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+mov [r11],rcx
+ret
+POP_IF_SCOPE:
+mov r11,if_stack_len
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,0
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+cmp rcx,r11
+setz r11B
+movzx r11,r11B
+add r12,8
+mov [r12],r11
+mov r11,[r12]
+sub r12,8
+cmp r11,0
+je if_else_26
+if_26:
+mov r11,string_53
+add r12,8
+mov [r12],r11
+mov r11,31
+add r12,8
+mov [r12],r11
+
+mov rsi,[r12]
+sub r12,8
+mov rdi,[r12]
+sub r12,8
+call print
+
+call print_newline
+
+mov rax,60
+mov rdi,0
+syscall
+if_else_26:
+if_then_26:
+mov r11,[r12]
+sub r12,8
+add r12,8
+mov [r12],r11
+add r12,8
+mov [r12],r11
+mov r11,if_stack
+add r12,8
+mov [r12],r11
+
+mov r11,if_stack_len
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,8
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+sub r11,rcx
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov rcx,[r12]
+sub r12,8
+add r11,rcx
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+cmp rcx,r11
+setnz r11B
+movzx r11,r11B
+add r12,8
+mov [r12],r11
+mov r11,[r12]
+sub r12,8
+cmp r11,0
+je if_else_27
+if_27:
+mov r11,string_54
+add r12,8
+mov [r12],r11
+mov r11,50
+add r12,8
+mov [r12],r11
+
+mov rsi,[r12]
+sub r12,8
+mov rdi,[r12]
+sub r12,8
+call print
+
+call print_newline
+
+mov rax,60
+mov rdi,0
+syscall
+if_else_27:
+if_then_27:
+mov r11,if_stack_len
+add r12,8
+mov [r12],r11
+
+mov r11,if_stack_len
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,8
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+sub r11,rcx
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+mov [r11],rcx
+call POP_SCOPE
+
+ret
+POP_WHILE_SCOPE:
+mov r11,while_stack_len
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,0
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+cmp rcx,r11
+setz r11B
+movzx r11,r11B
+add r12,8
+mov [r12],r11
+mov r11,[r12]
+sub r12,8
+cmp r11,0
+je if_else_28
+if_28:
+mov r11,string_55
+add r12,8
+mov [r12],r11
+mov r11,34
+add r12,8
+mov [r12],r11
+
+mov rsi,[r12]
+sub r12,8
+mov rdi,[r12]
+sub r12,8
+call print
+
+call print_newline
+
+mov rax,60
+mov rdi,0
+syscall
+if_else_28:
+if_then_28:
+mov r11,[r12]
+sub r12,8
+add r12,8
+mov [r12],r11
+add r12,8
+mov [r12],r11
+mov r11,while_stack
+add r12,8
+mov [r12],r11
+
+mov r11,while_stack_len
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,8
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+sub r11,rcx
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov rcx,[r12]
+sub r12,8
+add r11,rcx
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+cmp rcx,r11
+setnz r11B
+movzx r11,r11B
+add r12,8
+mov [r12],r11
+mov r11,[r12]
+sub r12,8
+cmp r11,0
+je if_else_29
+if_29:
+mov r11,string_56
+add r12,8
+mov [r12],r11
+mov r11,53
+add r12,8
+mov [r12],r11
+
+mov rsi,[r12]
+sub r12,8
+mov rdi,[r12]
+sub r12,8
+call print
+
+call print_newline
+
+mov rax,60
+mov rdi,0
+syscall
+if_else_29:
+if_then_29:
+mov r11,while_stack_len
+add r12,8
+mov [r12],r11
+
+mov r11,while_stack_len
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,8
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+sub r11,rcx
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+mov [r11],rcx
+call POP_SCOPE
+
+ret
+IS_TOP_SCOPE_IF:
+mov r11,scope_stack_len
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,0
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+cmp rcx,r11
+setz r11B
+movzx r11,r11B
+add r12,8
+mov [r12],r11
+mov r11,[r12]
+sub r12,8
+cmp r11,0
+je if_else_30
+if_30:
+mov r11,string_57
+add r12,8
+mov [r12],r11
+mov r11,38
+add r12,8
+mov [r12],r11
+
+mov rsi,[r12]
+sub r12,8
+mov rdi,[r12]
+sub r12,8
+call print
+
+call print_newline
+
+mov rax,60
+mov rdi,0
+syscall
+if_else_30:
+if_then_30:
+mov r11,if_stack_len
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,0
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+cmp rcx,r11
+setz r11B
+movzx r11,r11B
+add r12,8
+mov [r12],r11
+mov r11,[r12]
+sub r12,8
+cmp r11,0
+je if_else_31
+if_31:
+mov r11,string_58
+add r12,8
+mov [r12],r11
+mov r11,43
+add r12,8
+mov [r12],r11
+
+mov rsi,[r12]
+sub r12,8
+mov rdi,[r12]
+sub r12,8
+call print
+
+call print_newline
+
+mov rax,60
+mov rdi,0
+syscall
+if_else_31:
+if_then_31:
+mov r11,scope_stack
+add r12,8
+mov [r12],r11
+
+mov r11,scope_stack_len
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,8
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+sub r11,rcx
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov rcx,[r12]
+sub r12,8
+add r11,rcx
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,if_stack
+add r12,8
+mov [r12],r11
+
+mov r11,if_stack_len
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,8
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+sub r11,rcx
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov rcx,[r12]
+sub r12,8
+add r11,rcx
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+cmp rcx,r11
+setz r11B
+movzx r11,r11B
+add r12,8
+mov [r12],r11
+ret
+IS_TOP_SCOPE_WHILE:
+mov r11,scope_stack_len
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,0
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+cmp rcx,r11
+setz r11B
+movzx r11,r11B
+add r12,8
+mov [r12],r11
+mov r11,[r12]
+sub r12,8
+cmp r11,0
+je if_else_32
+if_32:
+mov r11,string_59
+add r12,8
+mov [r12],r11
+mov r11,38
+add r12,8
+mov [r12],r11
+
+mov rsi,[r12]
+sub r12,8
+mov rdi,[r12]
+sub r12,8
+call print
+
+call print_newline
+
+mov rax,60
+mov rdi,0
+syscall
+if_else_32:
+if_then_32:
+mov r11,while_stack_len
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,0
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+cmp rcx,r11
+setz r11B
+movzx r11,r11B
+add r12,8
+mov [r12],r11
+mov r11,[r12]
+sub r12,8
+cmp r11,0
+je if_else_33
+if_33:
+mov r11,string_60
+add r12,8
+mov [r12],r11
+mov r11,46
+add r12,8
+mov [r12],r11
+
+mov rsi,[r12]
+sub r12,8
+mov rdi,[r12]
+sub r12,8
+call print
+
+call print_newline
+
+mov rax,60
+mov rdi,0
+syscall
+if_else_33:
+if_then_33:
+mov r11,scope_stack
+add r12,8
+mov [r12],r11
+
+mov r11,scope_stack_len
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,8
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+sub r11,rcx
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov rcx,[r12]
+sub r12,8
+add r11,rcx
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,while_stack
+add r12,8
+mov [r12],r11
+
+mov r11,while_stack_len
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,8
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+sub r11,rcx
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov rcx,[r12]
+sub r12,8
+add r11,rcx
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+cmp rcx,r11
+setz r11B
+movzx r11,r11B
+add r12,8
+mov [r12],r11
+ret
 F_FLUSH:
 mov r11,output_file
 add r12,8
@@ -3272,12 +4555,12 @@ mov [r12],r11
 mov r11,[r12]
 sub r12,8
 cmp r11,0
-je if_else_21
-if_21:
+je if_else_34
+if_34:
 call F_FLUSH
 
-if_else_21:
-if_then_21:
+if_else_34:
+if_then_34:
 mov r11,[r12]
 sub r12,8
 add r12,8
@@ -3420,7 +4703,7 @@ call F_NEWLINE
 
 ret
 F_OUTPUT_TEMPLATE:
-mov r11,string_45
+mov r11,string_61
 add r12,8
 mov [r12],r11
 mov r11,12
@@ -3429,7 +4712,7 @@ mov [r12],r11
 
 call F_WRITELN
 
-mov r11,string_46
+mov r11,string_62
 add r12,8
 mov [r12],r11
 mov r11,22
@@ -3440,7 +4723,7 @@ call F_WRITELN
 
 call F_NEWLINE
 
-mov r11,string_47
+mov r11,string_63
 add r12,8
 mov [r12],r11
 mov r11,13
@@ -3449,7 +4732,7 @@ mov [r12],r11
 
 call F_WRITELN
 
-mov r11,string_48
+mov r11,string_64
 add r12,8
 mov [r12],r11
 mov r11,16
@@ -3460,7 +4743,7 @@ call F_WRITELN
 
 call F_NEWLINE
 
-mov r11,string_49
+mov r11,string_65
 add r12,8
 mov [r12],r11
 mov r11,7
@@ -3469,7 +4752,7 @@ mov [r12],r11
 
 call F_WRITELN
 
-mov r11,string_50
+mov r11,string_66
 add r12,8
 mov [r12],r11
 mov r11,4
@@ -3482,7 +4765,7 @@ call SP_REG
 
 call F_WRITE
 
-mov r11,string_51
+mov r11,string_67
 add r12,8
 mov [r12],r11
 mov r11,11
@@ -3583,8 +4866,8 @@ mov [r12],r11
 mov r11,[r12]
 sub r12,8
 cmp r11,0
-je if_else_22
-if_22:
+je if_else_35
+if_35:
 call F_FILL_BUFFER
 
 mov r11,input_buffer_len
@@ -3613,17 +4896,17 @@ mov [r12],r11
 mov r11,[r12]
 sub r12,8
 cmp r11,0
-je if_else_23
-if_23:
+je if_else_36
+if_36:
 ret
-jmp if_then_23
-if_else_23:
+jmp if_then_36
+if_else_36:
 call SKIP_WHITESPACE
 
 ret
-if_then_23:
-if_else_22:
-if_then_22:
+if_then_36:
+if_else_35:
+if_then_35:
 mov r11,input_buffer_curr
 add r12,8
 mov [r12],r11
@@ -3663,8 +4946,8 @@ mov [r12],r11
 mov r11,[r12]
 sub r12,8
 cmp r11,0
-je if_else_24
-if_24:
+je if_else_37
+if_37:
 mov r11,[r12]
 sub r12,8
 mov r11,line
@@ -3711,8 +4994,8 @@ sub r12,8
 mov r11,[r12]
 sub r12,8
 mov [r11],rcx
-jmp if_then_24
-if_else_24:
+jmp if_then_37
+if_else_37:
 mov r11,[r12]
 sub r12,8
 add r12,8
@@ -3735,8 +5018,8 @@ mov [r12],r11
 mov r11,[r12]
 sub r12,8
 cmp r11,0
-je if_else_25
-if_25:
+je if_else_38
+if_38:
 mov r11,[r12]
 sub r12,8
 mov r11,col
@@ -3770,13 +5053,13 @@ sub r12,8
 mov r11,[r12]
 sub r12,8
 mov [r11],rcx
-jmp if_then_25
-if_else_25:
+jmp if_then_38
+if_else_38:
 mov r11,[r12]
 sub r12,8
 ret
-if_then_25:
-if_then_24:
+if_then_38:
+if_then_37:
 mov r11,input_buffer_curr
 add r12,8
 mov [r12],r11
@@ -3869,8 +5152,8 @@ mov [r12],r11
 mov r11,[r12]
 sub r12,8
 cmp r11,0
-je if_else_26
-if_26:
+je if_else_39
+if_39:
 call F_FILL_BUFFER
 
 mov r11,input_buffer_len
@@ -3899,17 +5182,17 @@ mov [r12],r11
 mov r11,[r12]
 sub r12,8
 cmp r11,0
-je if_else_27
-if_27:
+je if_else_40
+if_40:
 ret
-jmp if_then_27
-if_else_27:
+jmp if_then_40
+if_else_40:
 call COPY_TOKEN_TO_QUOTE
 
 ret
-if_then_27:
-if_else_26:
-if_then_26:
+if_then_40:
+if_else_39:
+if_then_39:
 mov r11,input_buffer_curr
 add r12,8
 mov [r12],r11
@@ -3949,11 +5232,11 @@ mov [r12],r11
 mov r11,[r12]
 sub r12,8
 cmp r11,0
-je if_else_28
-if_28:
+je if_else_41
+if_41:
 mov r11,[r12]
 sub r12,8
-mov r11,string_52
+mov r11,string_68
 add r12,8
 mov [r12],r11
 mov r11,14
@@ -3984,7 +5267,7 @@ mov rdi,[r12]
 sub r12,8
 call print
 
-mov r11,string_53
+mov r11,string_69
 add r12,8
 mov [r12],r11
 mov r11,6
@@ -4015,7 +5298,7 @@ mov rdi,[r12]
 sub r12,8
 call print
 
-mov r11,string_54
+mov r11,string_70
 add r12,8
 mov [r12],r11
 mov r11,46
@@ -4033,8 +5316,8 @@ call print_newline
 mov rax,60
 mov rdi,0
 syscall
-if_else_28:
-if_then_28:
+if_else_41:
+if_then_41:
 mov r11,[r12]
 sub r12,8
 add r12,8
@@ -4217,12 +5500,12 @@ mov [r12],r11
 mov r11,[r12]
 sub r12,8
 cmp r11,0
-je if_else_29
-if_29:
+je if_else_42
+if_42:
 call COPY_TOKEN_TO_QUOTE
 
-if_else_29:
-if_then_29:
+if_else_42:
+if_then_42:
 ret
 COPY_TOKEN_TO_WHITESPACE:
 mov r11,input_buffer_len
@@ -4251,8 +5534,8 @@ mov [r12],r11
 mov r11,[r12]
 sub r12,8
 cmp r11,0
-je if_else_30
-if_30:
+je if_else_43
+if_43:
 call F_FILL_BUFFER
 
 mov r11,input_buffer_len
@@ -4281,17 +5564,17 @@ mov [r12],r11
 mov r11,[r12]
 sub r12,8
 cmp r11,0
-je if_else_31
-if_31:
+je if_else_44
+if_44:
 ret
-jmp if_then_31
-if_else_31:
+jmp if_then_44
+if_else_44:
 call COPY_TOKEN_TO_WHITESPACE
 
 ret
-if_then_31:
-if_else_30:
-if_then_30:
+if_then_44:
+if_else_43:
+if_then_43:
 mov r11,input_buffer_curr
 add r12,8
 mov [r12],r11
@@ -4367,13 +5650,13 @@ mov [r12],r11
 mov r11,[r12]
 sub r12,8
 cmp r11,0
-je if_else_32
-if_32:
+je if_else_45
+if_45:
 mov r11,[r12]
 sub r12,8
 ret
-if_else_32:
-if_then_32:
+if_else_45:
+if_then_45:
 mov r11,token
 add r12,8
 mov [r12],r11
@@ -4564,8 +5847,8 @@ mov [r12],r11
 mov r11,[r12]
 sub r12,8
 cmp r11,0
-je if_else_33
-if_33:
+je if_else_46
+if_46:
 call F_FILL_BUFFER
 
 mov r11,input_buffer_len
@@ -4594,17 +5877,17 @@ mov [r12],r11
 mov r11,[r12]
 sub r12,8
 cmp r11,0
-je if_else_34
-if_34:
+je if_else_47
+if_47:
 ret
-jmp if_then_34
-if_else_34:
+jmp if_then_47
+if_else_47:
 call SKIP_TO_NEWLINE
 
 ret
-if_then_34:
-if_else_33:
-if_then_33:
+if_then_47:
+if_else_46:
+if_then_46:
 mov r11,input_buffer_curr
 add r12,8
 mov [r12],r11
@@ -4731,12 +6014,12 @@ mov [r12],r11
 mov r11,[r12]
 sub r12,8
 cmp r11,0
-je if_else_35
-if_35:
+je if_else_48
+if_48:
 call SKIP_TO_NEWLINE
 
-if_else_35:
-if_then_35:
+if_else_48:
+if_then_48:
 ret
 GRAB_TOKEN:
 mov r11,line
@@ -4856,8 +6139,8 @@ mov [r12],r11
 mov r11,[r12]
 sub r12,8
 cmp r11,0
-je if_else_36
-if_36:
+je if_else_49
+if_49:
 mov r11,0
 add r12,8
 mov [r12],r11
@@ -4867,8 +6150,8 @@ add r12,8
 mov [r12],r11
 
 ret
-if_else_36:
-if_then_36:
+if_else_49:
+if_then_49:
 mov r11,input_buffer_curr
 add r12,8
 mov [r12],r11
@@ -4902,8 +6185,8 @@ mov [r12],r11
 mov r11,[r12]
 sub r12,8
 cmp r11,0
-je if_else_37
-if_37:
+je if_else_50
+if_50:
 mov r11,token
 add r12,8
 mov [r12],r11
@@ -5025,11 +6308,11 @@ sub r12,8
 mov [r11],rcx
 call COPY_TOKEN_TO_QUOTE
 
-jmp if_then_37
-if_else_37:
+jmp if_then_50
+if_else_50:
 call COPY_TOKEN_TO_WHITESPACE
 
-if_then_37:
+if_then_50:
 mov r11,token
 add r12,8
 mov [r12],r11
@@ -5044,7 +6327,7 @@ mov r11,[r11]
 add r12,8
 mov [r12],r11
 
-mov r11,string_55
+mov r11,string_71
 add r12,8
 mov [r12],r11
 mov r11,2
@@ -5069,14 +6352,14 @@ mov [r12],r11
 mov r11,[r12]
 sub r12,8
 cmp r11,0
-je if_else_38
-if_38:
+je if_else_51
+if_51:
 call SKIP_TO_NEWLINE
 
 call GRAB_TOKEN
 
-jmp if_then_38
-if_else_38:
+jmp if_then_51
+if_else_51:
 mov r11,token
 add r12,8
 mov [r12],r11
@@ -5091,10 +6374,10 @@ mov r11,[r11]
 add r12,8
 mov [r12],r11
 
-if_then_38:
+if_then_51:
 ret
 PRINT_TOKEN:
-mov r11,string_58
+mov r11,string_74
 add r12,8
 mov [r12],r11
 mov r11,7
@@ -5148,7 +6431,7 @@ mov rdi,[r12]
 sub r12,8
 call print
 
-mov r11,string_59
+mov r11,string_75
 add r12,8
 mov [r12],r11
 mov r11,7
@@ -5202,7 +6485,7 @@ mov rdi,[r12]
 sub r12,8
 call print
 
-mov r11,string_60
+mov r11,string_76
 add r12,8
 mov [r12],r11
 mov r11,2
@@ -5247,11 +6530,11 @@ mov [r12],r11
 mov r11,[r12]
 sub r12,8
 cmp r11,0
-je if_else_39
-if_39:
+je if_else_52
+if_52:
 mov r11,[r12]
 sub r12,8
-mov r11,string_61
+mov r11,string_77
 add r12,8
 mov [r12],r11
 mov r11,31
@@ -5333,8 +6616,8 @@ call print
 call print_newline
 
 ret
-if_else_39:
-if_then_39:
+if_else_52:
+if_then_52:
 mov r11,[r12]
 sub r12,8
 add r12,8
@@ -5355,11 +6638,11 @@ mov [r12],r11
 mov r11,[r12]
 sub r12,8
 cmp r11,0
-je if_else_40
-if_40:
+je if_else_53
+if_53:
 mov r11,[r12]
 sub r12,8
-mov r11,string_62
+mov r11,string_78
 add r12,8
 mov [r12],r11
 mov r11,23
@@ -5414,8 +6697,494 @@ call print
 call print_newline
 
 ret
-if_else_40:
-if_then_40:
+if_else_53:
+if_then_53:
+mov r11,[r12]
+sub r12,8
+add r12,8
+mov [r12],r11
+add r12,8
+mov [r12],r11
+call TOKEN_IF
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+cmp rcx,r11
+setz r11B
+movzx r11,r11B
+add r12,8
+mov [r12],r11
+mov r11,[r12]
+sub r12,8
+cmp r11,0
+je if_else_54
+if_54:
+mov r11,[r12]
+sub r12,8
+mov r11,string_79
+add r12,8
+mov [r12],r11
+mov r11,15
+add r12,8
+mov [r12],r11
+
+mov rsi,[r12]
+sub r12,8
+mov rdi,[r12]
+sub r12,8
+call print
+
+mov r11,24
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov rcx,[r12]
+sub r12,8
+add r11,rcx
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,int_to_string_buffer
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+add r12,8
+mov [r12],rcx
+add r12,8
+mov [r12],r11
+
+call INT_TO_STRING
+
+mov rsi,[r12]
+sub r12,8
+mov rdi,[r12]
+sub r12,8
+call print
+
+call print_newline
+
+ret
+if_else_54:
+if_then_54:
+mov r11,[r12]
+sub r12,8
+add r12,8
+mov [r12],r11
+add r12,8
+mov [r12],r11
+call TOKEN_ELSE
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+cmp rcx,r11
+setz r11B
+movzx r11,r11B
+add r12,8
+mov [r12],r11
+mov r11,[r12]
+sub r12,8
+cmp r11,0
+je if_else_55
+if_55:
+mov r11,[r12]
+sub r12,8
+mov r11,string_80
+add r12,8
+mov [r12],r11
+mov r11,17
+add r12,8
+mov [r12],r11
+
+mov rsi,[r12]
+sub r12,8
+mov rdi,[r12]
+sub r12,8
+call print
+
+mov r11,24
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov rcx,[r12]
+sub r12,8
+add r11,rcx
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,int_to_string_buffer
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+add r12,8
+mov [r12],rcx
+add r12,8
+mov [r12],r11
+
+call INT_TO_STRING
+
+mov rsi,[r12]
+sub r12,8
+mov rdi,[r12]
+sub r12,8
+call print
+
+call print_newline
+
+ret
+if_else_55:
+if_then_55:
+mov r11,[r12]
+sub r12,8
+add r12,8
+mov [r12],r11
+add r12,8
+mov [r12],r11
+call TOKEN_THEN
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+cmp rcx,r11
+setz r11B
+movzx r11,r11B
+add r12,8
+mov [r12],r11
+mov r11,[r12]
+sub r12,8
+cmp r11,0
+je if_else_56
+if_56:
+mov r11,[r12]
+sub r12,8
+mov r11,string_81
+add r12,8
+mov [r12],r11
+mov r11,17
+add r12,8
+mov [r12],r11
+
+mov rsi,[r12]
+sub r12,8
+mov rdi,[r12]
+sub r12,8
+call print
+
+mov r11,24
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov rcx,[r12]
+sub r12,8
+add r11,rcx
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,int_to_string_buffer
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+add r12,8
+mov [r12],rcx
+add r12,8
+mov [r12],r11
+
+call INT_TO_STRING
+
+mov rsi,[r12]
+sub r12,8
+mov rdi,[r12]
+sub r12,8
+call print
+
+call print_newline
+
+ret
+if_else_56:
+if_then_56:
+mov r11,[r12]
+sub r12,8
+add r12,8
+mov [r12],r11
+add r12,8
+mov [r12],r11
+call TOKEN_WHILE
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+cmp rcx,r11
+setz r11B
+movzx r11,r11B
+add r12,8
+mov [r12],r11
+mov r11,[r12]
+sub r12,8
+cmp r11,0
+je if_else_57
+if_57:
+mov r11,[r12]
+sub r12,8
+mov r11,string_82
+add r12,8
+mov [r12],r11
+mov r11,18
+add r12,8
+mov [r12],r11
+
+mov rsi,[r12]
+sub r12,8
+mov rdi,[r12]
+sub r12,8
+call print
+
+mov r11,24
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov rcx,[r12]
+sub r12,8
+add r11,rcx
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,int_to_string_buffer
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+add r12,8
+mov [r12],rcx
+add r12,8
+mov [r12],r11
+
+call INT_TO_STRING
+
+mov rsi,[r12]
+sub r12,8
+mov rdi,[r12]
+sub r12,8
+call print
+
+call print_newline
+
+ret
+if_else_57:
+if_then_57:
+mov r11,[r12]
+sub r12,8
+add r12,8
+mov [r12],r11
+add r12,8
+mov [r12],r11
+call TOKEN_DO
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+cmp rcx,r11
+setz r11B
+movzx r11,r11B
+add r12,8
+mov [r12],r11
+mov r11,[r12]
+sub r12,8
+cmp r11,0
+je if_else_58
+if_58:
+mov r11,[r12]
+sub r12,8
+mov r11,string_83
+add r12,8
+mov [r12],r11
+mov r11,15
+add r12,8
+mov [r12],r11
+
+mov rsi,[r12]
+sub r12,8
+mov rdi,[r12]
+sub r12,8
+call print
+
+mov r11,24
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov rcx,[r12]
+sub r12,8
+add r11,rcx
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,int_to_string_buffer
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+add r12,8
+mov [r12],rcx
+add r12,8
+mov [r12],r11
+
+call INT_TO_STRING
+
+mov rsi,[r12]
+sub r12,8
+mov rdi,[r12]
+sub r12,8
+call print
+
+call print_newline
+
+ret
+if_else_58:
+if_then_58:
+mov r11,[r12]
+sub r12,8
+add r12,8
+mov [r12],r11
+add r12,8
+mov [r12],r11
+call TOKEN_END
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+cmp rcx,r11
+setz r11B
+movzx r11,r11B
+add r12,8
+mov [r12],r11
+mov r11,[r12]
+sub r12,8
+cmp r11,0
+je if_else_59
+if_59:
+mov r11,[r12]
+sub r12,8
+mov r11,string_84
+add r12,8
+mov [r12],r11
+mov r11,17
+add r12,8
+mov [r12],r11
+
+mov rsi,[r12]
+sub r12,8
+mov rdi,[r12]
+sub r12,8
+call print
+
+mov r11,24
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov rcx,[r12]
+sub r12,8
+add r11,rcx
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,int_to_string_buffer
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+add r12,8
+mov [r12],rcx
+add r12,8
+mov [r12],r11
+
+call INT_TO_STRING
+
+mov rsi,[r12]
+sub r12,8
+mov rdi,[r12]
+sub r12,8
+call print
+
+call print_newline
+
+ret
+if_else_59:
+if_then_59:
 mov r11,[r12]
 sub r12,8
 add r12,8
@@ -5436,11 +7205,11 @@ mov [r12],r11
 mov r11,[r12]
 sub r12,8
 cmp r11,0
-je if_else_41
-if_41:
+je if_else_60
+if_60:
 mov r11,[r12]
 sub r12,8
-mov r11,string_63
+mov r11,string_85
 add r12,8
 mov [r12],r11
 mov r11,28
@@ -5513,8 +7282,8 @@ call print
 call print_newline
 
 ret
-if_else_41:
-if_then_41:
+if_else_60:
+if_then_60:
 mov r11,[r12]
 sub r12,8
 add r12,8
@@ -5535,11 +7304,11 @@ mov [r12],r11
 mov r11,[r12]
 sub r12,8
 cmp r11,0
-je if_else_42
-if_42:
+je if_else_61
+if_61:
 mov r11,[r12]
 sub r12,8
-mov r11,string_64
+mov r11,string_86
 add r12,8
 mov [r12],r11
 mov r11,23
@@ -5612,8 +7381,8 @@ call print
 call print_newline
 
 ret
-if_else_42:
-if_then_42:
+if_else_61:
+if_then_61:
 mov r11,[r12]
 sub r12,8
 add r12,8
@@ -5634,11 +7403,11 @@ mov [r12],r11
 mov r11,[r12]
 sub r12,8
 cmp r11,0
-je if_else_43
-if_43:
+je if_else_62
+if_62:
 mov r11,[r12]
 sub r12,8
-mov r11,string_65
+mov r11,string_87
 add r12,8
 mov [r12],r11
 mov r11,24
@@ -5711,8 +7480,8 @@ call print
 call print_newline
 
 ret
-if_else_43:
-if_then_43:
+if_else_62:
+if_then_62:
 mov r11,[r12]
 sub r12,8
 add r12,8
@@ -5743,9 +7512,9 @@ mov [r12],r11
 mov r11,[r12]
 sub r12,8
 cmp r11,0
-je if_else_44
-if_44:
-mov r11,string_66
+je if_else_63
+if_63:
+mov r11,string_88
 add r12,8
 mov [r12],r11
 mov r11,7
@@ -5771,9 +7540,9 @@ sub r12,8
 mov r11,[r12]
 sub r12,8
 ret
-jmp if_then_44
-if_else_44:
-mov r11,string_67
+jmp if_then_63
+if_else_63:
+mov r11,string_89
 add r12,8
 mov [r12],r11
 mov r11,17
@@ -5795,7 +7564,7 @@ call print_newline
 mov r11,[r12]
 sub r12,8
 ret
-if_then_44:
+if_then_63:
 ret
 PRINT_TOKENS_HELP:
 mov r11,[r12]
@@ -5826,11 +7595,11 @@ mov [r12],r11
 mov r11,[r12]
 sub r12,8
 cmp r11,0
-je if_else_45
-if_45:
+je if_else_64
+if_64:
 ret
-if_else_45:
-if_then_45:
+if_else_64:
+if_then_64:
 mov r11,token_struct
 add r12,8
 mov [r12],r11
@@ -5895,8 +7664,8 @@ call STRNCMP
 mov r11,[r12]
 sub r12,8
 cmp r11,0
-je if_else_46
-if_46:
+je if_else_65
+if_65:
 mov r11,[r12]
 sub r12,8
 mov r11,[r12]
@@ -5908,8 +7677,8 @@ add r12,8
 mov [r12],r11
 
 ret
-if_else_46:
-if_then_46:
+if_else_65:
+if_then_65:
 mov r11,[r12]
 sub r12,8
 add r12,8
@@ -5978,8 +7747,8 @@ mov [r12],r11
 mov r11,[r12]
 sub r12,8
 cmp r11,0
-je if_else_47
-if_47:
+je if_else_66
+if_66:
 mov r11,[r12]
 sub r12,8
 mov r11,[r12]
@@ -5991,8 +7760,8 @@ add r12,8
 mov [r12],r11
 
 ret
-if_else_47:
-if_then_47:
+if_else_66:
+if_then_66:
 call IS_VAR_NAME_HELP
 
 ret
@@ -6020,8 +7789,8 @@ call STRNCMP
 mov r11,[r12]
 sub r12,8
 cmp r11,0
-je if_else_48
-if_48:
+je if_else_67
+if_67:
 mov r11,[r12]
 sub r12,8
 mov r11,[r12]
@@ -6033,8 +7802,8 @@ add r12,8
 mov [r12],r11
 
 ret
-if_else_48:
-if_then_48:
+if_else_67:
+if_then_67:
 mov r11,[r12]
 sub r12,8
 add r12,8
@@ -6103,8 +7872,8 @@ mov [r12],r11
 mov r11,[r12]
 sub r12,8
 cmp r11,0
-je if_else_49
-if_49:
+je if_else_68
+if_68:
 mov r11,[r12]
 sub r12,8
 mov r11,[r12]
@@ -6116,8 +7885,8 @@ add r12,8
 mov [r12],r11
 
 ret
-if_else_49:
-if_then_49:
+if_else_68:
+if_then_68:
 call IS_METHOD_NAME_HELP
 
 ret
@@ -6154,15 +7923,15 @@ mov [r12],r11
 mov r11,[r12]
 sub r12,8
 cmp r11,0
-je if_else_50
-if_50:
+je if_else_69
+if_69:
 mov r11,[r12]
 sub r12,8
 mov r11,[r12]
 sub r12,8
 ret
-if_else_50:
-if_then_50:
+if_else_69:
+if_then_69:
 mov r11,token_struct
 add r12,8
 mov [r12],r11
@@ -6326,8 +8095,8 @@ mov [r12],r11
 mov r11,[r12]
 sub r12,8
 cmp r11,0
-je if_else_51
-if_51:
+je if_else_70
+if_70:
 mov r11,[r12]
 sub r12,8
 add r12,8
@@ -6368,9 +8137,9 @@ mov [r12],r11
 mov r11,[r12]
 sub r12,8
 cmp r11,0
-je if_else_52
-if_52:
-mov r11,string_68
+je if_else_71
+if_71:
+mov r11,string_90
 add r12,8
 mov [r12],r11
 mov r11,41
@@ -6388,8 +8157,8 @@ call print_newline
 mov rax,60
 mov rdi,0
 syscall
-if_else_52:
-if_then_52:
+if_else_71:
+if_then_71:
 call TOKEN_STRING_LITERAL
 
 call ADD_TOKEN
@@ -6583,8 +8352,8 @@ sub r12,8
 call PASS_1
 
 ret
-if_else_51:
-if_then_51:
+if_else_70:
+if_then_70:
 mov rcx,[r12]
 sub r12,8
 mov r11,[r12]
@@ -6616,8 +8385,8 @@ mov [r12],r11
 mov r11,[r12]
 sub r12,8
 cmp r11,0
-je if_else_53
-if_53:
+je if_else_72
+if_72:
 mov rcx,[r12]
 sub r12,8
 mov r11,[r12]
@@ -6687,8 +8456,8 @@ sub r12,8
 call PASS_1
 
 ret
-if_else_53:
-if_then_53:
+if_else_72:
+if_then_72:
 mov rcx,[r12]
 sub r12,8
 mov r11,[r12]
@@ -6715,7 +8484,7 @@ mov [r12],r11
 add r12,8
 mov [r12],rcx
 
-mov r11,string_69
+mov r11,string_91
 add r12,8
 mov [r12],r11
 mov r11,8
@@ -6750,7 +8519,7 @@ mov [r12],rcx
 add r12,8
 mov [r12],rdi
 
-mov r11,string_70
+mov r11,string_92
 add r12,8
 mov [r12],r11
 mov r11,3
@@ -6783,13 +8552,13 @@ mov [r12],r11
 mov r11,[r12]
 sub r12,8
 cmp r11,0
-je if_else_54
-if_54:
+je if_else_73
+if_73:
 mov r11,[r12]
 sub r12,8
 cmp r11,0
-je if_else_55
-if_55:
+je if_else_74
+if_74:
 mov r11,[r12]
 sub r12,8
 mov r11,[r12]
@@ -6800,8 +8569,8 @@ call TOKEN_MEM_DECL
 
 call ADD_TOKEN
 
-jmp if_then_55
-if_else_55:
+jmp if_then_74
+if_else_74:
 mov r11,[r12]
 sub r12,8
 mov r11,[r12]
@@ -6812,7 +8581,7 @@ call TOKEN_VARIABLE_DECL
 
 call ADD_TOKEN
 
-if_then_55:
+if_then_74:
 call GRAB_TOKEN
 
 mov r11,[r12]
@@ -6837,9 +8606,9 @@ mov [r12],r11
 mov r11,[r12]
 sub r12,8
 cmp r11,0
-je if_else_56
-if_56:
-mov r11,string_71
+je if_else_75
+if_75:
+mov r11,string_93
 add r12,8
 mov [r12],r11
 mov r11,14
@@ -6874,7 +8643,7 @@ mov rdi,[r12]
 sub r12,8
 call print
 
-mov r11,string_72
+mov r11,string_94
 add r12,8
 mov [r12],r11
 mov r11,6
@@ -6909,7 +8678,7 @@ mov rdi,[r12]
 sub r12,8
 call print
 
-mov r11,string_73
+mov r11,string_95
 add r12,8
 mov [r12],r11
 mov r11,49
@@ -6927,8 +8696,8 @@ call print_newline
 mov rax,60
 mov rdi,0
 syscall
-if_else_56:
-if_then_56:
+if_else_75:
+if_then_75:
 mov rcx,[r12]
 sub r12,8
 mov r11,[r12]
@@ -6960,9 +8729,9 @@ mov [r12],r11
 mov r11,[r12]
 sub r12,8
 cmp r11,0
-je if_else_57
-if_57:
-mov r11,string_74
+je if_else_76
+if_76:
+mov r11,string_96
 add r12,8
 mov [r12],r11
 mov r11,14
@@ -6997,7 +8766,7 @@ mov rdi,[r12]
 sub r12,8
 call print
 
-mov r11,string_75
+mov r11,string_97
 add r12,8
 mov [r12],r11
 mov r11,6
@@ -7032,7 +8801,7 @@ mov rdi,[r12]
 sub r12,8
 call print
 
-mov r11,string_76
+mov r11,string_98
 add r12,8
 mov [r12],r11
 mov r11,44
@@ -7050,8 +8819,8 @@ call print_newline
 mov rax,60
 mov rdi,0
 syscall
-if_else_57:
-if_then_57:
+if_else_76:
+if_then_76:
 mov rcx,[r12]
 sub r12,8
 mov r11,[r12]
@@ -7190,9 +8959,9 @@ mov [r12],r11
 mov r11,[r12]
 sub r12,8
 cmp r11,0
-je if_else_58
-if_58:
-mov r11,string_77
+je if_else_77
+if_77:
+mov r11,string_99
 add r12,8
 mov [r12],r11
 mov r11,37
@@ -7210,8 +8979,8 @@ call print_newline
 mov rax,60
 mov rdi,0
 syscall
-if_else_58:
-if_then_58:
+if_else_77:
+if_then_77:
 mov r11,[r12]
 sub r12,8
 add r12,8
@@ -7399,13 +9168,13 @@ mov [r11],rcx
 call PASS_1
 
 ret
-jmp if_then_54
-if_else_54:
+jmp if_then_73
+if_else_73:
 mov r11,[r12]
 sub r12,8
 mov r11,[r12]
 sub r12,8
-if_then_54:
+if_then_73:
 mov rcx,[r12]
 sub r12,8
 mov r11,[r12]
@@ -7419,10 +9188,10 @@ mov [r12],r11
 add r12,8
 mov [r12],rcx
 
-mov r11,string_78
+mov r11,string_100
 add r12,8
 mov [r12],r11
-mov r11,3
+mov r11,2
 add r12,8
 mov [r12],r11
 
@@ -7444,17 +9213,48 @@ mov [r12],r11
 mov r11,[r12]
 sub r12,8
 cmp r11,0
-je if_else_59
-if_59:
-call TOKEN_MEM_DECL
+je if_else_78
+if_78:
+mov r11,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+call TOKEN_IF
 
 call ADD_TOKEN
+
+mov r11,[r12]
+sub r12,8
+add r12,8
+mov [r12],r11
+add r12,8
+mov [r12],r11
+mov r11,24
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov rcx,[r12]
+sub r12,8
+add r11,rcx
+add r12,8
+mov [r12],r11
+
+call CREATE_SCOPE
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+mov [r11],rcx
+call PUSH_IF_SCOPE
 
 call PASS_1
 
 ret
-if_else_59:
-if_then_59:
+if_else_78:
+if_then_78:
 mov rcx,[r12]
 sub r12,8
 mov r11,[r12]
@@ -7468,7 +9268,975 @@ mov [r12],r11
 add r12,8
 mov [r12],rcx
 
-mov r11,string_79
+mov r11,string_101
+add r12,8
+mov [r12],r11
+mov r11,4
+add r12,8
+mov [r12],r11
+
+call STRNCMP
+
+mov r11,[r12]
+sub r12,8
+cmp r11,0
+je if_else_79
+if_79:
+mov r11,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+call TOKEN_ELSE
+
+call ADD_TOKEN
+
+mov r11,24
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov rcx,[r12]
+sub r12,8
+add r11,rcx
+add r12,8
+mov [r12],r11
+
+call IS_TOP_SCOPE_IF
+
+mov r11,1
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+cmp rcx,r11
+setnz r11B
+movzx r11,r11B
+add r12,8
+mov [r12],r11
+mov r11,[r12]
+sub r12,8
+cmp r11,0
+je if_else_80
+if_80:
+mov r11,string_102
+add r12,8
+mov [r12],r11
+mov r11,45
+add r12,8
+mov [r12],r11
+
+mov rsi,[r12]
+sub r12,8
+mov rdi,[r12]
+sub r12,8
+call print
+
+call print_newline
+
+mov rax,60
+mov rdi,0
+syscall
+if_else_80:
+if_then_80:
+mov r11,scope_stack
+add r12,8
+mov [r12],r11
+
+mov r11,scope_stack_len
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov rcx,[r12]
+sub r12,8
+add r11,rcx
+add r12,8
+mov [r12],r11
+
+mov r11,8
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+sub r11,rcx
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,24
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov rcx,[r12]
+sub r12,8
+add r11,rcx
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+mov [r11],rcx
+call PASS_1
+
+ret
+if_else_79:
+if_then_79:
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+add r12,8
+mov [r12],r11
+add r12,8
+mov [r12],rcx
+add r12,8
+mov [r12],r11
+add r12,8
+mov [r12],rcx
+
+mov r11,string_103
+add r12,8
+mov [r12],r11
+mov r11,4
+add r12,8
+mov [r12],r11
+
+call STRNCMP
+
+mov r11,[r12]
+sub r12,8
+cmp r11,0
+je if_else_81
+if_81:
+mov r11,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+call TOKEN_THEN
+
+call ADD_TOKEN
+
+mov r11,24
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov rcx,[r12]
+sub r12,8
+add r11,rcx
+add r12,8
+mov [r12],r11
+
+call IS_TOP_SCOPE_IF
+
+mov r11,1
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+cmp rcx,r11
+setnz r11B
+movzx r11,r11B
+add r12,8
+mov [r12],r11
+mov r11,[r12]
+sub r12,8
+cmp r11,0
+je if_else_82
+if_82:
+mov r11,string_104
+add r12,8
+mov [r12],r11
+mov r11,45
+add r12,8
+mov [r12],r11
+
+mov rsi,[r12]
+sub r12,8
+mov rdi,[r12]
+sub r12,8
+call print
+
+call print_newline
+
+mov rax,60
+mov rdi,0
+syscall
+if_else_82:
+if_then_82:
+mov r11,scope_stack
+add r12,8
+mov [r12],r11
+
+mov r11,scope_stack_len
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov rcx,[r12]
+sub r12,8
+add r11,rcx
+add r12,8
+mov [r12],r11
+
+mov r11,8
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+sub r11,rcx
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,24
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov rcx,[r12]
+sub r12,8
+add r11,rcx
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+mov [r11],rcx
+mov r11,scope_stack
+add r12,8
+mov [r12],r11
+
+mov r11,scope_stack_len
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov rcx,[r12]
+sub r12,8
+add r11,rcx
+add r12,8
+mov [r12],r11
+
+mov r11,8
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+sub r11,rcx
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+call POP_IF_SCOPE
+
+call PASS_1
+
+ret
+if_else_81:
+if_then_81:
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+add r12,8
+mov [r12],r11
+add r12,8
+mov [r12],rcx
+add r12,8
+mov [r12],r11
+add r12,8
+mov [r12],rcx
+
+mov r11,string_105
+add r12,8
+mov [r12],r11
+mov r11,5
+add r12,8
+mov [r12],r11
+
+call STRNCMP
+
+mov r11,1
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+cmp rcx,r11
+setz r11B
+movzx r11,r11B
+add r12,8
+mov [r12],r11
+mov r11,[r12]
+sub r12,8
+cmp r11,0
+je if_else_83
+if_83:
+mov r11,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+call TOKEN_WHILE
+
+call ADD_TOKEN
+
+mov r11,[r12]
+sub r12,8
+add r12,8
+mov [r12],r11
+add r12,8
+mov [r12],r11
+mov r11,[r12]
+sub r12,8
+add r12,8
+mov [r12],r11
+add r12,8
+mov [r12],r11
+mov r11,24
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov rcx,[r12]
+sub r12,8
+add r11,rcx
+add r12,8
+mov [r12],r11
+
+call CREATE_SCOPE
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+mov [r11],rcx
+mov r11,32
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov rcx,[r12]
+sub r12,8
+add r11,rcx
+add r12,8
+mov [r12],r11
+
+mov r11,0
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+mov [r11],rcx
+call PUSH_WHILE_SCOPE
+
+call PASS_1
+
+ret
+if_else_83:
+if_then_83:
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+add r12,8
+mov [r12],r11
+add r12,8
+mov [r12],rcx
+add r12,8
+mov [r12],r11
+add r12,8
+mov [r12],rcx
+
+mov r11,string_106
+add r12,8
+mov [r12],r11
+mov r11,2
+add r12,8
+mov [r12],r11
+
+call STRNCMP
+
+mov r11,[r12]
+sub r12,8
+cmp r11,0
+je if_else_84
+if_84:
+mov r11,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+call TOKEN_DO
+
+call ADD_TOKEN
+
+mov r11,24
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov rcx,[r12]
+sub r12,8
+add r11,rcx
+add r12,8
+mov [r12],r11
+
+call IS_TOP_SCOPE_WHILE
+
+mov r11,1
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+cmp rcx,r11
+setnz r11B
+movzx r11,r11B
+add r12,8
+mov [r12],r11
+mov r11,[r12]
+sub r12,8
+cmp r11,0
+je if_else_85
+if_85:
+mov r11,string_107
+add r12,8
+mov [r12],r11
+mov r11,46
+add r12,8
+mov [r12],r11
+
+mov rsi,[r12]
+sub r12,8
+mov rdi,[r12]
+sub r12,8
+call print
+
+call print_newline
+
+mov rax,60
+mov rdi,0
+syscall
+if_else_85:
+if_then_85:
+mov r11,scope_stack
+add r12,8
+mov [r12],r11
+
+mov r11,scope_stack_len
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov rcx,[r12]
+sub r12,8
+add r11,rcx
+add r12,8
+mov [r12],r11
+
+mov r11,8
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+sub r11,rcx
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,24
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov rcx,[r12]
+sub r12,8
+add r11,rcx
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+mov [r11],rcx
+mov r11,scope_stack
+add r12,8
+mov [r12],r11
+
+mov r11,scope_stack_len
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov rcx,[r12]
+sub r12,8
+add r11,rcx
+add r12,8
+mov [r12],r11
+
+mov r11,8
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+sub r11,rcx
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,32
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov rcx,[r12]
+sub r12,8
+add r11,rcx
+add r12,8
+mov [r12],r11
+
+mov r11,1
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+mov [r11],rcx
+call PASS_1
+
+ret
+if_else_84:
+if_then_84:
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+add r12,8
+mov [r12],r11
+add r12,8
+mov [r12],rcx
+add r12,8
+mov [r12],r11
+add r12,8
+mov [r12],rcx
+
+mov r11,string_108
+add r12,8
+mov [r12],r11
+mov r11,3
+add r12,8
+mov [r12],r11
+
+call STRNCMP
+
+mov r11,[r12]
+sub r12,8
+cmp r11,0
+je if_else_86
+if_86:
+mov r11,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+call TOKEN_END
+
+call ADD_TOKEN
+
+mov r11,24
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov rcx,[r12]
+sub r12,8
+add r11,rcx
+add r12,8
+mov [r12],r11
+
+call IS_TOP_SCOPE_WHILE
+
+mov r11,1
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+cmp rcx,r11
+setnz r11B
+movzx r11,r11B
+add r12,8
+mov [r12],r11
+mov r11,[r12]
+sub r12,8
+cmp r11,0
+je if_else_87
+if_87:
+mov r11,string_109
+add r12,8
+mov [r12],r11
+mov r11,47
+add r12,8
+mov [r12],r11
+
+mov rsi,[r12]
+sub r12,8
+mov rdi,[r12]
+sub r12,8
+call print
+
+call print_newline
+
+mov rax,60
+mov rdi,0
+syscall
+if_else_87:
+if_then_87:
+mov r11,scope_stack
+add r12,8
+mov [r12],r11
+
+mov r11,scope_stack_len
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov rcx,[r12]
+sub r12,8
+add r11,rcx
+add r12,8
+mov [r12],r11
+
+mov r11,8
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+sub r11,rcx
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,24
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov rcx,[r12]
+sub r12,8
+add r11,rcx
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+mov [r11],rcx
+mov r11,scope_stack
+add r12,8
+mov [r12],r11
+
+mov r11,scope_stack_len
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov rcx,[r12]
+sub r12,8
+add r11,rcx
+add r12,8
+mov [r12],r11
+
+mov r11,8
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+sub r11,rcx
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,32
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov rcx,[r12]
+sub r12,8
+add r11,rcx
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,1
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+cmp rcx,r11
+setnz r11B
+movzx r11,r11B
+add r12,8
+mov [r12],r11
+mov r11,[r12]
+sub r12,8
+cmp r11,0
+je if_else_88
+if_88:
+mov r11,string_110
+add r12,8
+mov [r12],r11
+mov r11,43
+add r12,8
+mov [r12],r11
+
+mov rsi,[r12]
+sub r12,8
+mov rdi,[r12]
+sub r12,8
+call print
+
+call print_newline
+
+mov rax,60
+mov rdi,0
+syscall
+if_else_88:
+if_then_88:
+mov r11,scope_stack
+add r12,8
+mov [r12],r11
+
+mov r11,scope_stack_len
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov rcx,[r12]
+sub r12,8
+add r11,rcx
+add r12,8
+mov [r12],r11
+
+mov r11,8
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+sub r11,rcx
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+call POP_WHILE_SCOPE
+
+call PASS_1
+
+ret
+if_else_86:
+if_then_86:
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+add r12,8
+mov [r12],r11
+add r12,8
+mov [r12],rcx
+add r12,8
+mov [r12],r11
+add r12,8
+mov [r12],rcx
+
+mov r11,string_111
 add r12,8
 mov [r12],r11
 mov r11,4
@@ -7493,8 +10261,8 @@ mov [r12],r11
 mov r11,[r12]
 sub r12,8
 cmp r11,0
-je if_else_60
-if_60:
+je if_else_89
+if_89:
 mov r11,[r12]
 sub r12,8
 mov r11,[r12]
@@ -7527,9 +10295,9 @@ mov [r12],r11
 mov r11,[r12]
 sub r12,8
 cmp r11,0
-je if_else_61
-if_61:
-mov r11,string_80
+je if_else_90
+if_90:
+mov r11,string_112
 add r12,8
 mov [r12],r11
 mov r11,14
@@ -7564,7 +10332,7 @@ mov rdi,[r12]
 sub r12,8
 call print
 
-mov r11,string_81
+mov r11,string_113
 add r12,8
 mov [r12],r11
 mov r11,6
@@ -7599,7 +10367,7 @@ mov rdi,[r12]
 sub r12,8
 call print
 
-mov r11,string_82
+mov r11,string_114
 add r12,8
 mov [r12],r11
 mov r11,40
@@ -7617,8 +10385,8 @@ call print_newline
 mov rax,60
 mov rdi,0
 syscall
-if_else_61:
-if_then_61:
+if_else_90:
+if_then_90:
 mov rcx,[r12]
 sub r12,8
 mov r11,[r12]
@@ -7650,9 +10418,9 @@ mov [r12],r11
 mov r11,[r12]
 sub r12,8
 cmp r11,0
-je if_else_62
-if_62:
-mov r11,string_83
+je if_else_91
+if_91:
+mov r11,string_115
 add r12,8
 mov [r12],r11
 mov r11,14
@@ -7687,7 +10455,7 @@ mov rdi,[r12]
 sub r12,8
 call print
 
-mov r11,string_84
+mov r11,string_116
 add r12,8
 mov [r12],r11
 mov r11,6
@@ -7722,7 +10490,7 @@ mov rdi,[r12]
 sub r12,8
 call print
 
-mov r11,string_85
+mov r11,string_117
 add r12,8
 mov [r12],r11
 mov r11,37
@@ -7740,8 +10508,8 @@ call print_newline
 mov rax,60
 mov rdi,0
 syscall
-if_else_62:
-if_then_62:
+if_else_91:
+if_then_91:
 mov rcx,[r12]
 sub r12,8
 mov r11,[r12]
@@ -7880,9 +10648,9 @@ mov [r12],r11
 mov r11,[r12]
 sub r12,8
 cmp r11,0
-je if_else_63
-if_63:
-mov r11,string_86
+je if_else_92
+if_92:
+mov r11,string_118
 add r12,8
 mov [r12],r11
 mov r11,35
@@ -7900,8 +10668,8 @@ call print_newline
 mov rax,60
 mov rdi,0
 syscall
-if_else_63:
-if_then_63:
+if_else_92:
+if_then_92:
 mov r11,[r12]
 sub r12,8
 add r12,8
@@ -8089,8 +10857,8 @@ mov [r11],rcx
 call PASS_1
 
 ret
-if_else_60:
-if_then_60:
+if_else_89:
+if_then_89:
 mov rcx,[r12]
 sub r12,8
 mov r11,[r12]
@@ -8128,8 +10896,8 @@ mov [r12],r11
 mov r11,[r12]
 sub r12,8
 cmp r11,0
-je if_else_64
-if_64:
+je if_else_93
+if_93:
 call ADD_TOKEN
 
 mov r11,[r12]
@@ -8141,15 +10909,15 @@ sub r12,8
 call PASS_1
 
 ret
-if_else_64:
-if_then_64:
+if_else_93:
+if_then_93:
 mov r11,[r12]
 sub r12,8
 mov r11,[r12]
 sub r12,8
 mov r11,[r12]
 sub r12,8
-mov r11,string_87
+mov r11,string_119
 add r12,8
 mov [r12],r11
 mov r11,20
@@ -8162,7 +10930,7 @@ mov rdi,[r12]
 sub r12,8
 call print
 
-mov r11,string_88
+mov r11,string_120
 add r12,8
 mov [r12],r11
 mov r11,6
@@ -8187,7 +10955,7 @@ mov [r12],r11
 
 call PRINT_INT
 
-mov r11,string_89
+mov r11,string_121
 add r12,8
 mov [r12],r11
 mov r11,7
@@ -8212,7 +10980,7 @@ mov [r12],r11
 
 call PRINT_INT
 
-mov r11,string_90
+mov r11,string_122
 add r12,8
 mov [r12],r11
 mov r11,2
