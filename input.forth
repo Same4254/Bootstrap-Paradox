@@ -343,6 +343,9 @@ VARIABLE variable_names_len
 MEM      method_names 1024
 VARIABLE method_names_len
 
+MEM      referenced_names 1024
+VARIABLE referenced_names_len
+
 MEM      scope_stack 1024
 VARIABLE scope_stack_len
 VARIABLE scope_next_id
@@ -1046,9 +1049,35 @@ FUNC PRINT_TOKEN ( ptr -> )
         RET
     THEN
 
+    DUP TOKEN_VARIABLE_REF = IF
+        DROP 
+
+        "Token: Var Ref. Name: " TYPE
+        DUP
+        24 + @
+        SWAP
+        32 + @
+
+        TYPE CR
+        RET
+    THEN
+
     DUP TOKEN_FUNC_DECL = IF
         DROP
         "Token: Func Decl. Name: " TYPE
+        DUP
+        24 + @
+        SWAP
+        32 + @
+
+        TYPE CR
+        RET
+    THEN
+
+    DUP TOKEN_FUNC_CALL = IF
+        DROP 
+
+        "Token: Func Call. Name: " TYPE
         DUP
         24 + @
         SWAP
@@ -1064,9 +1093,16 @@ FUNC PRINT_TOKEN ( ptr -> )
         DROP DROP
         RET
     ELSE
-        "Unkown token id: " TYPE 
-        .
         DROP
+        DROP
+        DROP
+        "Unkown token: " TYPE 
+        DUP
+
+        24 + @
+        SWAP 32 + @
+        TYPE CR
+ 
         RET
     THEN
 RET
@@ -1196,68 +1232,6 @@ FUNC PASS_1
         DROP DROP
         PASS_1
         RET
-    THEN
-
-    ( Variable Declaration )
-
-    ( need to keep track of which is true, but keep common code )
-    2DUP 2DUP "VARIABLE" STRNCMP 
-    ROT ROT   "MEM"      STRNCMP
-    2DUP OR
-    IF
-        IF
-            DROP DROP DROP
-            TOKEN_MEM_DECL ADD_TOKEN
-        ELSE
-            DROP DROP DROP
-            TOKEN_VARIABLE_DECL ADD_TOKEN
-        THEN
-
-        GRAB_TOKEN
-
-        DUP 0 = IF
-            "[Error. Line: " TYPE 
-            int_to_string_buffer line @ INT_TO_STRING TYPE
-
-            " Col: " TYPE
-            int_to_string_buffer col @ INT_TO_STRING TYPE
-            "]: Variable declaration expected a variable name!" TYPE CR
-
-            SYS_EXIT
-        THEN
-
-        2DUP FIND_TOKEN_BY_STR 0 != IF
-            "[Error. Line: " TYPE 
-            int_to_string_buffer line @ INT_TO_STRING TYPE
-
-            " Col: " TYPE
-            int_to_string_buffer col @ INT_TO_STRING TYPE
-            "]: Variable declaration cannot be a keyword!" TYPE CR
-        
-            SYS_EXIT
-        THEN
-
-        ROT DUP
-        24 + variable_names variable_names_len @ + !
-        32 + OVER !
-
-        DUP 1 + variable_names_len @ + 1024 >= IF
-            "Ran out of memory for variable names!" TYPE CR
-            SYS_EXIT
-        THEN
-        
-        DUP ROT ROT
-        variable_names variable_names_len @ + ROT ROT MEMCPY
-
-        variable_names_len variable_names_len @ ROT + !
-        variable_names variable_names_len @ + 0 !b
-        variable_names_len variable_names_len @ 1 + !
-
-        PASS_1
-        RET
-    ELSE
-        ( drop the two flags for the OR )
-        DROP DROP
     THEN
 
     ( IF )
@@ -1394,6 +1368,68 @@ FUNC PASS_1
         RET
     THEN
 
+    ( Variable Declaration )
+
+    ( need to keep track of which is true, but keep common code )
+    2DUP 2DUP "VARIABLE" STRNCMP 
+    ROT ROT   "MEM"      STRNCMP
+    2DUP OR
+    IF
+        IF
+            DROP DROP DROP
+            TOKEN_MEM_DECL ADD_TOKEN
+        ELSE
+            DROP DROP DROP
+            TOKEN_VARIABLE_DECL ADD_TOKEN
+        THEN
+
+        GRAB_TOKEN
+
+        DUP 0 = IF
+            "[Error. Line: " TYPE 
+            int_to_string_buffer line @ INT_TO_STRING TYPE
+
+            " Col: " TYPE
+            int_to_string_buffer col @ INT_TO_STRING TYPE
+            "]: Variable declaration expected a variable name!" TYPE CR
+
+            SYS_EXIT
+        THEN
+
+        2DUP FIND_TOKEN_BY_STR 0 != IF
+            "[Error. Line: " TYPE 
+            int_to_string_buffer line @ INT_TO_STRING TYPE
+
+            " Col: " TYPE
+            int_to_string_buffer col @ INT_TO_STRING TYPE
+            "]: Variable declaration cannot be a keyword!" TYPE CR
+        
+            SYS_EXIT
+        THEN
+
+        ROT DUP
+        24 + variable_names variable_names_len @ + !
+        32 + OVER !
+
+        DUP 1 + variable_names_len @ + 1024 >= IF
+            "Ran out of memory for variable names!" TYPE CR
+            SYS_EXIT
+        THEN
+        
+        DUP ROT ROT
+        variable_names variable_names_len @ + ROT ROT MEMCPY
+
+        variable_names_len variable_names_len @ ROT + !
+        variable_names variable_names_len @ + 0 !b
+        variable_names_len variable_names_len @ 1 + !
+
+        PASS_1
+        RET
+    ELSE
+        ( drop the two flags for the OR )
+        DROP DROP
+    THEN
+
     ( Method Declaration )
     2DUP "FUNC" STRNCMP 1 = IF
         DROP DROP
@@ -1443,7 +1479,7 @@ FUNC PASS_1
         RET
     THEN
 
-    ( Catch-all case )
+    ( Catch-all keyword case )
     2DUP FIND_TOKEN_BY_STR DUP 0 != IF
         ADD_TOKEN DROP
 
@@ -1452,42 +1488,106 @@ FUNC PASS_1
         RET
     THEN
 
-    DROP DROP DROP
+    ( Unknown name reference )
+    ( TBD in Pass 2 )
+    ( tabbed on purpose to match the pattern above )
+        ( str len token_id=0 )
+        DROP
 
-    "Unrecognized Token. " TYPE
+        ( str len )
+        DUP referenced_names_len @ + 1024 >= IF
+            "Ran out of memory for referenced names!" TYPE CR
+            SYS_EXIT
+        THEN
 
-    "Line: " TYPE 
-    line @ PRINT_INT
+        DUP ROT ROT
 
-    ", Col: " TYPE
-    col @ PRINT_INT
+        ( len str len )
+        referenced_names referenced_names_len @ + ROT ROT MEMCPY
 
-    ". " TYPE 
+        ( store the starting pointer to the string )
+        referenced_names referenced_names_len @ +
+        SWAP
 
-    token token_len @ TYPE CR
+        ( str len )
+        DUP referenced_names_len @ + 1 +
+        referenced_names_len SWAP !
 
+        ( null terminator )
+        referenced_names referenced_names_len @ + 0 !b
+
+        ( str len )
+        TOKEN_UNKOWN_NAME ADD_TOKEN
+
+        DUP 
+
+        ( str len tok tok )
+        32 + 
+        ROT
+
+        ( str tok tok+32 len )
+        !
+
+        ( str tok )
+        24 + SWAP !
+
+        PASS_1
 RET
 
-( get memory blocks )
+FUNC PASS_2_HELP ( off -> )
+    DUP token_struct_len @ >= IF
+        DROP
+        RET
+    THEN
+
+    ( off )
+    DUP 8 + SWAP
+    token_struct + 
+    DUP @
+    
+    ( off+8 ptr id )
+    DUP TOKEN_UNKOWN_NAME = IF
+        ( off+8 token_ptr id )
+        SWAP
+
+        DUP DUP
+
+        24 + @ SWAP 32 + @
+        2DUP IS_VAR_NAME IF
+            DROP DROP
+            DUP TOKEN_VARIABLE_REF !
+        ELSE 2DUP IS_METHOD_NAME IF
+            DROP DROP
+            DUP TOKEN_FUNC_CALL !
+        ELSE
+            DROP DROP
+            "Name does not reference a variable or method: " TYPE
+            TYPE CR
+            SYS_EXIT
+        THEN THEN
+    THEN
+
+    DROP
+    DROP
+    PASS_2_HELP
+RET
+
+( assign tokens to previously unkonwn names, such as variable references or method calls )
 FUNC PASS_2
-
+    0 PASS_2_HELP
 RET
 
-( method names )
-FUNC PASS_3
-
-RET
-
-( translate functions )
-FUNC PASS_4 
-
-RET
-
-( translate free hanging code )
-FUNC PASS_5
-
-RET
+CR
+"Pass 1" TYPE CR
 
 PASS_1
 
 PRINT_TOKENS
+STACK_LEN .
+
+CR
+"PASS 2" TYPE CR
+
+PASS_2
+PRINT_TOKENS
+STACK_LEN .

@@ -8,3 +8,7 @@ THEN
 IF
 ELSE
 THEN
+
+VARIABLE var
+
+var

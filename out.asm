@@ -651,9 +651,73 @@ sub r12,8
 mov [r11],rcx
 call F_FILL_BUFFER
 
+call print_newline
+
+mov r11,string_123
+add r12,8
+mov [r12],r11
+mov r11,6
+add r12,8
+mov [r12],r11
+
+mov rsi,[r12]
+sub r12,8
+mov rdi,[r12]
+sub r12,8
+call print
+
+call print_newline
+
 call PASS_1
 
 call PRINT_TOKENS
+
+mov rdx,0
+mov rax,r12
+sub rax,the_stack
+mov r11,8
+idiv r11
+add r12,8
+mov [r12],rax
+mov rdi,[r12]
+sub r12,8
+call print_int
+
+call print_newline
+
+call print_newline
+
+mov r11,string_124
+add r12,8
+mov [r12],r11
+mov r11,6
+add r12,8
+mov [r12],r11
+
+mov rsi,[r12]
+sub r12,8
+mov rdi,[r12]
+sub r12,8
+call print
+
+call print_newline
+
+call PASS_2
+
+call PRINT_TOKENS
+
+mov rdx,0
+mov rax,r12
+sub rax,the_stack
+mov r11,8
+idiv r11
+add r12,8
+mov [r12],rax
+mov rdi,[r12]
+sub r12,8
+call print_int
+
+call print_newline
 
 ; exit
 mov rax, 60

@@ -8,6 +8,7 @@ token_id_to_string resb 4096
 string_literals resb 1024
 variable_names resb 1024
 method_names resb 1024
+referenced_names resb 1024
 scope_stack resb 1024
 if_stack resb 1024
 while_stack resb 1024

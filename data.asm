@@ -15,6 +15,7 @@ token_id_to_string_len dq 0
 string_literals_len dq 0
 variable_names_len dq 0
 method_names_len dq 0
+referenced_names_len dq 0
 scope_stack_len dq 0
 scope_next_id dq 0
 if_stack_len dq 0
@@ -106,39 +107,41 @@ string_83 db "Token: DO. ID: ", 0
 string_84 db "Token: THEN. ID: ", 0
 string_85 db "Token: Variable Decl. Name: ", 0
 string_86 db "Token: Mem Decl. Name: ", 0
-string_87 db "Token: Func Decl. Name: ", 0
-string_88 db "Token: ", 0
-string_89 db "Unkown token id: ", 0
-string_90 db "Ran out of space to write string literals", 0
-string_91 db "VARIABLE", 0
-string_92 db "MEM", 0
-string_93 db "[Error. Line: ", 0
-string_94 db " Col: ", 0
-string_95 db "]: Variable declaration expected a variable name!", 0
-string_96 db "[Error. Line: ", 0
-string_97 db " Col: ", 0
-string_98 db "]: Variable declaration cannot be a keyword!", 0
-string_99 db "Ran out of memory for variable names!", 0
-string_100 db "IF", 0
-string_101 db "ELSE", 0
-string_102 db "Attempted to add ELSE token in a non-IF scope", 0
-string_103 db "THEN", 0
-string_104 db "Attempted to add THEN token in a non-IF scope", 0
-string_105 db "WHILE", 0
-string_106 db "DO", 0
-string_107 db "Attempted to add DO token in a non-WHILE scope", 0
-string_108 db "END", 0
-string_109 db "Attempted to add END token in a non-WHILE scope", 0
-string_110 db "WHILE loop does not have a corresponding DO", 0
-string_111 db "FUNC", 0
-string_112 db "[Error. Line: ", 0
-string_113 db " Col: ", 0
-string_114 db "]: Function declaration expected a name!", 0
-string_115 db "[Error. Line: ", 0
-string_116 db " Col: ", 0
-string_117 db "]: Function name cannot be a keyword!", 0
-string_118 db "Ran out of memory for method names!", 0
-string_119 db "Unrecognized Token. ", 0
-string_120 db "Line: ", 0
-string_121 db ", Col: ", 0
-string_122 db ". ", 0
+string_87 db "Token: Var Ref. Name: ", 0
+string_88 db "Token: Func Decl. Name: ", 0
+string_89 db "Token: Func Call. Name: ", 0
+string_90 db "Token: ", 0
+string_91 db "Unkown token: ", 0
+string_92 db "Ran out of space to write string literals", 0
+string_93 db "IF", 0
+string_94 db "ELSE", 0
+string_95 db "Attempted to add ELSE token in a non-IF scope", 0
+string_96 db "THEN", 0
+string_97 db "Attempted to add THEN token in a non-IF scope", 0
+string_98 db "WHILE", 0
+string_99 db "DO", 0
+string_100 db "Attempted to add DO token in a non-WHILE scope", 0
+string_101 db "END", 0
+string_102 db "Attempted to add END token in a non-WHILE scope", 0
+string_103 db "WHILE loop does not have a corresponding DO", 0
+string_104 db "VARIABLE", 0
+string_105 db "MEM", 0
+string_106 db "[Error. Line: ", 0
+string_107 db " Col: ", 0
+string_108 db "]: Variable declaration expected a variable name!", 0
+string_109 db "[Error. Line: ", 0
+string_110 db " Col: ", 0
+string_111 db "]: Variable declaration cannot be a keyword!", 0
+string_112 db "Ran out of memory for variable names!", 0
+string_113 db "FUNC", 0
+string_114 db "[Error. Line: ", 0
+string_115 db " Col: ", 0
+string_116 db "]: Function declaration expected a name!", 0
+string_117 db "[Error. Line: ", 0
+string_118 db " Col: ", 0
+string_119 db "]: Function name cannot be a keyword!", 0
+string_120 db "Ran out of memory for method names!", 0
+string_121 db "Ran out of memory for referenced names!", 0
+string_122 db "Name does not reference a variable or method: ", 0
+string_123 db "Pass 1", 0
+string_124 db "PASS 2", 0
