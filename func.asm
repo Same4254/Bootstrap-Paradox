@@ -1976,7 +1976,7 @@ mov [r12],r11
 
 ret
 TOKEN_STRUCT_SIZE:
-mov r11,40
+mov r11,48
 add r12,8
 mov [r12],r11
 
@@ -3073,7 +3073,7 @@ add r11,rcx
 add r12,8
 mov [r12],r11
 
-mov r11,1024
+mov r11,4800000
 add r12,8
 mov [r12],r11
 
@@ -7327,6 +7327,12 @@ add r12,8
 mov [r12],r11
 add r12,8
 mov [r12],r11
+mov r11,[r12]
+sub r12,8
+add r12,8
+mov [r12],r11
+add r12,8
+mov [r12],r11
 mov r11,24
 add r12,8
 mov [r12],r11
@@ -7378,6 +7384,41 @@ mov rdi,[r12]
 sub r12,8
 call print
 
+mov r11,string_87
+add r12,8
+mov [r12],r11
+mov r11,10
+add r12,8
+mov [r12],r11
+
+mov rsi,[r12]
+sub r12,8
+mov rdi,[r12]
+sub r12,8
+call print
+
+mov r11,40
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov rcx,[r12]
+sub r12,8
+add r11,rcx
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov rdi,[r12]
+sub r12,8
+call print_int
+
 call print_newline
 
 ret
@@ -7407,7 +7448,7 @@ je if_else_62
 if_62:
 mov r11,[r12]
 sub r12,8
-mov r11,string_87
+mov r11,string_88
 add r12,8
 mov [r12],r11
 mov r11,22
@@ -7506,7 +7547,7 @@ je if_else_63
 if_63:
 mov r11,[r12]
 sub r12,8
-mov r11,string_88
+mov r11,string_89
 add r12,8
 mov [r12],r11
 mov r11,24
@@ -7605,7 +7646,7 @@ je if_else_64
 if_64:
 mov r11,[r12]
 sub r12,8
-mov r11,string_89
+mov r11,string_90
 add r12,8
 mov [r12],r11
 mov r11,24
@@ -7712,7 +7753,7 @@ sub r12,8
 cmp r11,0
 je if_else_65
 if_65:
-mov r11,string_90
+mov r11,string_91
 add r12,8
 mov [r12],r11
 mov r11,7
@@ -7746,7 +7787,7 @@ mov r11,[r12]
 sub r12,8
 mov r11,[r12]
 sub r12,8
-mov r11,string_91
+mov r11,string_92
 add r12,8
 mov [r12],r11
 mov r11,14
@@ -8394,7 +8435,7 @@ sub r12,8
 cmp r11,0
 je if_else_73
 if_73:
-mov r11,string_92
+mov r11,string_93
 add r12,8
 mov [r12],r11
 mov r11,41
@@ -8726,7 +8767,7 @@ mov [r12],r11
 add r12,8
 mov [r12],rcx
 
-mov r11,string_93
+mov r11,string_94
 add r12,8
 mov [r12],r11
 mov r11,2
@@ -8806,7 +8847,7 @@ mov [r12],r11
 add r12,8
 mov [r12],rcx
 
-mov r11,string_94
+mov r11,string_95
 add r12,8
 mov [r12],r11
 mov r11,4
@@ -8860,7 +8901,7 @@ sub r12,8
 cmp r11,0
 je if_else_77
 if_77:
-mov r11,string_95
+mov r11,string_96
 add r12,8
 mov [r12],r11
 mov r11,45
@@ -8961,7 +9002,7 @@ mov [r12],r11
 add r12,8
 mov [r12],rcx
 
-mov r11,string_96
+mov r11,string_97
 add r12,8
 mov [r12],r11
 mov r11,4
@@ -9015,7 +9056,7 @@ sub r12,8
 cmp r11,0
 je if_else_79
 if_79:
-mov r11,string_97
+mov r11,string_98
 add r12,8
 mov [r12],r11
 mov r11,45
@@ -9158,7 +9199,7 @@ mov [r12],r11
 add r12,8
 mov [r12],rcx
 
-mov r11,string_98
+mov r11,string_99
 add r12,8
 mov [r12],r11
 mov r11,5
@@ -9265,7 +9306,7 @@ mov [r12],r11
 add r12,8
 mov [r12],rcx
 
-mov r11,string_99
+mov r11,string_100
 add r12,8
 mov [r12],r11
 mov r11,2
@@ -9319,7 +9360,7 @@ sub r12,8
 cmp r11,0
 je if_else_82
 if_82:
-mov r11,string_100
+mov r11,string_101
 add r12,8
 mov [r12],r11
 mov r11,46
@@ -9481,7 +9522,7 @@ mov [r12],r11
 add r12,8
 mov [r12],rcx
 
-mov r11,string_101
+mov r11,string_102
 add r12,8
 mov [r12],r11
 mov r11,3
@@ -9535,7 +9576,7 @@ sub r12,8
 cmp r11,0
 je if_else_84
 if_84:
-mov r11,string_102
+mov r11,string_103
 add r12,8
 mov [r12],r11
 mov r11,47
@@ -9694,7 +9735,7 @@ sub r12,8
 cmp r11,0
 je if_else_85
 if_85:
-mov r11,string_103
+mov r11,string_104
 add r12,8
 mov [r12],r11
 mov r11,43
@@ -9787,7 +9828,7 @@ mov [r12],r11
 add r12,8
 mov [r12],rcx
 
-mov r11,string_104
+mov r11,string_105
 add r12,8
 mov [r12],r11
 mov r11,8
@@ -9822,7 +9863,7 @@ mov [r12],rcx
 add r12,8
 mov [r12],rdi
 
-mov r11,string_105
+mov r11,string_106
 add r12,8
 mov [r12],r11
 mov r11,3
@@ -9868,6 +9909,10 @@ mov r11,[r12]
 sub r12,8
 mov r11,[r12]
 sub r12,8
+mov r11,1
+add r12,8
+mov [r12],r11
+
 call TOKEN_MEM_DECL
 
 call ADD_TOKEN
@@ -9880,6 +9925,10 @@ mov r11,[r12]
 sub r12,8
 mov r11,[r12]
 sub r12,8
+mov r11,0
+add r12,8
+mov [r12],r11
+
 call TOKEN_VARIABLE_DECL
 
 call ADD_TOKEN
@@ -9911,7 +9960,7 @@ sub r12,8
 cmp r11,0
 je if_else_88
 if_88:
-mov r11,string_106
+mov r11,string_107
 add r12,8
 mov [r12],r11
 mov r11,14
@@ -9946,7 +9995,7 @@ mov rdi,[r12]
 sub r12,8
 call print
 
-mov r11,string_107
+mov r11,string_108
 add r12,8
 mov [r12],r11
 mov r11,6
@@ -9981,7 +10030,7 @@ mov rdi,[r12]
 sub r12,8
 call print
 
-mov r11,string_108
+mov r11,string_109
 add r12,8
 mov [r12],r11
 mov r11,49
@@ -10034,7 +10083,7 @@ sub r12,8
 cmp r11,0
 je if_else_89
 if_89:
-mov r11,string_109
+mov r11,string_110
 add r12,8
 mov [r12],r11
 mov r11,14
@@ -10069,7 +10118,7 @@ mov rdi,[r12]
 sub r12,8
 call print
 
-mov r11,string_110
+mov r11,string_111
 add r12,8
 mov [r12],r11
 mov r11,6
@@ -10104,7 +10153,7 @@ mov rdi,[r12]
 sub r12,8
 call print
 
-mov r11,string_111
+mov r11,string_112
 add r12,8
 mov [r12],r11
 mov r11,44
@@ -10264,7 +10313,7 @@ sub r12,8
 cmp r11,0
 je if_else_90
 if_90:
-mov r11,string_112
+mov r11,string_113
 add r12,8
 mov [r12],r11
 mov r11,37
@@ -10468,6 +10517,122 @@ sub r12,8
 mov r11,[r12]
 sub r12,8
 mov [r11],rcx
+mov r11,[r12]
+sub r12,8
+cmp r11,0
+je if_else_91
+if_91:
+call GRAB_TOKEN
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+add r12,8
+mov [r12],r11
+add r12,8
+mov [r12],rcx
+add r12,8
+mov [r12],r11
+add r12,8
+mov [r12],rcx
+
+call STR_IS_INT
+
+mov r11,[r12]
+sub r12,8
+cmp r11,0
+je if_else_92
+if_92:
+call STR_TO_INT
+
+mov r11,token_struct
+add r12,8
+mov [r12],r11
+
+mov r11,token_struct_len
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov r11,[r11]
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov rcx,[r12]
+sub r12,8
+add r11,rcx
+add r12,8
+mov [r12],r11
+
+call TOKEN_STRUCT_SIZE
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+sub r11,rcx
+add r12,8
+mov [r12],r11
+
+mov r11,40
+add r12,8
+mov [r12],r11
+
+mov r11,[r12]
+sub r12,8
+mov rcx,[r12]
+sub r12,8
+add r11,rcx
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+add r12,8
+mov [r12],rcx
+add r12,8
+mov [r12],r11
+
+mov rcx,[r12]
+sub r12,8
+mov r11,[r12]
+sub r12,8
+mov [r11],rcx
+jmp if_then_92
+if_else_92:
+mov r11,string_114
+add r12,8
+mov [r12],r11
+mov r11,45
+add r12,8
+mov [r12],r11
+
+mov rsi,[r12]
+sub r12,8
+mov rdi,[r12]
+sub r12,8
+call print
+
+mov rsi,[r12]
+sub r12,8
+mov rdi,[r12]
+sub r12,8
+call print
+
+call print_newline
+
+mov rax,60
+mov rdi,0
+syscall
+if_then_92:
+if_else_91:
+if_then_91:
 call PASS_1
 
 ret
@@ -10491,7 +10656,7 @@ mov [r12],r11
 add r12,8
 mov [r12],rcx
 
-mov r11,string_113
+mov r11,string_115
 add r12,8
 mov [r12],r11
 mov r11,4
@@ -10516,8 +10681,8 @@ mov [r12],r11
 mov r11,[r12]
 sub r12,8
 cmp r11,0
-je if_else_91
-if_91:
+je if_else_93
+if_93:
 mov r11,[r12]
 sub r12,8
 mov r11,[r12]
@@ -10550,9 +10715,9 @@ mov [r12],r11
 mov r11,[r12]
 sub r12,8
 cmp r11,0
-je if_else_92
-if_92:
-mov r11,string_114
+je if_else_94
+if_94:
+mov r11,string_116
 add r12,8
 mov [r12],r11
 mov r11,14
@@ -10587,7 +10752,7 @@ mov rdi,[r12]
 sub r12,8
 call print
 
-mov r11,string_115
+mov r11,string_117
 add r12,8
 mov [r12],r11
 mov r11,6
@@ -10622,7 +10787,7 @@ mov rdi,[r12]
 sub r12,8
 call print
 
-mov r11,string_116
+mov r11,string_118
 add r12,8
 mov [r12],r11
 mov r11,40
@@ -10640,8 +10805,8 @@ call print_newline
 mov rax,60
 mov rdi,0
 syscall
-if_else_92:
-if_then_92:
+if_else_94:
+if_then_94:
 mov rcx,[r12]
 sub r12,8
 mov r11,[r12]
@@ -10673,9 +10838,9 @@ mov [r12],r11
 mov r11,[r12]
 sub r12,8
 cmp r11,0
-je if_else_93
-if_93:
-mov r11,string_117
+je if_else_95
+if_95:
+mov r11,string_119
 add r12,8
 mov [r12],r11
 mov r11,14
@@ -10710,7 +10875,7 @@ mov rdi,[r12]
 sub r12,8
 call print
 
-mov r11,string_118
+mov r11,string_120
 add r12,8
 mov [r12],r11
 mov r11,6
@@ -10745,7 +10910,7 @@ mov rdi,[r12]
 sub r12,8
 call print
 
-mov r11,string_119
+mov r11,string_121
 add r12,8
 mov [r12],r11
 mov r11,37
@@ -10763,8 +10928,8 @@ call print_newline
 mov rax,60
 mov rdi,0
 syscall
-if_else_93:
-if_then_93:
+if_else_95:
+if_then_95:
 mov rcx,[r12]
 sub r12,8
 mov r11,[r12]
@@ -10903,9 +11068,9 @@ mov [r12],r11
 mov r11,[r12]
 sub r12,8
 cmp r11,0
-je if_else_94
-if_94:
-mov r11,string_120
+je if_else_96
+if_96:
+mov r11,string_122
 add r12,8
 mov [r12],r11
 mov r11,35
@@ -10923,8 +11088,8 @@ call print_newline
 mov rax,60
 mov rdi,0
 syscall
-if_else_94:
-if_then_94:
+if_else_96:
+if_then_96:
 mov r11,[r12]
 sub r12,8
 add r12,8
@@ -11112,8 +11277,8 @@ mov [r11],rcx
 call PASS_1
 
 ret
-if_else_91:
-if_then_91:
+if_else_93:
+if_then_93:
 mov rcx,[r12]
 sub r12,8
 mov r11,[r12]
@@ -11151,8 +11316,8 @@ mov [r12],r11
 mov r11,[r12]
 sub r12,8
 cmp r11,0
-je if_else_95
-if_95:
+je if_else_97
+if_97:
 call ADD_TOKEN
 
 mov r11,[r12]
@@ -11164,8 +11329,8 @@ sub r12,8
 call PASS_1
 
 ret
-if_else_95:
-if_then_95:
+if_else_97:
+if_then_97:
 mov r11,[r12]
 sub r12,8
 mov r11,[r12]
@@ -11208,9 +11373,9 @@ mov [r12],r11
 mov r11,[r12]
 sub r12,8
 cmp r11,0
-je if_else_96
-if_96:
-mov r11,string_121
+je if_else_98
+if_98:
+mov r11,string_123
 add r12,8
 mov [r12],r11
 mov r11,39
@@ -11228,8 +11393,8 @@ call print_newline
 mov rax,60
 mov rdi,0
 syscall
-if_else_96:
-if_then_96:
+if_else_98:
+if_then_98:
 mov r11,[r12]
 sub r12,8
 add r12,8
@@ -11526,22 +11691,20 @@ mov [r12],r11
 mov r11,[r12]
 sub r12,8
 cmp r11,0
-je if_else_97
-if_97:
+je if_else_99
+if_99:
 mov r11,[r12]
 sub r12,8
 ret
-if_else_97:
-if_then_97:
+if_else_99:
+if_then_99:
 mov r11,[r12]
 sub r12,8
 add r12,8
 mov [r12],r11
 add r12,8
 mov [r12],r11
-mov r11,8
-add r12,8
-mov [r12],r11
+call TOKEN_STRUCT_SIZE
 
 mov r11,[r12]
 sub r12,8
@@ -11604,8 +11767,8 @@ mov [r12],r11
 mov r11,[r12]
 sub r12,8
 cmp r11,0
-je if_else_98
-if_98:
+je if_else_100
+if_100:
 mov rcx,[r12]
 sub r12,8
 mov r11,[r12]
@@ -11690,8 +11853,8 @@ call IS_VAR_NAME
 mov r11,[r12]
 sub r12,8
 cmp r11,0
-je if_else_99
-if_99:
+je if_else_101
+if_101:
 mov r11,[r12]
 sub r12,8
 mov r11,[r12]
@@ -11709,8 +11872,8 @@ sub r12,8
 mov r11,[r12]
 sub r12,8
 mov [r11],rcx
-jmp if_then_99
-if_else_99:
+jmp if_then_101
+if_else_101:
 mov rcx,[r12]
 sub r12,8
 mov r11,[r12]
@@ -11729,8 +11892,8 @@ call IS_METHOD_NAME
 mov r11,[r12]
 sub r12,8
 cmp r11,0
-je if_else_100
-if_100:
+je if_else_102
+if_102:
 mov r11,[r12]
 sub r12,8
 mov r11,[r12]
@@ -11748,13 +11911,13 @@ sub r12,8
 mov r11,[r12]
 sub r12,8
 mov [r11],rcx
-jmp if_then_100
-if_else_100:
+jmp if_then_102
+if_else_102:
 mov r11,[r12]
 sub r12,8
 mov r11,[r12]
 sub r12,8
-mov r11,string_122
+mov r11,string_124
 add r12,8
 mov [r12],r11
 mov r11,46
@@ -11778,10 +11941,10 @@ call print_newline
 mov rax,60
 mov rdi,0
 syscall
+if_then_102:
+if_then_101:
+if_else_100:
 if_then_100:
-if_then_99:
-if_else_98:
-if_then_98:
 mov r11,[r12]
 sub r12,8
 mov r11,[r12]

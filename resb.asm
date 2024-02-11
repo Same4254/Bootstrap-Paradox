@@ -3,7 +3,7 @@ int_to_string_buffer resb 1024
 input_buffer resb 1024
 output_buffer resb 1024
 token resb 1024
-token_struct resb 1024
+token_struct resb 4800000
 token_id_to_string resb 4096
 string_literals resb 1024
 variable_names resb 1024

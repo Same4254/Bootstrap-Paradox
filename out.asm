@@ -653,7 +653,7 @@ call F_FILL_BUFFER
 
 call print_newline
 
-mov r11,string_123
+mov r11,string_125
 add r12,8
 mov [r12],r11
 mov r11,6
@@ -687,7 +687,7 @@ call print_newline
 
 call print_newline
 
-mov r11,string_124
+mov r11,string_126
 add r12,8
 mov [r12],r11
 mov r11,6

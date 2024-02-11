@@ -328,7 +328,8 @@ VARIABLE col
 VARIABLE next_line
 VARIABLE next_col
 
-MEM      token_struct 1024
+( space for all of the tokens to be written to )
+MEM      token_struct 4800000
 VARIABLE token_struct_len
 
 MEM      token_id_to_string 4096
@@ -361,7 +362,7 @@ newline 10 !
 
 FUNC SP_REG "r12" RET
 
-FUNC TOKEN_STRUCT_SIZE    40 RET
+FUNC TOKEN_STRUCT_SIZE    48 RET
 
 FUNC TOKEN_STRING_LITERAL 1  RET
 FUNC TOKEN_IMM_INT        2  RET
@@ -566,7 +567,7 @@ FUNC FIND_TOKEN_BY_STR ( str len -> id )
 RET
 
 FUNC ADD_TOKEN ( id -> token_ptr )
-    token_struct_len @ TOKEN_STRUCT_SIZE + 1024 >= IF
+    token_struct_len @ TOKEN_STRUCT_SIZE + 4800000 >= IF
         "Out of memory for tokens!" TYPE CR
         SYS_EXIT
     THEN
@@ -1041,11 +1042,17 @@ FUNC PRINT_TOKEN ( ptr -> )
         DROP
         "Token: Mem Decl. Name: " TYPE
         DUP
+        DUP
         24 + @
         SWAP
         32 + @
 
-        TYPE CR
+        TYPE
+
+        ". Length: " TYPE
+        40 + @
+        .
+
         RET
     THEN
 
@@ -1377,9 +1384,17 @@ FUNC PASS_1
     IF
         IF
             DROP DROP DROP
-            TOKEN_MEM_DECL ADD_TOKEN
+
+            ( to use at the end to tell if MEM block )
+            1
+
+            TOKEN_MEM_DECL ADD_TOKEN 
         ELSE
             DROP DROP DROP
+
+            ( to use at the end to tell if MEM block )
+            0
+
             TOKEN_VARIABLE_DECL ADD_TOKEN
         THEN
 
@@ -1422,6 +1437,18 @@ FUNC PASS_1
         variable_names_len variable_names_len @ ROT + !
         variable_names variable_names_len @ + 0 !b
         variable_names_len variable_names_len @ 1 + !
+
+        ( if MEM block, also grab size )
+        IF
+            GRAB_TOKEN
+            2DUP STR_IS_INT IF
+                STR_TO_INT
+                token_struct token_struct_len @ + TOKEN_STRUCT_SIZE - 40 + SWAP !
+            ELSE
+                "MEM block expected an integer size, but got: " TYPE TYPE CR
+                SYS_EXIT
+            THEN
+        THEN
 
         PASS_1
         RET
@@ -1541,7 +1568,7 @@ FUNC PASS_2_HELP ( off -> )
     THEN
 
     ( off )
-    DUP 8 + SWAP
+    DUP TOKEN_STRUCT_SIZE + SWAP
     token_struct + 
     DUP @
     
