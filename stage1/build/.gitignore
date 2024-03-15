@@ -3,4 +3,5 @@ data.asm
 func.asm
 resb.asm
 out
+forth-stage1
 *.o
