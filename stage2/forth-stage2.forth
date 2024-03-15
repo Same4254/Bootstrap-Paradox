@@ -1359,13 +1359,14 @@ FUNC PASS_1
         24 + string_literals string_literals_len @ + !
 
         ( copy length of string literal )
-        32 + OVER !
+        ( subtract 2 since the token includes the 2 quotes )
+        32 + OVER 2 - !
 
         2DUP
-        string_literals string_literals_len @ + ROT ROT MEMCPY
+        string_literals string_literals_len @ + ROT 1 + ROT 2 - MEMCPY
 
         DUP
-        string_literals_len string_literals_len @ ROT + !
+        string_literals_len string_literals_len @ ROT + 2 - !
 
         DROP DROP 
         PASS_1
@@ -2682,8 +2683,13 @@ FUNC PASS_TRANSLATE_DATA_HELP ( off )
         
         " db " F_WRITE
 
+        ( quotes are not stored from the token ) 
+        F_QUOTE
+
         24 + @ SWAP 32 + @
         F_WRITE
+
+        F_QUOTE
 
         ", 0" F_WRITELN
     THEN THEN
