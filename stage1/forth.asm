@@ -15,14 +15,15 @@ section .bss
     vars resb 16384
 
 section .data
-    ; define bytes with pointer named "text", 10 is newline
-    input_filename_str db "./input.forth", 0
-    func_filename_str db "func.asm", 0
-    output_filename_str db "out.asm", 0
-    data_filename_str db "data.asm", 0
-    resb_filename_str db "resb.asm", 0
+    cmd_opt db "Command line options must provide a single path to the desired output filename", 10
 
-    template_str db "%include ", 34, "data.asm", 34, 10, "%include ", 34, "std.asm", 34, 10, "%include ", 34, "func.asm", 34, 10, "%include ", 34, "resb.asm", 34, 10, 10, "section .bss", 10, "the_stack resb 8192", 10, 10, "section .text", 10, "    global _start", 10, 10, "_start:", 10, "mov r12, the_stack", 10, 10
+    ; define bytes with pointer named "text", 10 is newline
+    func_filename_str db "./build/func.asm", 0
+    data_filename_str db "./build/data.asm", 0
+    resb_filename_str db "./build/resb.asm", 0
+    output_filename_str db "./build/out.asm", 0
+
+    template_str db "%include ", 34, "./build/data.asm", 34, 10, "%include ", 34, "./build/std.asm", 34, 10, "%include ", 34, "./build/func.asm", 34, 10, "%include ", 34, "./build/resb.asm", 34, 10, 10, "section .bss", 10, "the_stack resb 8192", 10, 10, "section .text", 10, "    global _start", 10, 10, "_start:", 10, "mov r12, the_stack", 10, 10
 
     end_template_str db "; exit", 10, "mov rax, 60", 10, "mov rdi, 0", 10, "syscall", 10
 
@@ -200,7 +201,7 @@ section .text
     ; global exports the method 
     global _start
 
-%include "std.asm"
+%include "./build/std.asm"
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Input
@@ -1100,9 +1101,28 @@ forth_grab_token_end:
     ret
 
 _start:
+    pop rdi
+    cmp rdi, 2
+    je name_provided
+
+name_not_provided:
+    mov rdi, cmd_opt
+    mov rsi, 79
+    call print
+
+    jmp exit
+
+name_provided:
+    pop rdi
+    pop rdi
+
+    mov rsi, 10
+
+    ; **argv -> grab the second pointer
+    ; mov rdi, [rsi+8]
+
     ; open the file
     mov rax, 2
-    mov rdi, input_filename_str
     mov rsi, 0
     mov rdx, 0
     syscall
@@ -1163,7 +1183,7 @@ _start:
     mov rax, 1
     mov rdi, r14
     mov rsi, template_str
-    mov rdx, 175
+    mov rdx, 206
     syscall
 
     ; Write start of data file
@@ -3637,6 +3657,7 @@ end:
     mov rdi, rbx
     syscall
 
+exit:
      ;;; exit
     mov rax, 60
     ; code

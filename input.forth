@@ -337,6 +337,7 @@ VARIABLE token_id_to_string_len
 
 MEM      string_literals 1024
 VARIABLE string_literals_len
+VARIABLE string_literals_id ( unique id for each str )
 
 MEM      variable_names 1024
 VARIABLE variable_names_len
@@ -384,50 +385,49 @@ FUNC TOKEN_2DUP           13 RET
 FUNC TOKEN_SWAP           14 RET
 FUNC TOKEN_2SWAP          15 RET
 FUNC TOKEN_DROP           16 RET
-FUNC TOKEN_2DROP          17 RET
-FUNC TOKEN_OVER           18 RET
-FUNC TOKEN_ROT            19 RET
+FUNC TOKEN_OVER           17 RET
+FUNC TOKEN_ROT            18 RET
 
-FUNC TOKEN_IS_EQUAL       20 RET
-FUNC TOKEN_NOT_EQUAL      21 RET
-FUNC TOKEN_GREATER        22 RET
-FUNC TOKEN_GREATER_EQ     23 RET
-FUNC TOKEN_LESS           24 RET
-FUNC TOKEN_LESS_EQ        25 RET
+FUNC TOKEN_IS_EQUAL       19 RET
+FUNC TOKEN_NOT_EQUAL      20 RET
+FUNC TOKEN_GREATER        21 RET
+FUNC TOKEN_GREATER_EQ     22 RET
+FUNC TOKEN_LESS           23 RET
+FUNC TOKEN_LESS_EQ        24 RET
 
-FUNC TOKEN_AND            26 RET
-FUNC TOKEN_NOT            27 RET
-FUNC TOKEN_OR             28 RET
-FUNC TOKEN_XOR            29 RET
+FUNC TOKEN_AND            25 RET
+FUNC TOKEN_NOT            26 RET
+FUNC TOKEN_OR             27 RET
+FUNC TOKEN_XOR            28 RET
 
-FUNC TOKEN_IF             30 RET
-FUNC TOKEN_ELSE           31 RET
-FUNC TOKEN_THEN           32 RET
+FUNC TOKEN_IF             29 RET
+FUNC TOKEN_ELSE           30 RET
+FUNC TOKEN_THEN           31 RET
 
-FUNC TOKEN_WHILE          33 RET
-FUNC TOKEN_DO             34 RET
-FUNC TOKEN_END            35 RET
+FUNC TOKEN_WHILE          32 RET
+FUNC TOKEN_DO             33 RET
+FUNC TOKEN_END            34 RET
 
-FUNC TOKEN_VARIABLE_DECL  36 RET
-FUNC TOKEN_MEM_DECL       37 RET
+FUNC TOKEN_VARIABLE_DECL  35 RET
+FUNC TOKEN_MEM_DECL       36 RET
 
-FUNC TOKEN_VARIABLE_REF   38 RET
-FUNC TOKEN_FETCH          39 RET
-FUNC TOKEN_FETCH_B        40 RET
-FUNC TOKEN_STORE          41 RET
-FUNC TOKEN_STORE_B        42 RET
+FUNC TOKEN_VARIABLE_REF   37 RET
+FUNC TOKEN_FETCH          38 RET
+FUNC TOKEN_FETCH_BYTE     39 RET
+FUNC TOKEN_STORE          40 RET
+FUNC TOKEN_STORE_BYTE     41 RET
 
-FUNC TOKEN_FUNC_DECL      43 RET
-FUNC TOKEN_RET            44 RET
-FUNC TOKEN_FUNC_CALL      45 RET
+FUNC TOKEN_FUNC_DECL      42 RET
+FUNC TOKEN_RET            43 RET
+FUNC TOKEN_FUNC_CALL      44 RET
 
-FUNC TOKEN_SYS_READ       46 RET
-FUNC TOKEN_SYS_WRITE      47 RET
-FUNC TOKEN_SYS_OPEN       48 RET
-FUNC TOKEN_SYS_CLOSE      49 RET
-FUNC TOKEN_SYS_EXIT       50 RET
+FUNC TOKEN_SYS_READ       45 RET
+FUNC TOKEN_SYS_WRITE      46 RET
+FUNC TOKEN_SYS_OPEN       47 RET
+FUNC TOKEN_SYS_CLOSE      48 RET
+FUNC TOKEN_SYS_EXIT       49 RET
 
-FUNC TOKEN_UNKOWN_NAME    51 RET
+FUNC TOKEN_UNKOWN_NAME    50 RET
 
 FUNC PUSH_TOKEN_NAME ( token_id str str_len )
     token_id_to_string token_id_to_string_len @ + 16 + SWAP !
@@ -451,7 +451,6 @@ TOKEN_2DUP          "2DUP"      PUSH_TOKEN_NAME
 TOKEN_SWAP          "SWAP"      PUSH_TOKEN_NAME
 TOKEN_2SWAP         "2SWAP"     PUSH_TOKEN_NAME
 TOKEN_DROP          "DROP"      PUSH_TOKEN_NAME
-TOKEN_2DROP         "2DROP"     PUSH_TOKEN_NAME
 TOKEN_OVER          "OVER"      PUSH_TOKEN_NAME
 TOKEN_ROT           "ROT"       PUSH_TOKEN_NAME
 TOKEN_IS_EQUAL      "=="        PUSH_TOKEN_NAME
@@ -473,9 +472,9 @@ TOKEN_END           "END"       PUSH_TOKEN_NAME
 TOKEN_VARIABLE_DECL "VARIABLE"  PUSH_TOKEN_NAME
 TOKEN_MEM_DECL      "MEM"       PUSH_TOKEN_NAME
 TOKEN_FETCH         "@"         PUSH_TOKEN_NAME
-TOKEN_FETCH_B       "@b"        PUSH_TOKEN_NAME
+TOKEN_FETCH_BYTE    "@b"        PUSH_TOKEN_NAME
 TOKEN_STORE         "!"         PUSH_TOKEN_NAME
-TOKEN_STORE_B       "!b"        PUSH_TOKEN_NAME
+TOKEN_STORE_BYTE    "!b"        PUSH_TOKEN_NAME
 TOKEN_FUNC_DECL     "FUNC"      PUSH_TOKEN_NAME
 TOKEN_RET           "RET"       PUSH_TOKEN_NAME
 TOKEN_SYS_READ      "SYS_READ"  PUSH_TOKEN_NAME
@@ -483,6 +482,10 @@ TOKEN_SYS_WRITE     "SYS_WRITE" PUSH_TOKEN_NAME
 TOKEN_SYS_OPEN      "SYS_OPEN"  PUSH_TOKEN_NAME
 TOKEN_SYS_CLOSE     "SYS_CLOSE" PUSH_TOKEN_NAME
 TOKEN_SYS_EXIT      "SYS_EXIT"  PUSH_TOKEN_NAME
+
+FUNC STRING_NAME_PREFIX ( -> ptr n )
+    "string_"
+RET
 
 FUNC FIND_TOKEN_BY_ID_HELP ( id off -> str len )
     DUP token_id_to_string_len @ >= IF
@@ -738,6 +741,122 @@ FUNC F_WRITELN ( str n )
     F_NEWLINE
 RET
 
+FUNC MOV ( )
+    "mov" F_WRITE
+RET
+
+FUNC AND ( )
+    "and" F_WRITE
+RET
+
+FUNC CMP ( )
+    "cmp" F_WRITE
+RET
+
+FUNC JMP ( )
+    "jmp" F_WRITE
+RET
+
+FUNC JE ( )
+    "je" F_WRITE
+RET
+
+FUNC JNE ( )
+    "jne" F_WRITE
+RET
+
+FUNC SETZ ( )
+    "setz" F_WRITE
+RET
+
+FUNC SETNZ ( )
+    "setnz" F_WRITE
+RET
+
+FUNC SETG ( )
+    "setg" F_WRITE
+RET
+
+FUNC SETGE ( )
+    "setge" F_WRITE
+RET
+
+FUNC SETL ( )
+    "setl" F_WRITE
+RET
+
+FUNC SETLE ( )
+    "setle" F_WRITE
+RET
+
+FUNC SETE ( )
+    "sete" F_WRITE
+RET
+
+FUNC ADD ( )
+    "add" F_WRITE
+RET
+
+FUNC SUB ( )
+    "sub" F_WRITE
+RET
+
+FUNC DIV ( )
+    "div" F_WRITE
+RET
+
+FUNC CALL ( )
+    "call" F_WRITE
+RET
+
+FUNC COM ( )
+    "," F_WRITE
+RET
+
+FUNC SPACE ( )
+    " " F_WRITE
+RET
+
+FUNC _RAX ( )
+    "rax" F_WRITE
+RET
+
+FUNC _AL ( )
+    "al" F_WRITE
+RET
+
+FUNC _RBX ( )
+    "rbx" F_WRITE
+RET
+
+FUNC _RCX ( )
+    "rcx" F_WRITE
+RET
+
+FUNC _RDX ( )
+    "rdx" F_WRITE
+RET
+
+FUNC _RDI ( )
+    "rdi" F_WRITE
+RET
+
+FUNC _R12 ( )
+    "r12" F_WRITE
+RET
+
+FUNC _SP ( )
+    "r12" F_WRITE
+RET
+
+FUNC LSQ ( )
+    "[" F_WRITE
+RET
+
+FUNC RSQ ( )
+    "]" F_WRITE
+RET
+
 FUNC F_OUTPUT_TEMPLATE
     "section .bss" F_WRITELN
     "   the_stack resb 8192" F_WRITELN
@@ -963,9 +1082,9 @@ FUNC PRINT_TOKEN ( ptr -> )
     DUP @
     DUP TOKEN_STRING_LITERAL = IF
         DROP
-        "Token: String Literal. String: " TYPE
+        "Token: String Literal (id = " TYPE
+        DUP 40 + @ PRINT_INT "). " TYPE
         24 + DUP 8 + @ SWAP @ SWAP 
-        ( 2DUP . . )
         TYPE CR
         RET
     THEN
@@ -1206,7 +1325,10 @@ FUNC PASS_1
             SYS_EXIT
         THEN
 
-        TOKEN_STRING_LITERAL ADD_TOKEN DUP
+        TOKEN_STRING_LITERAL ADD_TOKEN DUP DUP
+
+        40 + string_literals_id @ !
+        string_literals_id string_literals_id @ 1 + !
 
         ( copy address to the string literal )
         24 + string_literals string_literals_len @ + !
@@ -1247,9 +1369,13 @@ FUNC PASS_1
         TOKEN_IF ADD_TOKEN
         
         DUP
+        DUP
 
         ( store the scope id in the token )
         24 + CREATE_SCOPE !
+
+        ( store that there is no ELSE *yet* )
+        32 + 0 !
 
         PUSH_IF_SCOPE
 
@@ -1271,6 +1397,10 @@ FUNC PASS_1
 
         ( store the scope id by getting it from the IF token )
         scope_stack scope_stack_len @ + 8 - @ 
+
+        ( mark the IF token to say that there is an associated ELSE token )
+        DUP 32 + 1 !
+
         24 + @
         !
         
@@ -1604,17 +1734,933 @@ FUNC PASS_2
     0 PASS_2_HELP
 RET
 
+FUNC POP_REG ( str n -> )
+    "; pop " F_WRITE 2DUP F_WRITELN
+
+    MOV SPACE F_WRITE COM SPACE LSQ _SP RSQ F_NEWLINE
+    SUB SPACE _SP COM SPACE "8" F_WRITELN
+RET
+
+FUNC PUSH_REG ( str n -> )
+    "; push " F_WRITE 2DUP F_WRITELN
+
+    ( mov the register value to stack address )
+    MOV SPACE LSQ _SP RSQ COM SPACE F_WRITELN
+    ADD SPACE _SP COM SPACE "8" F_WRITELN
+RET
+
+FUNC PUSH_INT_AS_STR ( ptr len -> )
+    MOV SPACE _RAX COM SPACE F_WRITELN
+    "rax" PUSH_REG
+RET
+
+FUNC PUSH_INT ( n -> )
+    int_to_string_buffer SWAP INT_TO_STRING
+
+    PUSH_INT_AS_STR
+RET
+
+( for pushing variable and str addresses )
+FUNC PUSH_NAME ( str n -> )
+    MOV SPACE _RAX COM SPACE F_WRITELN
+    "rax" PUSH_REG
+RET
+
+( writes a binary operator to operate on the top two elements on the stack )
+FUNC BINARY_OP_STACK ( str n -> )
+    ( comment )
+    "; " F_WRITE
+    2DUP
+    F_WRITELN
+
+    "rbx" POP_REG
+    "rax" POP_REG
+
+    F_WRITE SPACE _RAX COM SPACE _RBX F_NEWLINE
+
+    "rax" PUSH_REG
+RET
+
+FUNC TRANSLATE_TOKEN ( ptr )
+    DUP @
+
+    ( ptr id )
+    DUP TOKEN_STRING_LITERAL = IF
+        DROP
+
+        ( comment )
+        "; Push string: " F_WRITE
+        DUP 24 + @
+        OVER 32 + @
+        F_WRITELN
+
+        "; Push address" F_WRITELN
+        
+        MOV SPACE _RAX COM SPACE 
+        STRING_NAME_PREFIX F_WRITE DUP 40 + @ int_to_string_buffer SWAP INT_TO_STRING F_WRITE F_NEWLINE
+
+        "rax" PUSH_REG
+        
+        "; Push length" F_WRITELN
+        32 + @ PUSH_INT
+
+        F_NEWLINE
+
+        RET
+    THEN
+
+    DUP TOKEN_IMM_INT = IF
+        DROP
+        
+        24 + @ DUP
+
+        ( comment )
+        "; Push integer: " F_WRITE int_to_string_buffer SWAP INT_TO_STRING F_WRITELN
+
+        PUSH_INT
+        F_NEWLINE
+        RET
+    THEN
+
+    DUP TOKEN_ADD = IF
+        DROP DROP
+
+        "add" BINARY_OP_STACK
+        
+        F_NEWLINE
+        RET
+    THEN
+
+    DUP TOKEN_SUB = IF
+        DROP DROP
+
+        "sub" BINARY_OP_STACK
+        
+        F_NEWLINE
+        RET
+    THEN
+
+    DUP TOKEN_MUL = IF
+        DROP DROP
+
+        "mul" BINARY_OP_STACK
+        
+        F_NEWLINE
+        RET
+    THEN
+
+    DUP TOKEN_DIV = IF
+        DROP DROP
+        
+        "; Divide" F_WRITELN
+        "rbx" POP_REG
+        "rax" POP_REG
+
+        MOV SPACE _RDX COM SPACE "0" F_WRITELN
+        DIV SPACE _RBX F_NEWLINE
+        "rax" PUSH_REG
+
+        F_NEWLINE
+        RET
+    THEN
+
+    DUP TOKEN_MOD = IF
+        DROP DROP
+        
+        "; Divide" F_WRITELN
+        "rbx" POP_REG
+        "rax" POP_REG
+
+        MOV SPACE _RDX COM SPACE "0" F_WRITELN
+        DIV SPACE _RBX F_NEWLINE
+        "rdx" PUSH_REG
+
+        F_NEWLINE
+        RET
+    THEN
+
+    DUP TOKEN_PRINT_INT = IF
+        DROP DROP
+
+        "; Print Int" F_WRITELN
+
+        "rdi" POP_REG
+        CALL SPACE "print_int"
+
+        F_NEWLINE
+        RET
+    THEN
+
+    DUP TOKEN_TYPE = IF
+        DROP DROP
+
+        "; TYPE" F_WRITELN
+
+        "rsi" POP_REG
+        "rdi" POP_REG
+
+        CALL SPACE "print" F_WRITELN
+
+        F_NEWLINE
+        RET
+    THEN
+
+    DUP TOKEN_CR = IF
+        DROP DROP
+
+        "; CR" F_WRITELN
+
+        CALL SPACE "print_newline_str" F_WRITELN
+
+        F_NEWLINE
+        RET
+    THEN
+
+    DUP TOKEN_STACK_LEN = IF 
+        DROP DROP
+
+        "; STACK_LEN" F_WRITELN
+
+        MOV SPACE _RDX COM SPACE "0" F_WRITELN
+        MOV SPACE _RAX COM SPACE _SP F_NEWLINE
+        SUB SPACE _RAX COM SPACE "the_stack" F_WRITELN
+        MOV SPACE _RBX COM SPACE "8" F_WRITELN
+        DIV SPACE _RBX
+        "rax" PUSH_REG
+
+        RET
+    THEN
+
+    DUP TOKEN_DUP = IF
+        DROP DROP
+
+        "; DUP" F_WRITELN
+
+        "rax" POP_REG
+        "rax" PUSH_REG
+        "rax" PUSH_REG
+
+        F_NEWLINE
+        RET
+    THEN
+
+    DUP TOKEN_2DUP = IF
+        DROP DROP
+
+        "; 2DUP" F_WRITELN
+
+        "rbx" POP_REG
+        "rax" POP_REG
+
+        "rax" PUSH_REG
+        "rbx" PUSH_REG
+
+        "rax" PUSH_REG
+        "rbx" PUSH_REG
+
+        F_NEWLINE
+        RET
+    THEN
+
+    DUP TOKEN_SWAP = IF
+        DROP DROP
+
+        "; SWAP" F_WRITELN
+
+        "rbx" POP_REG
+        "rax" POP_REG
+
+        "rbx" PUSH_REG
+        "rax" PUSH_REG
+
+        F_NEWLINE
+        RET
+    THEN
+
+    DUP TOKEN_2SWAP = IF
+        DROP DROP
+
+        "; SWAP" F_WRITELN
+
+        "rbx" POP_REG
+        "rax" POP_REG
+
+        "rdx" POP_REG
+        "rcx" POP_REG
+
+        "rcx" PUSH_REG
+        "rdx" PUSH_REG
+
+        "rax" PUSH_REG
+        "rbx" POP_REG
+
+        F_NEWLINE
+        RET
+    THEN
+
+    DUP TOKEN_DROP = IF
+        DROP DROP
+
+        "; DROP" F_WRITELN
+        SUB SPACE _SP COM SPACE "8" F_WRITELN
+
+        F_NEWLINE
+        RET
+    THEN
+
+    DUP TOKEN_OVER = IF
+        DROP DROP
+
+        "; OVER" F_WRITELN
+        "rax" POP_REG
+        "rbx" POP_REG
+
+        "rbx" PUSH_REG
+        "rax" PUSH_REG
+        "rbx" PUSH_REG
+
+        F_WRITELN
+        RET
+    THEN
+
+    DUP TOKEN_ROT = IF
+        DROP DROP
+
+        "; OVER" F_WRITELN
+        "rax" POP_REG
+        "rbx" POP_REG
+        "rcx" POP_REG
+
+        "rcx" PUSH_REG
+        "rax" PUSH_REG
+        "rbx" PUSH_REG
+
+        F_WRITELN
+        RET
+    THEN
+
+    DUP TOKEN_IS_EQUAL = IF
+        DROP DROP
+        "; equality test" F_WRITELN
+        "rax" POP_REG
+        "rbx" POP_REG
+
+        CMP SPACE _RAX COM SPACE _RBX F_NEWLINE
+        MOV SPACE _RAX COM SPACE "0" F_WRITELN
+        SETZ SPACE _AL F_NEWLINE
+        "rax" PUSH_REG
+
+        F_NEWLINE
+        RET
+    THEN
+
+    DUP TOKEN_NOT_EQUAL = IF
+        DROP DROP
+        "; unequality test" F_WRITELN
+        "rax" POP_REG
+        "rbx" POP_REG
+
+        CMP SPACE _RAX COM SPACE _RBX F_NEWLINE
+        MOV SPACE _RAX COM SPACE "0" F_WRITELN
+        SETNZ SPACE _AL F_NEWLINE
+        "rax" PUSH_REG
+
+        F_NEWLINE
+        RET
+    THEN
+
+    DUP TOKEN_GREATER = IF
+        DROP DROP
+        "; greater than test" F_WRITELN
+        "rax" POP_REG
+        "rbx" POP_REG
+
+        CMP SPACE _RAX COM SPACE _RBX F_NEWLINE
+        MOV SPACE _RAX COM SPACE "0" F_WRITELN
+        SETG SPACE _AL F_NEWLINE
+        "rax" PUSH_REG
+
+        F_NEWLINE
+        RET
+    THEN
+
+    DUP TOKEN_GREATER_EQ = IF
+        DROP DROP
+        "; greater than or equal test" F_WRITELN
+        "rax" POP_REG
+        "rbx" POP_REG
+
+        CMP SPACE _RAX COM SPACE _RBX F_NEWLINE
+        MOV SPACE _RAX COM SPACE "0" F_WRITELN
+        SETGE SPACE _AL F_NEWLINE
+        "rax" PUSH_REG
+
+        F_NEWLINE
+        RET
+    THEN
+
+    DUP TOKEN_LESS = IF
+        DROP DROP
+        "; less than test" F_WRITELN
+        "rax" POP_REG
+        "rbx" POP_REG
+
+        CMP SPACE _RAX COM SPACE _RBX F_NEWLINE
+        MOV SPACE _RAX COM SPACE "0" F_WRITELN
+        SETL SPACE _AL F_NEWLINE
+        "rax" PUSH_REG
+
+        F_NEWLINE
+        RET
+    THEN
+
+    DUP TOKEN_LESS_EQ = IF
+        DROP DROP
+        "; less than or equal test" F_WRITELN
+        "rax" POP_REG
+        "rbx" POP_REG
+
+        CMP SPACE _RAX COM SPACE _RBX F_NEWLINE
+        MOV SPACE _RAX COM SPACE "0" F_WRITELN
+        SETLE SPACE _AL F_NEWLINE
+        "rax" PUSH_REG
+
+        F_NEWLINE
+        RET
+    THEN
+
+    DUP TOKEN_AND = IF
+        DROP DROP
+
+        "and" BINARY_OP_STACK
+
+        F_NEWLINE
+        RET
+    THEN
+
+    DUP TOKEN_NOT = IF
+        DROP DROP
+
+        "rax" POP_REG
+
+        CMP SPACE _RAX SPACE COM "0" F_WRITELN
+
+        MOV SPACE _RAX SPACE COM "0" F_WRITELN
+        SETE SPACE _AL F_NEWLINE
+
+        "rax" PUSH_REG
+
+        F_NEWLINE
+        RET
+    THEN
+
+    DUP TOKEN_OR = IF
+        DROP DROP
+
+        "or" BINARY_OP_STACK
+
+        F_NEWLINE
+        RET
+    THEN
+
+    DUP TOKEN_XOR = IF
+        DROP DROP
+
+        "xor" BINARY_OP_STACK
+
+        F_NEWLINE
+        RET
+    THEN
+
+    DUP TOKEN_IF = IF
+        DROP
+
+        "; if" F_WRITELN
+        "rax" POP_REG
+
+        ( test the top element on the stack )
+        CMP SPACE _RAX COM SPACE "0" F_WRITELN
+ 
+        ( check if there is an ELSE to go with the IF )
+        DUP
+        DUP 32 + @ 1 = IF
+            ( if there is an ELSE jump to it )
+            JNE SPACE "else_" F_WRITE 
+            24 + @ int_to_string_buffer SWAP INT_TO_STRING F_WRITELN
+        ELSE
+            ( if there is nowhere else, jump to THEN )
+            JNE SPACE "then_" F_WRITE 
+            24 + @ int_to_string_buffer SWAP INT_TO_STRING F_WRITELN
+        THEN
+
+        F_NEWLINE
+
+        ( write the IF label )
+        "if_" F_WRITE
+
+        24 + @ int_to_string_buffer SWAP INT_TO_STRING
+        F_WRITE
+
+        ":" F_WRITELN
+
+        RET
+    THEN
+
+    DUP TOKEN_ELSE = IF
+        DROP
+
+        "else_" F_WRITE 
+        24 + @ int_to_string_buffer SWAP INT_TO_STRING F_WRITE
+        ":" F_WRITELN
+
+        RET
+    THEN
+
+    DUP TOKEN_THEN = IF
+        DROP
+
+        "then_" F_WRITE 
+        24 + @ int_to_string_buffer SWAP INT_TO_STRING F_WRITE
+        ":" F_WRITELN
+
+        RET
+    THEN
+
+    DUP TOKEN_WHILE = IF
+        DROP
+        
+        "while_" F_WRITE
+        24 + @ int_to_string_buffer SWAP INT_TO_STRING F_WRITE
+        ":" F_WRITELN
+
+        RET
+    THEN
+
+    DUP TOKEN_DO = IF
+        DROP
+
+        "; condition check" F_WRITELN
+        "rax" POP_REG
+        CMP SPACE _RAX COM SPACE "0" F_WRITELN
+
+        JE  SPACE "end_" F_WRITE
+        24 + @ int_to_string_buffer SWAP INT_TO_STRING
+        F_WRITELN
+    THEN
+
+    DUP TOKEN_END = IF
+        DROP
+
+        "; end" F_WRITELN
+        JMP SPACE "while_" F_WRITE
+        DUP 24 + @ int_to_string_buffer SWAP INT_TO_STRING
+        F_WRITELN
+
+        "end_" F_WRITE
+        24 + @ int_to_string_buffer SWAP INT_TO_STRING F_WRITE
+
+        ":" F_WRITELN
+
+        RET
+    THEN
+
+    DUP TOKEN_VARIABLE_REF = IF
+        DROP
+
+        DUP 24 + @ SWAP 32 + @ 
+
+        2DUP
+        "; reference variable: " F_WRITE F_WRITELN
+
+        ( store the address of the var into rax )
+        MOV SPACE _RAX COM SPACE F_WRITELN
+
+        "rax" PUSH_REG
+
+        RET
+    THEN
+
+    DUP TOKEN_FETCH = IF
+        DROP DROP
+
+        "; ptr de-reference" F_WRITELN
+        "rax" POP_REG
+        MOV SPACE _RAX COM SPACE LSQ _RAX RSQ F_NEWLINE 
+        "rax" PUSH_REG
+
+        F_NEWLINE
+
+        RET
+    THEN
+
+    DUP TOKEN_FETCH_BYTE = IF
+        DROP DROP
+
+        "; byte ptr de-reference" F_WRITELN
+        "rbx" POP_REG
+        MOV SPACE _RAX COM SPACE "0" F_WRITELN
+        MOV SPACE _AL COM SPACE LSQ "byte " F_WRITE _RBX RSQ F_NEWLINE 
+        "rax" PUSH_REG
+
+        F_NEWLINE
+
+        RET
+    THEN
+
+    DUP TOKEN_FUNC_DECL = IF
+        DROP
+
+
+        DUP 24 + @ SWAP 32 + @ F_WRITE 
+        ":" F_WRITELN
+
+        RET
+    THEN
+
+    DUP TOKEN_RET = IF
+        DROP DROP
+
+        "ret" F_WRITELN
+        F_NEWLINE
+
+        RET
+    THEN
+
+    DUP TOKEN_FUNC_CALL = IF
+        DROP
+
+        DUP 24 + @ SWAP 32 + @
+
+        CALL SPACE F_WRITELN
+
+        RET
+    THEN
+
+    DUP TOKEN_SYS_READ = IF
+        DROP DROP
+
+        ( number of bytes to read )
+        "rdx" POP_REG
+
+        ( buff ptr )
+        "rsi" POP_REG
+
+        ( fd )
+        "rdi" POP_REG
+
+        ( syscall number )
+        MOV _RAX COM SPACE "0" F_WRITELN
+
+        CALL "syscall" F_WRITELN
+        "rax" PUSH_REG
+
+        F_NEWLINE
+
+        RET
+    THEN
+
+    DUP TOKEN_SYS_WRITE = IF
+        DROP DROP
+
+        ( bytes to write )
+        "rdx" POP_REG
+
+        ( buff ptr )
+        "rsi" POP_REG
+
+        ( fd )
+        "rdi" POP_REG
+
+        ( syscall number )
+        MOV _RAX COM SPACE "1" F_WRITELN
+
+        CALL "syscall" F_WRITELN
+        "rax" PUSH_REG
+
+        F_NEWLINE
+
+        RET
+    THEN
+
+    DUP TOKEN_SYS_OPEN = IF
+        DROP DROP
+
+        ( mode )
+        "rdx" POP_REG
+
+        ( flags )
+        "rsi" POP_REG
+
+        ( file name )
+        "rdi" POP_REG
+
+        ( syscall number )
+        MOV _RAX COM SPACE "2" F_WRITELN
+
+        CALL "syscall" F_WRITELN
+        "rax" PUSH_REG
+
+        F_NEWLINE
+
+        RET
+    THEN
+
+    DUP TOKEN_SYS_CLOSE = IF
+        DROP DROP
+
+        ( fd )
+        "rdx" POP_REG
+
+        ( syscall number )
+        MOV _RAX COM SPACE "3" F_WRITELN
+
+        CALL "syscall" F_WRITELN
+        "rax" PUSH_REG
+
+        F_NEWLINE
+
+        RET
+    THEN
+
+    DUP TOKEN_SYS_EXIT = IF
+        DROP DROP
+
+        MOV SPACE _RDI COM SPACE "0" F_WRITELN
+
+        ( syscall number )
+        MOV _RAX COM SPACE "60" F_WRITELN
+
+        CALL "syscall" F_WRITELN
+        "rax" PUSH_REG
+
+        F_NEWLINE
+
+        RET
+    THEN
+RET
+
+VARIABLE in_function
+
+FUNC PASS_TRANSLATE_FUNCTIONS_HELP ( off -> )
+    ( check if we have reached the end of the tokens )
+    DUP token_struct_len @ >= IF
+        DROP
+        RET
+    THEN
+
+    DUP token_struct + @
+
+    ( assume a function inside of a function has been checked for already )
+    DUP TOKEN_FUNC_DECL = IF
+        DROP
+        in_function 1 !
+        scope_stack_len 0 !
+
+        DUP token_struct + TRANSLATE_TOKEN
+
+        TOKEN_STRUCT_SIZE + PASS_TRANSLATE_FUNCTIONS_HELP
+        RET
+    THEN
+
+    ( have not declared a function and not in a function currently )
+    in_function @ 0 = IF
+        DROP
+        TOKEN_STRUCT_SIZE + PASS_TRANSLATE_FUNCTIONS_HELP
+        RET
+    THEN
+
+    ( we are in a function )
+
+    ( keep track of the scope stack, to know when we exit the method scope )
+    DUP TOKEN_IF = IF
+        scope_stack_len scope_stack_len @ 1 + !
+    THEN
+
+    DUP TOKEN_THEN = IF
+        scope_stack_len scope_stack_len @ 1 - !
+    THEN
+
+    DUP TOKEN_WHILE = IF
+        scope_stack_len scope_stack_len @ 1 + !
+    THEN
+
+    DUP TOKEN_END = IF
+        scope_stack_len scope_stack_len @ 1 - !
+    THEN
+
+    DUP TOKEN_RET = scope_stack_len @ 0 = AND IF
+        in_function 0 !
+    THEN
+
+    DROP
+    DUP token_struct + TRANSLATE_TOKEN
+    TOKEN_STRUCT_SIZE + PASS_TRANSLATE_FUNCTIONS_HELP
+RET
+
+FUNC PASS_TRANSLATE_FUNCTIONS ( )
+    0 PASS_TRANSLATE_FUNCTIONS_HELP 
+RET
+
+FUNC PASS_TRANSLATE_FREE_CODE_HELP ( off -> )
+    ( check if we have reached the end of the tokens )
+    DUP token_struct_len @ >= IF
+        DROP
+        RET
+    THEN
+
+    DUP token_struct + @
+
+    ( assume a function inside of a function has been checked for already )
+    DUP TOKEN_FUNC_DECL = IF
+        DROP
+        in_function 1 !
+        scope_stack_len 0 !
+
+        TOKEN_STRUCT_SIZE + PASS_TRANSLATE_FREE_CODE_HELP
+        RET
+    THEN
+
+    ( not in a function, translate )
+    in_function @ 0 = IF
+        DROP
+        DUP token_struct + TRANSLATE_TOKEN
+        TOKEN_STRUCT_SIZE + PASS_TRANSLATE_FREE_CODE_HELP
+        RET
+    THEN
+
+    ( we are in a function keep track of when we exit it )
+
+    ( keep track of the scope stack, to know when we exit the method scope )
+    DUP TOKEN_IF = IF
+        scope_stack_len scope_stack_len @ 1 + !
+    THEN
+
+    DUP TOKEN_THEN = IF
+        scope_stack_len scope_stack_len @ 1 - !
+    THEN
+
+    DUP TOKEN_WHILE = IF
+        scope_stack_len scope_stack_len @ 1 + !
+    THEN
+
+    DUP TOKEN_END = IF
+        scope_stack_len scope_stack_len @ 1 - !
+    THEN
+
+    DUP TOKEN_RET = scope_stack_len @ 0 = AND IF
+        in_function 0 !
+    THEN
+
+    DROP
+    TOKEN_STRUCT_SIZE + PASS_TRANSLATE_FREE_CODE_HELP
+RET
+
+FUNC PASS_TRANSLATE_FREE_CODE ( )
+    0 PASS_TRANSLATE_FREE_CODE_HELP
+RET
+
+FUNC PASS_TRANSLATE_BSS_HELP ( off )
+    DUP token_struct_len >= IF
+        DROP 
+        RET
+    THEN
+
+    DUP token_struct + 
+    DUP @
+
+    ( off ptr id )
+    TOKEN_MEM_DECL = IF
+        DUP DUP 
+        24 + @ SWAP 32 + @
+        F_WRITE
+
+        " resb " F_WRITE
+
+        40 + @ int_to_string_buffer SWAP INT_TO_STRING F_WRITELN
+    ELSE
+        DROP 
+    THEN
+
+    TOKEN_STRUCT_SIZE + PASS_TRANSLATE_BSS_HELP
+RET
+
+FUNC PASS_TRANSLATE_BSS ( )
+    "section .bss" F_WRITELN
+    0 PASS_TRANSLATE_BSS_HELP 
+RET
+
+FUNC PASS_TRANSLATE_DATA_HELP ( off )
+    DUP token_struct_len >= IF
+        DROP 
+        RET
+    THEN
+
+    DUP token_struct + 
+    DUP @
+
+    ( off ptr id )
+    DUP TOKEN_VARIABLE_DECL = IF
+        DROP
+        DUP DUP 
+        24 + @ SWAP 32 + @
+        F_WRITE
+
+        " dq 0" F_WRITELN
+    ELSE TOKEN_STRING_LITERAL = IF
+        DUP DUP 
+
+        "string_" F_WRITE
+        DUP 40 + @ int_to_string_buffer SWAP INT_TO_STRING F_WRITE
+        
+        " db " F_WRITE
+
+        24 + @ SWAP 32 + @
+        F_WRITE
+
+        ", 0" F_WRITELN
+    THEN THEN
+
+    TOKEN_STRUCT_SIZE + PASS_TRANSLATE_DATA_HELP
+RET
+
+FUNC PASS_TRANSLATE_DATA ( )
+    "section .data" F_WRITELN
+    0 PASS_TRANSLATE_DATA_HELP
+RET
+
 CR
 "Pass 1" TYPE CR
 
 PASS_1
 
 PRINT_TOKENS
-STACK_LEN .
 
 CR
 "PASS 2" TYPE CR
 
 PASS_2
 PRINT_TOKENS
-STACK_LEN .
+
+PASS_TRANSLATE_BSS
+F_NEWLINE
+
+PASS_TRANSLATE_DATA
+
+"section .text" F_WRITELN
+
+PASS_TRANSLATE_FUNCTIONS
+F_NEWLINE
+
+"global _start" F_WRITELN
+F_NEWLINE
+
+"_start:" F_WRITELN
+PASS_TRANSLATE_FREE_CODE
+
+"; exit" F_WRITELN
+MOV SPACE _RAX COM SPACE "60" F_WRITELN
+MOV SPACE _RDI COM SPACE "0"  F_WRITELN
+"syscall" F_WRITELN
+
+F_FLUSH
+

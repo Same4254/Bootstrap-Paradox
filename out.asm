@@ -205,20 +205,9 @@ mov [r12],r11
 
 call PUSH_TOKEN_NAME
 
-call TOKEN_2DROP
-
-mov r11,string_15
-add r12,8
-mov [r12],r11
-mov r11,5
-add r12,8
-mov [r12],r11
-
-call PUSH_TOKEN_NAME
-
 call TOKEN_OVER
 
-mov r11,string_16
+mov r11,string_15
 add r12,8
 mov [r12],r11
 mov r11,4
@@ -229,7 +218,7 @@ call PUSH_TOKEN_NAME
 
 call TOKEN_ROT
 
-mov r11,string_17
+mov r11,string_16
 add r12,8
 mov [r12],r11
 mov r11,3
@@ -240,7 +229,7 @@ call PUSH_TOKEN_NAME
 
 call TOKEN_IS_EQUAL
 
-mov r11,string_18
+mov r11,string_17
 add r12,8
 mov [r12],r11
 mov r11,2
@@ -251,7 +240,7 @@ call PUSH_TOKEN_NAME
 
 call TOKEN_NOT_EQUAL
 
-mov r11,string_19
+mov r11,string_18
 add r12,8
 mov [r12],r11
 mov r11,2
@@ -262,7 +251,7 @@ call PUSH_TOKEN_NAME
 
 call TOKEN_GREATER
 
-mov r11,string_20
+mov r11,string_19
 add r12,8
 mov [r12],r11
 mov r11,1
@@ -273,7 +262,7 @@ call PUSH_TOKEN_NAME
 
 call TOKEN_GREATER_EQ
 
-mov r11,string_21
+mov r11,string_20
 add r12,8
 mov [r12],r11
 mov r11,2
@@ -284,7 +273,7 @@ call PUSH_TOKEN_NAME
 
 call TOKEN_LESS
 
-mov r11,string_22
+mov r11,string_21
 add r12,8
 mov [r12],r11
 mov r11,1
@@ -295,7 +284,7 @@ call PUSH_TOKEN_NAME
 
 call TOKEN_LESS_EQ
 
-mov r11,string_23
+mov r11,string_22
 add r12,8
 mov [r12],r11
 mov r11,2
@@ -306,7 +295,7 @@ call PUSH_TOKEN_NAME
 
 call TOKEN_AND
 
-mov r11,string_24
+mov r11,string_23
 add r12,8
 mov [r12],r11
 mov r11,3
@@ -317,7 +306,7 @@ call PUSH_TOKEN_NAME
 
 call TOKEN_NOT
 
-mov r11,string_25
+mov r11,string_24
 add r12,8
 mov [r12],r11
 mov r11,3
@@ -328,7 +317,7 @@ call PUSH_TOKEN_NAME
 
 call TOKEN_OR
 
-mov r11,string_26
+mov r11,string_25
 add r12,8
 mov [r12],r11
 mov r11,2
@@ -339,7 +328,7 @@ call PUSH_TOKEN_NAME
 
 call TOKEN_XOR
 
-mov r11,string_27
+mov r11,string_26
 add r12,8
 mov [r12],r11
 mov r11,3
@@ -350,7 +339,7 @@ call PUSH_TOKEN_NAME
 
 call TOKEN_IF
 
-mov r11,string_28
+mov r11,string_27
 add r12,8
 mov [r12],r11
 mov r11,2
@@ -361,7 +350,7 @@ call PUSH_TOKEN_NAME
 
 call TOKEN_ELSE
 
-mov r11,string_29
+mov r11,string_28
 add r12,8
 mov [r12],r11
 mov r11,4
@@ -372,7 +361,7 @@ call PUSH_TOKEN_NAME
 
 call TOKEN_THEN
 
-mov r11,string_30
+mov r11,string_29
 add r12,8
 mov [r12],r11
 mov r11,4
@@ -383,7 +372,7 @@ call PUSH_TOKEN_NAME
 
 call TOKEN_WHILE
 
-mov r11,string_31
+mov r11,string_30
 add r12,8
 mov [r12],r11
 mov r11,5
@@ -394,7 +383,7 @@ call PUSH_TOKEN_NAME
 
 call TOKEN_DO
 
-mov r11,string_32
+mov r11,string_31
 add r12,8
 mov [r12],r11
 mov r11,2
@@ -405,7 +394,7 @@ call PUSH_TOKEN_NAME
 
 call TOKEN_END
 
-mov r11,string_33
+mov r11,string_32
 add r12,8
 mov [r12],r11
 mov r11,3
@@ -416,7 +405,7 @@ call PUSH_TOKEN_NAME
 
 call TOKEN_VARIABLE_DECL
 
-mov r11,string_34
+mov r11,string_33
 add r12,8
 mov [r12],r11
 mov r11,8
@@ -427,7 +416,7 @@ call PUSH_TOKEN_NAME
 
 call TOKEN_MEM_DECL
 
-mov r11,string_35
+mov r11,string_34
 add r12,8
 mov [r12],r11
 mov r11,3
@@ -438,7 +427,7 @@ call PUSH_TOKEN_NAME
 
 call TOKEN_FETCH
 
-mov r11,string_36
+mov r11,string_35
 add r12,8
 mov [r12],r11
 mov r11,1
@@ -447,9 +436,9 @@ mov [r12],r11
 
 call PUSH_TOKEN_NAME
 
-call TOKEN_FETCH_B
+call TOKEN_FETCH_BYTE
 
-mov r11,string_37
+mov r11,string_36
 add r12,8
 mov [r12],r11
 mov r11,2
@@ -460,7 +449,7 @@ call PUSH_TOKEN_NAME
 
 call TOKEN_STORE
 
-mov r11,string_38
+mov r11,string_37
 add r12,8
 mov [r12],r11
 mov r11,1
@@ -469,9 +458,9 @@ mov [r12],r11
 
 call PUSH_TOKEN_NAME
 
-call TOKEN_STORE_B
+call TOKEN_STORE_BYTE
 
-mov r11,string_39
+mov r11,string_38
 add r12,8
 mov [r12],r11
 mov r11,2
@@ -482,7 +471,7 @@ call PUSH_TOKEN_NAME
 
 call TOKEN_FUNC_DECL
 
-mov r11,string_40
+mov r11,string_39
 add r12,8
 mov [r12],r11
 mov r11,4
@@ -493,7 +482,7 @@ call PUSH_TOKEN_NAME
 
 call TOKEN_RET
 
-mov r11,string_41
+mov r11,string_40
 add r12,8
 mov [r12],r11
 mov r11,3
@@ -504,7 +493,7 @@ call PUSH_TOKEN_NAME
 
 call TOKEN_SYS_READ
 
-mov r11,string_42
+mov r11,string_41
 add r12,8
 mov [r12],r11
 mov r11,8
@@ -515,7 +504,7 @@ call PUSH_TOKEN_NAME
 
 call TOKEN_SYS_WRITE
 
-mov r11,string_43
+mov r11,string_42
 add r12,8
 mov [r12],r11
 mov r11,9
@@ -526,7 +515,7 @@ call PUSH_TOKEN_NAME
 
 call TOKEN_SYS_OPEN
 
-mov r11,string_44
+mov r11,string_43
 add r12,8
 mov [r12],r11
 mov r11,8
@@ -537,7 +526,7 @@ call PUSH_TOKEN_NAME
 
 call TOKEN_SYS_CLOSE
 
-mov r11,string_45
+mov r11,string_44
 add r12,8
 mov [r12],r11
 mov r11,9
@@ -548,7 +537,7 @@ call PUSH_TOKEN_NAME
 
 call TOKEN_SYS_EXIT
 
-mov r11,string_46
+mov r11,string_45
 add r12,8
 mov [r12],r11
 mov r11,8
@@ -557,7 +546,7 @@ mov [r12],r11
 
 call PUSH_TOKEN_NAME
 
-mov r11,string_72
+mov r11,string_101
 add r12,8
 mov [r12],r11
 mov r11,16
@@ -603,7 +592,7 @@ sub r12,8
 mov r11,[r12]
 sub r12,8
 mov [r11],rcx
-mov r11,string_73
+mov r11,string_102
 add r12,8
 mov [r12],r11
 mov r11,17
@@ -653,7 +642,7 @@ call F_FILL_BUFFER
 
 call print_newline
 
-mov r11,string_125
+mov r11,string_340
 add r12,8
 mov [r12],r11
 mov r11,6
@@ -672,22 +661,9 @@ call PASS_1
 
 call PRINT_TOKENS
 
-mov rdx,0
-mov rax,r12
-sub rax,the_stack
-mov r11,8
-idiv r11
-add r12,8
-mov [r12],rax
-mov rdi,[r12]
-sub r12,8
-call print_int
-
 call print_newline
 
-call print_newline
-
-mov r11,string_126
+mov r11,string_341
 add r12,8
 mov [r12],r11
 mov r11,6
@@ -706,18 +682,104 @@ call PASS_2
 
 call PRINT_TOKENS
 
-mov rdx,0
-mov rax,r12
-sub rax,the_stack
-mov r11,8
-idiv r11
-add r12,8
-mov [r12],rax
-mov rdi,[r12]
-sub r12,8
-call print_int
+call PASS_TRANSLATE_BSS
 
-call print_newline
+call F_NEWLINE
+
+call PASS_TRANSLATE_DATA
+
+mov r11,string_342
+add r12,8
+mov [r12],r11
+mov r11,13
+add r12,8
+mov [r12],r11
+
+call F_WRITELN
+
+call PASS_TRANSLATE_FUNCTIONS
+
+call F_NEWLINE
+
+mov r11,string_343
+add r12,8
+mov [r12],r11
+mov r11,13
+add r12,8
+mov [r12],r11
+
+call F_WRITELN
+
+call F_NEWLINE
+
+mov r11,string_344
+add r12,8
+mov [r12],r11
+mov r11,7
+add r12,8
+mov [r12],r11
+
+call F_WRITELN
+
+call PASS_TRANSLATE_FREE_CODE
+
+mov r11,string_345
+add r12,8
+mov [r12],r11
+mov r11,6
+add r12,8
+mov [r12],r11
+
+call F_WRITELN
+
+call MOV
+
+call SPACE
+
+call _RAX
+
+call COM
+
+call SPACE
+
+mov r11,string_346
+add r12,8
+mov [r12],r11
+mov r11,2
+add r12,8
+mov [r12],r11
+
+call F_WRITELN
+
+call MOV
+
+call SPACE
+
+call _RDI
+
+call COM
+
+call SPACE
+
+mov r11,string_347
+add r12,8
+mov [r12],r11
+mov r11,1
+add r12,8
+mov [r12],r11
+
+call F_WRITELN
+
+mov r11,string_348
+add r12,8
+mov [r12],r11
+mov r11,7
+add r12,8
+mov [r12],r11
+
+call F_WRITELN
+
+call F_FLUSH
 
 ; exit
 mov rax, 60
