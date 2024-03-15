@@ -361,6 +361,9 @@ VARIABLE while_stack_len
 MEM newline 8
 newline 10 !
 
+MEM quote 8
+quote 34 !
+
 FUNC SP_REG "r12" RET
 
 FUNC TOKEN_STRUCT_SIZE    48 RET
@@ -731,6 +734,11 @@ FUNC F_WRITE ( str n )
     output_buffer_length output_buffer_length @ ROT + !
 RET
 
+FUNC F_QUOTE
+    quote 1
+    F_WRITE
+RET
+
 FUNC F_NEWLINE
     newline 1 
     F_WRITE
@@ -739,6 +747,10 @@ RET
 FUNC F_WRITELN ( str n )
     F_WRITE
     F_NEWLINE
+RET
+
+FUNC POP ( )
+    "pop" F_WRITE
 RET
 
 FUNC MOV ( )
@@ -1056,10 +1068,23 @@ FUNC GRAB_TOKEN ( -> str len )
 RET
 
 ( open the file )
-"output-forth.asm" DROP 578 511 SYS_OPEN
+"./build/out-stage2.asm" DROP 578 511 SYS_OPEN
 output_file SWAP !
 
-"input-forth.forth" DROP 0 0 SYS_OPEN
+( check the cmd line arguements for the input filename )
+( put the ptr to the name of the file and the str len onto the stack )
+2 = IF
+    DROP
+
+    ( filename_ptr )
+    DUP
+    STR_LEN
+ELSE
+    "Expected one command line arguement for the input filename!" TYPE CR
+    SYS_EXIT
+THEN
+
+DROP 0 0 SYS_OPEN
 input_file SWAP !
 
 ( F_OUTPUT_TEMPLATE )
@@ -1843,7 +1868,7 @@ FUNC TRANSLATE_TOKEN ( ptr )
     DUP TOKEN_MUL = IF
         DROP DROP
 
-        "mul" BINARY_OP_STACK
+        "imul" BINARY_OP_STACK
         
         F_NEWLINE
         RET
@@ -1885,7 +1910,7 @@ FUNC TRANSLATE_TOKEN ( ptr )
         "; Print Int" F_WRITELN
 
         "rdi" POP_REG
-        CALL SPACE "print_int"
+        CALL SPACE "print_int" F_WRITELN
 
         F_NEWLINE
         RET
@@ -1910,7 +1935,7 @@ FUNC TRANSLATE_TOKEN ( ptr )
 
         "; CR" F_WRITELN
 
-        CALL SPACE "print_newline_str" F_WRITELN
+        CALL SPACE "print_newline" F_WRITELN
 
         F_NEWLINE
         RET
@@ -2586,6 +2611,7 @@ RET
 
 FUNC PASS_TRANSLATE_BSS ( )
     "section .bss" F_WRITELN
+    "the_stack resb 8192" F_WRITELN
     0 PASS_TRANSLATE_BSS_HELP 
 RET
 
@@ -2641,6 +2667,9 @@ CR
 PASS_2
 PRINT_TOKENS
 
+"%include " F_WRITE F_QUOTE "./build/std.asm" F_WRITE F_QUOTE F_NEWLINE
+F_NEWLINE
+
 PASS_TRANSLATE_BSS
 F_NEWLINE
 
@@ -2655,6 +2684,40 @@ F_NEWLINE
 F_NEWLINE
 
 "_start:" F_WRITELN
+MOV SPACE _SP COM SPACE "the_stack" F_WRITELN
+
+( handle the command line arguments )
+( grab the contents of the native stack and put them onto the Forth stack )
+
+( argc )
+
+(
+rax -> r11
+rbx -> r13
+rsi -> r14
+rdi -> r15
+)
+
+"pop rax" F_WRITELN
+"pop rsi" F_WRITELN
+
+"mov rbx, rax" F_WRITELN
+"jmp push_stack_loop_check" F_WRITELN
+
+"push_stack_loop:" F_WRITELN
+"pop rdi" F_WRITELN
+"rdi" PUSH_REG
+"sub rbx, 1"
+
+"push_stack_loop_check:" F_WRITELN
+"cmp rbx, 1" F_WRITELN
+"jne push_stack_loop" F_WRITELN
+
+"rsi" PUSH_REG
+"rax" PUSH_REG
+
+F_NEWLINE
+ 
 PASS_TRANSLATE_FREE_CODE
 
 "; exit" F_WRITELN

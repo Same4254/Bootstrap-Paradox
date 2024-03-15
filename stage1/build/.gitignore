@@ -1,0 +1,6 @@
+out.asm
+data.asm
+func.asm
+resb.asm
+out
+*.o

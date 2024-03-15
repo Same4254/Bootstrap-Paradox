@@ -27,6 +27,12 @@ section .data
 
     end_template_str db "; exit", 10, "mov rax, 60", 10, "mov rdi, 0", 10, "syscall", 10
 
+    ; template for parsing the command line arguments
+    ; split into two parts because writing out pushing registers to the forth stack is automated
+    ; instead of re-writing pushing to the forth stack, call the function to do that
+    parse_cmd_opt_1 db "pop r11", 10, "pop r14", 10, "mov r13, r11", 10, "jmp push_stack_loop_check", 10, "push_stack_loop:", 10, "pop r15", 10
+    parse_cmd_opt_2 db "sub r13, 1", 10, 10, "push_stack_loop_check:", 10, "cmp r13, 1", 10, "jne push_stack_loop", 10
+
     the_stack_str db "the_stack"
 
     data_file_template_str db "section .data", 10
@@ -163,6 +169,9 @@ section .data
     rdi_str db "rdi"
     rsi_str db "rsi"
     rax_str db "rax"
+    r13_str db "r13"
+    r14_str db "r14"
+    r15_str db "r15"
 
     ;;; stack access strings
     stack_access_current_str db "[r12]"
@@ -1185,6 +1194,33 @@ name_provided:
     mov rsi, template_str
     mov rdx, 206
     syscall
+
+    mov rax, 1
+    mov rdi, r14
+    mov rsi, parse_cmd_opt_1
+    mov rdx, 80
+    syscall
+
+    mov rdi, r14
+    mov rsi, r15_str
+    mov rdx, 3
+    call write_forth_stack_push_to_file
+
+    mov rax, 1
+    mov rdi, r14
+    mov rsi, parse_cmd_opt_2
+    mov rdx, 66
+    syscall
+
+    mov rdi, r14
+    mov rsi, r14_str
+    mov rdx, 3
+    call write_forth_stack_push_to_file
+
+    mov rdi, r14
+    mov rsi, r11_str
+    mov rdx, 3
+    call write_forth_stack_push_to_file
 
     ; Write start of data file
     mov rax, 1

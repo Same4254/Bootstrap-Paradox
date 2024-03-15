@@ -1,0 +1,10 @@
+out.asm
+out-stage2.asm
+data.asm
+func.asm
+resb.asm
+out
+out-stage2
+forth-stage1
+forth-stage2
+*.o

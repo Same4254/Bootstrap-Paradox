@@ -4,4 +4,4 @@ FUNC thing
     3 4 *
 RET
 
-1 2 +
+1 2 + . CR
