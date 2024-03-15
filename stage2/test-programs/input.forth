@@ -1,7 +1,20 @@
-MEM block 1024
-
-FUNC thing 
-    3 4 *
+FUNC test 
+    2 +
 RET
 
-1 2 + . CR
+VARIABLE thing
+"WORKING" TYPE CR
+
+MEM block 1024
+
+block 5 !
+block @ .
+
+thing 10 !
+thing @ .
+
+1
+WHILE DUP 5 < DO
+    DUP .
+    1 +
+END
