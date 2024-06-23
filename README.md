@@ -30,7 +30,7 @@ FUNC GREATER_THAN_5 (n -> bool)
 - GREATER_THAN_5 is the name of the function.
 - () represents a comment. It is customary in Forth to write a comment on a function which describes how the function will manipulate the stack. This is because functions in Forth have no real calling convention. Rather, it simply expects there to be elements on the stack to manipulate.
 - 5 pushes a 5 onto the stack
-- > will take the top two elements on the stack, compare them, and the push a boolen (0 or 1) onto the stack
+- \> will take the top two elements on the stack, compare them, and the push a boolen (0 or 1) onto the stack
 - IF will check the boolean value (0 or 1) and branch on that value as you would expect
 - THEN terminates the IF statement, since there is no delimiter to denote when the expressions within the IF is done
 - RET will return from the function to where the function was called from
